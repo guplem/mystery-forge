@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(find *)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(gh issue *)",
+      "Bash(gh pr *)",
+      "Bash(gh label *)",
+      "Bash(npm run *)",
+      "Bash(npx prettier *)",
+      "Bash(node --test*)",
+      "Bash(uv sync*)",
+      "Bash(uv run *)"
+    ],
+    "ask": [],
+    "deny": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "case \"$CLAUDE_FILE\" in *configurator/gameConfigSchema.js) echo '[hook] WARNING: this is a GENERATED file. Revert the edit, change contracts/game-config.schema.json instead, then run: npm run generate:schema' ;; esac"
+          },
+          {
+            "type": "command",
+            "command": "case \"$CLAUDE_FILE\" in *.js|*.css|*.html|*.json|*.md|*.yml|*.yaml) npx prettier --write --ignore-unknown \"$CLAUDE_FILE\" >/dev/null 2>&1 || true ;; *.py) (cd \"$(git rev-parse --show-toplevel)/toolkit\" && uv run ruff format \"$CLAUDE_FILE\" >/dev/null 2>&1) || true ;; esac"
+          },
+          {
+            "type": "command",
+            "command": "case \"$CLAUDE_FILE\" in *contracts/*) echo '[hook] A cross-language contract changed. Update the Python and the JavaScript side in the same PR, and run: npm run check' ;; *toolkit/src/*|*configurator/*.js) echo '[hook] Logic changed. Run the validate agent before you open a PR.' ;; esac"
+          }
+        ]
+      }
+    ]
+  }
+}

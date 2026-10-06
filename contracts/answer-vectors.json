@@ -1,0 +1,125 @@
+{
+  "description": "Shared test vectors for answer normalization and hashing. The Python toolkit and the JavaScript companion must give these exact results.",
+  "salt": "test-salt",
+  "normalization": [
+    {
+      "language": "en",
+      "input": "Lighthouse",
+      "expected": "lighthouse"
+    },
+    {
+      "language": "en",
+      "input": "  the Old Mill! ",
+      "expected": "oldmill"
+    },
+    {
+      "language": "en",
+      "input": "The",
+      "expected": "the"
+    },
+    {
+      "language": "en",
+      "input": "a b c",
+      "expected": "bc"
+    },
+    {
+      "language": "en",
+      "input": "0420",
+      "expected": "0420"
+    },
+    {
+      "language": "en",
+      "input": "4-2-0",
+      "expected": "420"
+    },
+    {
+      "language": "es",
+      "input": "El Faro",
+      "expected": "faro"
+    },
+    {
+      "language": "es",
+      "input": "Año",
+      "expected": "ano"
+    },
+    {
+      "language": "es",
+      "input": "¿Señor García?",
+      "expected": "senorgarcia"
+    },
+    {
+      "language": "es",
+      "input": "Las llaves",
+      "expected": "llaves"
+    },
+    {
+      "language": "ca",
+      "input": "L'escola",
+      "expected": "escola"
+    },
+    {
+      "language": "ca",
+      "input": "Els Encants",
+      "expected": "encants"
+    },
+    {
+      "language": "fr",
+      "input": "L'Œuvre",
+      "expected": "oeuvre"
+    },
+    {
+      "language": "de",
+      "input": "Die Straße",
+      "expected": "strasse"
+    },
+    {
+      "language": "de",
+      "input": "Øresund",
+      "expected": "oresund"
+    },
+    {
+      "language": "it",
+      "input": "Gli Uffizi",
+      "expected": "uffizi"
+    },
+    {
+      "language": "pt",
+      "input": "O Coração",
+      "expected": "coracao"
+    },
+    {
+      "language": "en",
+      "input": "Æsop",
+      "expected": "aesop"
+    },
+    {
+      "language": "en",
+      "input": "Łódź",
+      "expected": "lodz"
+    },
+    {
+      "language": "en",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "language": "xx",
+      "input": "The End",
+      "expected": "theend"
+    }
+  ],
+  "hashes": [
+    {
+      "normalized": "lighthouse",
+      "expected_sha256": "542d4ac32e7a445f6ab3b4aa88d337b83480d0e7a8a3f6e45029418bb8cf708c"
+    },
+    {
+      "normalized": "",
+      "expected_sha256": "e3c12bc74ba86cb6d075ae2ec3c2c28eb4358746fa274d71353d6baf8e1c44de"
+    },
+    {
+      "normalized": "senorgarcia",
+      "expected_sha256": "0ad88df1f90ede4d0becddba6d6edeb12b1328370cf9800ccd5149b9dc9bf805"
+    }
+  ]
+}

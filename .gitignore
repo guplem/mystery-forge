@@ -1,0 +1,19 @@
+# Dependencies and caches
+node_modules/
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Local secrets (API keys for the optional image providers)
+.env.local
+
+# Local review notes written by the review-pr skill
+.reviews/
+
+# Games generated inside the repo by mistake or by tests
+generator/games/

@@ -1,0 +1,23 @@
+{
+  "name": "mystery-forge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generate printable mystery and escape-room games with an AI coding agent.",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit -p jsconfig.json",
+    "test:web": "node --test --experimental-test-coverage --test-coverage-include=configurator/**/*.js --test-coverage-include=toolkit/src/mystery_forge/render/companion/**/*.js --test-coverage-exclude=**/*.test.js --test-coverage-exclude=configurator/app.js --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 \"configurator/**/*.test.js\" \"toolkit/src/mystery_forge/render/companion/**/*.test.js\"",
+    "check:web": "npm run format:check && npm run typecheck && npm run test:web",
+    "check:toolkit": "cd toolkit && uv run ruff format --check . && uv run ruff check . && uv run mypy && uv run pytest --cov",
+    "check:skills": "cd generator && uv run .pskill/pskill.py validate && uv run .pskill/pskill.py test",
+    "check": "npm run check:web && npm run check:toolkit && npm run check:skills",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "lefthook": "^1.10.10",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,23 @@
+# Git-level hooks. They run for anyone who commits, agent or human, inside a Claude Code session or not.
+#
+# `npm install` installs them, through the `prepare` script in package.json. After a fresh clone, run `npm install`
+# once and the hooks are ready.
+#
+# pre-commit runs the fast format and lint steps that CI also runs, so a local pass and a CI pass cannot drift apart.
+# The test suites stay in CI and in the validate agent, because they need a browser and take longer.
+# There is no post-merge hook: the only generated file (configurator/gameConfigSchema.js) is committed, and a test
+# fails when it is stale.
+
+pre-commit:
+  parallel: true
+  commands:
+    format-web:
+      run: npx prettier --check .
+    typecheck-web:
+      run: npm run typecheck
+    format-toolkit:
+      root: toolkit/
+      run: uv run ruff format --check .
+    lint-toolkit:
+      root: toolkit/
+      run: uv run ruff check .
