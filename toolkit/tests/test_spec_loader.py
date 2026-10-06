@@ -139,6 +139,7 @@ def test_duplicate_ids_across_files_are_reported(game_dir: Path) -> None:
 
 def test_svg_images_are_read_and_other_files_are_ignored(game_dir: Path) -> None:
     images = game_dir / "source" / "images"
+    images.mkdir(exist_ok=True)
     (images / "lamp.svg").write_text("<svg></svg>", encoding="utf-8")
     (images / "notes.txt").write_text("ignored", encoding="utf-8")
     source, findings = load_game_source(game_dir)
@@ -148,7 +149,7 @@ def test_svg_images_are_read_and_other_files_are_ignored(game_dir: Path) -> None
 
 def test_a_game_without_image_puzzle_or_document_folders_loads(game_dir: Path) -> None:
     for folder in ("images", "puzzles", "documents"):
-        shutil.rmtree(game_dir / "source" / folder)
+        shutil.rmtree(game_dir / "source" / folder, ignore_errors=True)
     source, findings = load_game_source(game_dir)
     assert findings == []
     assert source.puzzles == ()
