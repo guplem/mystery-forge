@@ -16,13 +16,14 @@ Whole-game code checks run on every assembly: the puzzle graph, the evidence led
 
 Panel rules:
 
-- 5 solvers (best quality) or 3 (fast draft) per stage. Pass needs this many correct answers with verified evidence: easy 4 of 5 (3 of 3), medium 3 of 5 (2 of 3), hard 2 of 5 (1 of 3).
+- 5 solvers (best quality) or 3 (fast draft) per stage, each with a different persona (literal, lateral, fast, skeptic, newcomer; a 10-year-old for kids' games). Pass needs this many correct answers with verified evidence: easy 4 of 5 (3 of 3), medium 3 of 5 (2 of 3), hard and expert 2 of 5 (1 of 3). With fewer than 3 valid solvers the verdict is `insufficient_solvers`.
 - A correct answer whose quotes are not in the packet counts as a guess, not a solve.
 - A wrong answer that 2 or more solvers share, or that a solver marks as "fits every clue" with verified quotes, makes the puzzle ambiguous. The fixer must exclude it with a clue or accept it as an equivalent variant.
 - When 3 or more solvers agree on the same wrong answer, the fixer checks the gold answer first.
 - One guesser gets only the premise and the answer formats. A correct guess marks the puzzle as guessable.
 - Each puzzle file holds a canary string. A solver answer that contains a canary read the source files, so it does not count.
-- Every check result stores a content hash of what it checked. Export refuses a game with a stale result.
+- When several verdicts apply, the first of this order wins: `insufficient_solvers`, `gold_suspect`, `ambiguous`, `guessable`, `too_hard`, `pass`. The accusation questions are judged like medium puzzles.
+- Every check result stores a content hash of what it checked (`reports/verification.json`). The skill runs the panel again before export when a result is stale.
 
 **Rejected alternative:** a panel vote on every puzzle, with no builders. Same-model solvers make correlated mistakes, and LLMs solve ciphers that humans find hard while they fail at folds and overlays that humans find easy. The panel finds ambiguity; it does not measure human difficulty.
 
@@ -30,4 +31,4 @@ Panel rules:
 
 - The catalog prefers buildable mechanics, and each catalog entry names its verification level.
 - Panel cost grows with stages times solvers, not with puzzles times solvers.
-- A harness with no subagents skips the panel, and the report and the manual say "panel not run".
+- A run can skip the panel (`create-game` input `panel: false`) when the user asks for speed; the final report says so. On a harness with no subagents, the panel tasks run one after another in the main context, so they are not isolated from the answers.

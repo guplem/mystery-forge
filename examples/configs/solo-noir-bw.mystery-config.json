@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "audience": "adults",
+  "format": "case_file",
+  "players": { "count": 1, "names": [] },
+  "host": "self_running",
+  "duration_minutes": 60,
+  "difficulty": "hard",
+  "language": "en",
+  "theme": { "idea": "", "tone": "noir", "era": "historical" },
+  "equipment": {
+    "printer": "black_and_white",
+    "ink_saving": true,
+    "paper": "Letter",
+    "scissors": false,
+    "tape_or_glue": false,
+    "envelopes": false
+  },
+  "generation": { "quality": "best", "pick_concept": "ask", "seed": 0 }
+}
