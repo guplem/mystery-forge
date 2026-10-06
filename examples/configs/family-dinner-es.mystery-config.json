@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "audience": "family",
+  "format": "both",
+  "players": { "count": 6, "names": [] },
+  "host": "self_running",
+  "duration_minutes": 90,
+  "difficulty": "medium",
+  "language": "es",
+  "theme": { "idea": "", "tone": "surprise", "era": "any" },
+  "equipment": {
+    "printer": "color",
+    "ink_saving": false,
+    "paper": "A4",
+    "scissors": true,
+    "tape_or_glue": false,
+    "envelopes": true
+  },
+  "generation": { "quality": "best", "pick_concept": "ask", "seed": 0 }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "audience": "kids",
+  "format": "envelopes",
+  "players": { "count": 5, "names": [] },
+  "host": "game_master",
+  "duration_minutes": 45,
+  "difficulty": "easy",
+  "language": "en",
+  "theme": { "idea": "A missing birthday cake at a dinosaur museum", "tone": "comedic", "era": "modern" },
+  "content": { "death_allowed": false, "scary_level": "none", "reading_load": "light" },
+  "visuals": { "style": "kids", "images": "svg", "readable_font": true },
+  "generation": { "quality": "fast", "pick_concept": "ask", "seed": 0 }
+}
