@@ -31,4 +31,7 @@ hints:
   - level: 2
     text: The boot prints were wet. When could someone walk to the rock?
     points_to: [boots-wet, tide-table]
+leak_allowlist:
+  - text: 'Low tide: 1:50 in the night'
+    reason: The tide table is the evidence. Players must still link it to the wet boot prints to answer.
 canary: canary-golden-p3
