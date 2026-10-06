@@ -1,0 +1,415 @@
+schema: pskill/v1
+id: create-game
+description: >-
+  Generate a complete printable mystery game (envelope escape room, detective case file, or both) from a Mystery
+  Forge config file: story, puzzles, documents, checks, a solver panel, PDFs, and a companion page, exported to the
+  user's Desktop. Use when the user asks to create, make, or generate a game, a mystery, a case, or an escape room.
+goal: >-
+  A game folder on the user's Desktop (or the config's output folder) with the manual, the materials to print, the
+  hints, the solutions, and the companion page, for a game whose every puzzle passed the toolkit checks and the
+  solver panel.
+invocation: auto
+inputs:
+  config:
+    type: string
+    optional: true
+    default: ""
+    description: "The path of the user's .mystery-config.json file. Empty: the newest one in the Downloads folder."
+  panel:
+    type: boolean
+    optional: true
+    default: true
+    description: "false skips the solver panel (faster, less safe). Use false only when the user asks for it."
+outputs:
+  result: {type: string, enum: [exported, stopped, failed], description: "How the run ended."}
+  folder: {type: string, optional: true, description: "The exported game folder, when there is one."}
+entry: doctor
+
+blocks:
+  doctor:
+    type: script
+    description: Check the browser that prints the PDFs, and the folders
+    run: [uv, run, --project, ../toolkit, forge, doctor]
+    parse: json
+    timeout_s: 900
+    max_visits: 2
+    on_max_visits: stopped
+    next:
+      - when: "{{ steps.doctor.json.ok }}"
+        to: setup
+      - to: browser_missing
+
+  browser_missing:
+    type: decision
+    description: Ask how to get a browser for the PDFs
+    decider: human
+    instruction: >-
+      Tell the user that the toolkit found no browser to print the PDFs ({{ steps.doctor.json.fix }}). Ask whether to
+      install Playwright's own Chromium now (a download of about 150 MB), or to stop so that they can install Google
+      Chrome or Microsoft Edge first.
+    choices:
+      install: Install Playwright's Chromium now.
+      stop: Stop the run.
+    next: {install: install_browser, stop: stopped}
+
+  install_browser:
+    type: script
+    description: Install Playwright's Chromium
+    run: [uv, run, --project, ../toolkit, playwright, install, chromium]
+    timeout_s: 900
+    retries: 0
+    next: doctor
+
+  setup:
+    type: script
+    description: Read the config and create the game folder with the drawn story ingredients
+    run:
+      - uv
+      - run
+      - --project
+      - ../toolkit
+      - forge
+      - setup
+      - --games-dir
+      - games
+      - --config
+      - "{{ (steps.ask_config.answer if steps.ask_config is defined else inputs.config) | default('', true) }}"
+    parse: json
+    timeout_s: 900
+    max_visits: 4
+    on_max_visits: stopped
+    next:
+      - when: "{{ steps.setup.json.ok }}"
+        to: confirm_config
+      - to: ask_config
+
+  ask_config:
+    type: decision
+    description: Ask the user for a config file
+    decider: human
+    instruction: instructions/ask_config.md
+    next: setup
+
+  confirm_config:
+    type: decision
+    description: Confirm the config and the time that the run takes
+    decider: human
+    instruction: instructions/confirm_config.md
+    choices:
+      go: Start the generation with this config.
+      change: Use another config file.
+      stop: Stop the run.
+    next: {go: concepts, change: ask_config, stop: stopped}
+
+  concepts:
+    type: parallel
+    description: Write three story concepts from the drawn ingredients
+    for_each:
+      - {name: concepts}
+    task_name: "{{ item.name }}"
+    agent: concept-writer
+    instruction: instructions/concepts.md
+    output:
+      teasers:
+        type: array
+        description: "One spoiler-free teaser per concept, in concept order."
+        items:
+          type: object
+          properties:
+            title: {type: string}
+            teaser: {type: string}
+      summary: {type: string, description: "At most 3 lines: how the concepts differ."}
+    next:
+      - when: "{{ steps.setup.json.summary.pick_concept == 'agent' or run.mode == 'autonomous' }}"
+        to: pick_concept_agent
+      - to: pick_concept
+
+  pick_concept:
+    type: decision
+    description: Let the user pick a story concept
+    decider: human
+    instruction: instructions/pick_concept.md
+    choices:
+      first: The first concept.
+      second: The second concept.
+      third: The third concept.
+    next: {first: write_story, second: write_story, third: write_story}
+
+  pick_concept_agent:
+    type: decision
+    description: Pick the story concept that fits the config best
+    decider: agent
+    instruction: >-
+      Pick the concept that best fits the config (audience, tone, theme idea, player count) and that promises the most
+      surprising twist. Read `{{ steps.setup.json.game_dir }}/source/concepts.yaml` and
+      `{{ steps.setup.json.game_dir }}/source/config.json`. Do not show the concepts or their twists to the user.
+    choices:
+      first: The first concept.
+      second: The second concept.
+      third: The third concept.
+    next: {first: write_story, second: write_story, third: write_story}
+
+  write_story:
+    type: parallel
+    description: Write the story bible from the chosen concept
+    for_each:
+      - {name: story}
+    task_name: "{{ item.name }}"
+    agent: story-writer
+    instruction: instructions/write_story.md
+    output:
+      summary: {type: string, description: "At most 5 lines, with no spoiler: the setting, the cast size, the stages."}
+    next: story_check
+
+  story_check:
+    type: call
+    description: Check the story and fix its errors
+    skill: game-check-loop
+    inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: story}
+    max_visits: 3
+    on_max_visits: plan
+    next:
+      - when: "{{ steps.story_check.outputs.ok }}"
+        to: review_story
+      - to: failed
+
+  review_story:
+    type: parallel
+    description: Review the story for contradictions, fairness, and fun
+    for_each:
+      - {name: story review}
+    task_name: "{{ item.name }}"
+    agent: story-reviewer
+    instruction: instructions/review_story.md
+    output:
+      findings:
+        type: array
+        description: "Your findings. An empty list when the story is ready."
+        items:
+          type: object
+          properties:
+            severity: {type: string, enum: [required, suggestion]}
+            problem: {type: string}
+            fix: {type: string}
+    next:
+      - when: >-
+          {{ (steps.review_story.results[0].findings | selectattr('severity', 'equalto', 'required') | list | length) > 0
+          and (history.revise_story | length) < 2 }}
+        to: revise_story
+      - to: plan
+
+  revise_story:
+    type: parallel
+    description: Revise the story for the review findings
+    for_each:
+      - {name: story revision}
+    task_name: "{{ item.name }}"
+    agent: story-writer
+    instruction: instructions/revise_story.md
+    output:
+      summary: {type: string, description: "At most 5 lines: what you changed, with no spoiler."}
+    next: story_check
+
+  plan:
+    type: parallel
+    description: Plan the puzzles, the stages, and the documents
+    for_each:
+      - {name: puzzle plan}
+    task_name: "{{ item.name }}"
+    agent: puzzle-planner
+    instruction: instructions/plan.md
+    output:
+      summary: {type: string, description: "At most 5 lines, with no answer: the stages and the mix of player actions."}
+    next: plan_check
+
+  plan_check:
+    type: call
+    description: Check the plan and fix its errors
+    skill: game-check-loop
+    inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: plan}
+    next:
+      - when: "{{ steps.plan_check.outputs.ok }}"
+        to: write_story_documents
+      - to: failed
+
+  write_story_documents:
+    type: parallel
+    description: Write the documents that no puzzle owns
+    for_each:
+      - {name: story documents}
+    task_name: "{{ item.name }}"
+    agent: document-writer
+    instruction: instructions/write_story_documents.md
+    output:
+      documents: {type: array, items: {type: string}, description: "The document files that you wrote."}
+      summary: {type: string, description: "At most 3 lines, with no spoiler."}
+    next: writer_tasks
+
+  writer_tasks:
+    type: script
+    description: List one writing task per planned puzzle
+    run: [uv, run, --project, ../toolkit, forge, writer-tasks, --game, "{{ steps.setup.json.game_dir }}"]
+    parse: json
+    next: write_puzzles
+
+  write_puzzles:
+    type: parallel
+    description: Write each puzzle and its documents in a fresh subagent
+    for_each: "{{ steps.writer_tasks.json.tasks }}"
+    task_name: "{{ item.name }}"
+    agent: puzzle-writer
+    instruction: instructions/write_puzzle.md
+    output:
+      status: {type: string, enum: [written, failed], description: "failed only when you could not write the puzzle."}
+      files: {type: array, items: {type: string}, description: "The files that you wrote."}
+      summary: {type: string, description: "One line, with no answer."}
+    next: game_check
+
+  game_check:
+    type: call
+    description: Assemble the game, run every check, and fix the errors
+    skill: game-check-loop
+    inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: full}
+    max_visits: 4
+    on_max_visits: render
+    next:
+      - when: "{{ not steps.game_check.outputs.ok }}"
+        to: failed
+      - when: "{{ not inputs.panel }}"
+        to: render
+      - to: panel
+
+  panel:
+    type: call
+    description: Test the game with fresh solver subagents
+    skill: solver-panel
+    inputs: {game_dir: "{{ steps.setup.json.game_dir }}"}
+    max_visits: 3
+    on_max_visits: render
+    next:
+      - when: "{{ steps.panel.outputs.ok }}"
+        to: render
+      - when: "{{ (history.panel_fix | length) < 2 }}"
+        to: panel_fix
+      - to: render
+
+  panel_fix:
+    type: parallel
+    description: Fix each puzzle that the panel failed
+    for_each: "{{ steps.panel.outputs.failing_items }}"
+    task_name: "{{ item.name }}"
+    agent: fixer
+    instruction: instructions/panel_fix.md
+    output:
+      status: {type: string, enum: [fixed, kept, failed], description: "kept when you show with a quote that the solvers missed a clue."}
+      changed_files: {type: array, items: {type: string}, description: "The files that you changed."}
+      summary: {type: string, description: "At most 3 lines, with no answer."}
+    next: game_check
+
+  render:
+    type: script
+    description: Render the HTML pages, the PDFs, and the previews, and check them
+    run: [uv, run, --project, ../toolkit, forge, render, --game, "{{ steps.setup.json.game_dir }}"]
+    parse: json
+    timeout_s: 900
+    max_visits: 4
+    on_max_visits: export
+    next:
+      - when: "{{ steps.render.json.ok and (history.visual_review | length) == 0 }}"
+        to: visual_review
+      - when: "{{ steps.render.json.ok }}"
+        to: status
+      - when: "{{ (history.render_fix | length) < 2 }}"
+        to: render_fix
+      - to: failed
+
+  render_fix:
+    type: parallel
+    description: Fix the layout and print problems of the rendered pages
+    for_each: "{{ steps.render.json.fix_groups }}"
+    task_name: "{{ item.name }}"
+    agent: fixer
+    instruction: instructions/render_fix.md
+    output:
+      status: {type: string, enum: [fixed, failed], description: "failed only when you could not change anything."}
+      changed_files: {type: array, items: {type: string}, description: "The files that you changed."}
+      summary: {type: string, description: "At most 3 lines."}
+    next: render
+
+  visual_review:
+    type: parallel
+    description: Look at every rendered page like a player who just printed it
+    for_each:
+      - {name: visual review}
+    task_name: "{{ item.name }}"
+    agent: visual-reviewer
+    instruction: instructions/visual_review.md
+    output:
+      findings:
+        type: array
+        description: "The layout problems that you found. An empty list when every page looks right."
+        items:
+          type: object
+          properties:
+            severity: {type: string, enum: [required, suggestion]}
+            page: {type: string}
+            problem: {type: string}
+            fix: {type: string}
+    next:
+      - when: "{{ (steps.visual_review.results[0].findings | selectattr('severity', 'equalto', 'required') | list | length) > 0 }}"
+        to: layout_fix
+      - to: status
+
+  layout_fix:
+    type: parallel
+    description: Fix the layout problems that the visual review found
+    for_each:
+      - {name: layout fix}
+    task_name: "{{ item.name }}"
+    agent: fixer
+    instruction: instructions/layout_fix.md
+    output:
+      changed_files: {type: array, items: {type: string}, description: "The files that you changed."}
+      summary: {type: string, description: "At most 3 lines."}
+    next: render
+
+  status:
+    type: script
+    description: Check that no verification is older than the files it checked
+    run: [uv, run, --project, ../toolkit, forge, status, --game, "{{ steps.setup.json.game_dir }}"]
+    parse: json
+    next:
+      - when: "{{ steps.status.json.ok or not inputs.panel or (history.panel | length) >= 3 }}"
+        to: export
+      - to: panel
+
+  export:
+    type: script
+    description: Copy the finished game to the output folder
+    run: [uv, run, --project, ../toolkit, forge, export, --game, "{{ steps.setup.json.game_dir }}"]
+    parse: json
+    retries: 0
+    next: done
+
+  done:
+    type: end
+    description: The game is exported
+    status: succeeded
+    outputs:
+      result: exported
+      folder: "{{ steps.export.json.folder }}"
+    report: instructions/report_done.md
+
+  stopped:
+    type: end
+    description: The run stopped before a game existed
+    status: cancelled
+    outputs: {result: stopped}
+    report: Tell the user that the run stopped, and why, in one or two sentences. Nothing was exported.
+
+  failed:
+    type: end
+    description: The game still has errors that the fix rounds could not clear
+    status: failed
+    outputs: {result: failed}
+    report: instructions/report_failed.md

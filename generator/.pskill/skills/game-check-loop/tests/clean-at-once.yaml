@@ -1,0 +1,9 @@
+name: the first check finds no error
+inputs: {game_dir: games/demo, scope: story}
+scripts:
+  check:
+    - {exit_code: 0, stdout: '{"ok": true, "errors": 0, "warnings": 2, "report": "games/demo/reports/check-story.json", "fix_groups": []}'}
+expect:
+  path: [check, clean]
+  status: succeeded
+  outputs: {ok: true, errors: 0, warnings: 2, rounds: 0}

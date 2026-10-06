@@ -1,0 +1,13 @@
+name: errors stay after the last allowed round
+inputs: {game_dir: games/demo, scope: plan, max_rounds: 1}
+scripts:
+  check:
+    - {exit_code: 0, stdout: '{"ok": false, "errors": 2, "warnings": 0, "report": "r.json", "fix_groups": [{"name": "plan", "files": ["plan.yaml", "flow.yaml"], "findings_file": "f.json"}]}'}
+    - {exit_code: 0, stdout: '{"ok": false, "errors": 1, "warnings": 0, "report": "r.json", "fix_groups": [{"name": "plan", "files": ["plan.yaml"], "findings_file": "f.json"}]}'}
+answers:
+  fix:
+    - {status: fixed, changed_files: [plan.yaml], summary: Fixed one.}
+expect:
+  path: [check, fix, check, errors_left]
+  status: succeeded
+  outputs: {ok: false, errors: 1, rounds: 1}

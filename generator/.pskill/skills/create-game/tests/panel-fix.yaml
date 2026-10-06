@@ -1,0 +1,138 @@
+name: the panel fails a puzzle, a fixer repairs it, and the panel passes
+inputs:
+  config: c.json
+scripts:
+  doctor:
+  - exit_code: 0
+    stdout: '{"ok": true, "browser": "chrome", "desktop": "D", "downloads": "W"}'
+  setup:
+  - exit_code: 0
+    stdout: '{"ok": true, "game_dir": "games/g", "config_file": "c.json", "summary": {"players": 4, "duration_minutes": 90,
+      "difficulty": "medium", "language": "en", "audience": "family", "format": "both", "idea": "", "quality": "best", "pick_concept":
+      "ask", "host": "self_running"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20, "generation_minutes":
+      90}, "draw_file": "games/g/source/draw.json"}'
+  writer_tasks:
+  - exit_code: 0
+    stdout: '{"ok": true, "tasks": [{"name": "P1 caesar-cipher", "id": "P1", "stage": "A", "mechanic": "caesar-cipher", "documents":
+      ["D2"], "relies_on": []}, {"name": "P2 maze", "id": "P2", "stage": "B", "mechanic": "maze", "documents": ["D3"], "relies_on":
+      ["D1"]}]}'
+  render:
+  - exit_code: 0
+    stdout: '{"ok": true, "previews_dir": "games/g/render/previews", "fix_groups": []}'
+  status:
+  - exit_code: 0
+    stdout: '{"ok": true, "stale": []}'
+  export:
+  - exit_code: 0
+    stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
+      materials).pdf"]}'
+calls:
+  story_check:
+  - &id001
+    status: succeeded
+    outputs:
+      ok: true
+      errors: 0
+      warnings: 1
+      rounds: 0
+      report: r.json
+  plan_check:
+  - *id001
+  game_check:
+  - *id001
+  - *id001
+  panel:
+  - status: succeeded
+    outputs:
+      ok: false
+      failing:
+      - 'A1: ambiguous: two answers'
+      report: p.json
+      failing_items:
+      - name: A1 ambiguous
+        code: A1
+        verdict: ambiguous
+        files:
+        - puzzles/P1.yaml
+        findings_file: f.json
+  - status: succeeded
+    outputs:
+      ok: true
+      failing: []
+      failing_items: []
+      report: p.json
+answers:
+  confirm_config:
+  - choice: go
+    rationale: The user said so.
+    $answered_by: human
+  concepts:
+  - teasers:
+    - title: Title 1
+      teaser: Teaser 1.
+    - title: Title 2
+      teaser: Teaser 2.
+    - title: Title 3
+      teaser: Teaser 3.
+    summary: Three tones.
+  pick_concept:
+  - choice: second
+    rationale: The user said so.
+    $answered_by: human
+  write_story:
+  - summary: A ferry, five people, three envelopes.
+  review_story:
+  - findings: []
+  plan:
+  - summary: Eight puzzles, six actions.
+  write_story_documents:
+  - documents:
+    - documents/D1.md
+    summary: The briefing.
+  write_puzzles:
+  - status: written
+    files:
+    - puzzles/P1.yaml
+    - documents/D2.md
+    summary: A coded line.
+  - status: written
+    files:
+    - puzzles/P2.yaml
+    - documents/D3.md
+    summary: A maze.
+  visual_review:
+  - findings: []
+  panel_fix:
+  - status: fixed
+    changed_files:
+    - puzzles/P1.yaml
+    summary: Sharper clue.
+expect:
+  path:
+  - doctor
+  - setup
+  - confirm_config
+  - concepts
+  - pick_concept
+  - write_story
+  - story_check
+  - review_story
+  - plan
+  - plan_check
+  - write_story_documents
+  - writer_tasks
+  - write_puzzles
+  - game_check
+  - panel
+  - panel_fix
+  - game_check
+  - panel
+  - render
+  - visual_review
+  - status
+  - export
+  - done
+  status: succeeded
+  outputs:
+    result: exported
+    folder: D/Mystery Forge/The Game
