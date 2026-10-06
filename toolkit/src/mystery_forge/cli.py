@@ -16,12 +16,14 @@ from typing import Any, TextIO
 
 from pydantic import BaseModel
 
+from mystery_forge import cli_game
 from mystery_forge.assemble import assemble_game
 from mystery_forge.brief import Brief, derive_brief
 from mystery_forge.catalog.loader import design_rules_text, load_mechanics, mechanic_by_id
+from mystery_forge.cli_output import capped_findings, emit, write_report
 from mystery_forge.config import ConfigLoadResult, GameConfig, load_config_file, normalize_config
 from mystery_forge.draw import Draw, draw_ingredients
-from mystery_forge.findings import Finding, count_errors, findings_to_json
+from mystery_forge.findings import count_errors, findings_to_json
 from mystery_forge.mechanics.registry import all_implementations
 from mystery_forge.paths import (
     KnownFolderReader,
@@ -34,7 +36,6 @@ from mystery_forge.paths import (
 from mystery_forge.spec.documents import ALL_DIRECTIVES
 from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
 
-MAX_FINDINGS_IN_OUTPUT: int = 20
 RECENT_GAMES_TO_AVOID: int = 5
 MAX_SEED: int = 2_147_483_647
 SCHEMAS: dict[str, type[BaseModel]] = {"story": Story, "flow": Flow, "puzzle": Puzzle, "document": DocumentMeta}
@@ -74,28 +75,6 @@ def probe_browser() -> str | None:  # pragma: no cover - launches a real browser
     return None
 
 
-def emit(output: TextIO, payload: dict[str, Any]) -> None:
-    output.write(json.dumps(payload, ensure_ascii=False) + "\n")
-
-
-def capped_findings(findings: list[Finding]) -> dict[str, Any]:
-    ordered: list[Finding] = sorted(findings, key=lambda finding: finding.severity != "error")
-    return {
-        "errors": count_errors(findings),
-        "warnings": len(findings) - count_errors(findings),
-        "findings": findings_to_json(ordered[:MAX_FINDINGS_IN_OUTPUT]),
-        "more_findings": max(0, len(findings) - MAX_FINDINGS_IN_OUTPUT),
-    }
-
-
-def write_report(game_dir: Path, name: str, payload: dict[str, Any]) -> Path:
-    reports: Path = game_dir / "reports"
-    reports.mkdir(parents=True, exist_ok=True)
-    path: Path = reports / f"{name}.json"
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return path
-
-
 def write_json(path: Path, model: BaseModel) -> None:
     path.write_text(json.dumps(model.model_dump(mode="json"), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -103,12 +82,14 @@ def write_json(path: Path, model: BaseModel) -> None:
 def command_setup(arguments: argparse.Namespace, output: TextIO) -> int:
     folders: SystemFolders = find_system_folders()
     config_path: Path | None = None
-    if arguments.config:
+    # The generator passes the user's answer as --config; the word "defaults" asks for the default config.
+    use_defaults: bool = arguments.defaults or arguments.config == "defaults"
+    if arguments.config and not use_defaults:
         config_path = Path(arguments.config)
         if not config_path.is_file():
             emit(output, {"ok": False, "message": f"The config file {config_path} does not exist."})
             return 2
-    elif not arguments.defaults:
+    elif not use_defaults:
         config_path = newest_config_file(folders.downloads)
         if config_path is None:
             emit(output, {"ok": False, "findings": [not_found_finding(folders.downloads)]})
@@ -162,6 +143,8 @@ def config_summary(config: GameConfig) -> dict[str, Any]:
         "format": config.format,
         "idea": config.theme.idea,
         "quality": config.generation.quality,
+        "pick_concept": config.generation.pick_concept,
+        "host": config.host,
     }
 
 
@@ -267,6 +250,10 @@ def command_doctor(arguments: argparse.Namespace, output: TextIO) -> int:
     return 0
 
 
+def command_export(arguments: argparse.Namespace, output: TextIO) -> int:
+    return cli_game.command_export(arguments, output, find_system_folders())
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="forge", description="Build, check, and render Mystery Forge games.")
     verbs = parser.add_subparsers(dest="verb", required=True)
@@ -291,6 +278,32 @@ def build_parser() -> argparse.ArgumentParser:
     schema.set_defaults(handler=command_schema)
     doctor = verbs.add_parser("doctor", help="Check the browser and the folders.")
     doctor.set_defaults(handler=command_doctor)
+    check = verbs.add_parser("check", help="Check the story, the plan, or the full game, and group the findings.")
+    check.add_argument("--game", required=True, help="The game folder (the parent of source/).")
+    check.add_argument("--scope", choices=["story", "plan", "full"], default="full", help="What to check.")
+    check.set_defaults(handler=cli_game.command_check)
+    writer_tasks = verbs.add_parser("writer-tasks", help="List one writing task per planned puzzle.")
+    writer_tasks.add_argument("--game", required=True, help="The game folder.")
+    writer_tasks.set_defaults(handler=cli_game.command_writer_tasks)
+    packets = verbs.add_parser("packets", help="Write the solver packets of each stage and the guesser packet.")
+    packets.add_argument("--game", required=True, help="The game folder.")
+    packets.set_defaults(handler=cli_game.command_packets)
+    judge = verbs.add_parser("judge", help="Judge the solver answers (JSON on stdin) against the official answers.")
+    judge.add_argument("--game", required=True, help="The game folder.")
+    judge.add_argument("--input", help="The JSON input as text, instead of stdin.")
+    judge.set_defaults(handler=cli_game.command_judge)
+    status = verbs.add_parser("status", help="List the verifications that are older than the files they checked.")
+    status.add_argument("--game", required=True, help="The game folder.")
+    status.add_argument("--panel", default="true", help="false when the run skipped the solver panel.")
+    status.set_defaults(handler=cli_game.command_status)
+    render = verbs.add_parser("render", help="Render the HTML pages, the PDFs, and the previews, and check them.")
+    render.add_argument("--game", required=True, help="The game folder.")
+    render.add_argument("--html-only", action="store_true", help="Write the HTML pages only, with no browser.")
+    render.set_defaults(handler=cli_game.command_render)
+    export = verbs.add_parser("export", help="Copy the rendered game to the output folder.")
+    export.add_argument("--game", required=True, help="The game folder.")
+    export.add_argument("--to", help="The folder that receives the game folder. Default: the config's, or Desktop.")
+    export.set_defaults(handler=command_export)
     return parser
 
 
