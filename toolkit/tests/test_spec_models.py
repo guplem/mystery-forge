@@ -236,3 +236,15 @@ def test_flow_first_stage_opens_at_start_and_ids_are_unique() -> None:
     flow_data["stages"][1] = {"id": "A", "label": "Again", "opens_with": "P2"}
     with pytest.raises(ValidationError, match="twice"):
         Flow.model_validate(flow_data)
+
+
+def test_story_visual_style_is_optional_and_limited_to_known_styles() -> None:
+    assert Story.model_validate(minimal_story()).visual_style is None
+    assert Story.model_validate(minimal_story() | {"visual_style": "noir"}).visual_style == "noir"
+    with pytest.raises(ValidationError, match="visual_style"):
+        Story.model_validate(minimal_story() | {"visual_style": "auto"})
+
+
+def test_puzzle_decoys_default_to_empty() -> None:
+    assert Puzzle.model_validate(minimal_puzzle()).decoys == []
+    assert Puzzle.model_validate(minimal_puzzle() | {"decoys": ["Mill Pond"]}).decoys == ["Mill Pond"]

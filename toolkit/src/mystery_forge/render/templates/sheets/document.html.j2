@@ -1,0 +1,16 @@
+{% from "macros.html.j2" import scissors_icon, fold_icon, page_label, field_row %}
+{% set page = content %}
+{% set f = page.fields %}
+<div class="margin-tag">{{ page.title }}{% if page.copies > 1 %} · {{ t("copy_label", number=page.copy_number, count=page.copies) }}{% endif %}</div>
+{% if page.puzzle_code %}<div class="puzzle-badge"><span>{{ t("puzzle_badge") }}</span><strong>{{ page.puzzle_code }}</strong></div>{% endif %}
+{% if page.cut or page.fold or page.note %}
+<div class="print-notes">
+  {% if page.cut %}<span class="print-note">{{ scissors_icon() }}{{ t("print_cut") }}</span>{% endif %}
+  {% if page.fold %}<span class="print-note">{{ fold_icon() }}{{ t("print_fold") }}</span>{% endif %}
+  {% if page.note %}<span class="print-note">{{ page.note }}</span>{% endif %}
+</div>
+{% endif %}
+<div class="safe doc-area kind-{{ page.kind.id }}{% if page.cut %} print-cut{% endif %}{% if page.fold %} print-fold{% endif %}">
+{% include "kinds/" ~ page.kind.template %}
+{% if page.fold %}<div class="fold-guide" aria-hidden="true"></div>{% endif %}
+</div>

@@ -1,0 +1,23 @@
+name: two solvers for one stage, a guesser, and a judge that finds one ambiguous puzzle
+inputs: {game_dir: games/demo}
+scripts:
+  packets:
+    - {exit_code: 0, stdout: '{"ok": true, "guesser_file": "g.md", "solver_tasks": [{"name": "A solver 1", "stage": "A", "solver": 1, "persona": "Read literally.", "packet_file": "a.md", "has_accusation": false}, {"name": "A solver 2", "stage": "A", "solver": 2, "persona": "Think laterally.", "packet_file": "a.md", "has_accusation": false}]}'}
+  judge:
+    - {exit_code: 0, stdout: '{"ok": false, "failing": ["A2: ambiguous: two solvers answered MILL"], "failing_items": [{"name": "A2 ambiguous", "code": "A2", "verdict": "ambiguous", "files": ["puzzles/P2.yaml", "documents/D3.md"], "findings_file": "games/demo/reports/fix-A2.json"}], "report": "games/demo/reports/panel.json"}'}
+answers:
+  solve:
+    - status: done
+      answers:
+        - {code: A1, answer: boathouse, stuck: false, reasoning: Shifted back by three., evidence: [{document: The keeper's logbook, quote: my code goes back three steps}], candidates: []}
+      accusation: []
+    - status: done
+      answers:
+        - {code: A1, answer: "", stuck: true, reasoning: I could not find the key., evidence: [], candidates: [{answer: mill, fits_all_clues: false, failing_clue: the shift}]}
+      accusation: []
+  guess:
+    - guesses: [{code: A1, answer: lighthouse}]
+expect:
+  path: [packets, solve, guess, judge, judged]
+  status: succeeded
+  outputs: {ok: false, failing: ["A2: ambiguous: two solvers answered MILL"], report: games/demo/reports/panel.json}

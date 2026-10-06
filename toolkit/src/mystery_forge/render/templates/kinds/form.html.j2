@@ -1,0 +1,20 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop prop-full official-form">
+  <header class="form-head">
+    <div>
+      {% if f.get("issuer") %}<p class="form-issuer">{{ f.get("issuer") }}</p>{% endif %}
+      <h1 class="form-title">{{ page.title }}</h1>
+    </div>
+    <div class="form-number-box">
+      <span class="field-label">{{ t("field_form_number") }}</span>
+      <span class="field-value">{{ f.get("form_number", "") }}</span>
+      {% if f.get("date") %}<span class="field-label">{{ t("field_date") }}</span><span class="field-value">{{ f.get("date") }}</span>{% endif %}
+    </div>
+  </header>
+  <div class="doc-body form-body">{{ page.html }}</div>
+  <footer class="form-foot">
+    <div><span class="sign-line"></span><span class="field-label">{{ t("field_date") }}</span></div>
+    <div><span class="sign-line"></span><span class="field-label">{{ t("field_name") }}</span></div>
+  </footer>
+  {{ page_label(t, page) }}
+</article>

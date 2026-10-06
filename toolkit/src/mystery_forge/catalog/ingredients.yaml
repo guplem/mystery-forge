@@ -1,0 +1,809 @@
+# Story ingredient decks. Code draws one card from each deck with a seeded random draw, and the writer must use
+# every drawn card. A card that does not fit the config's audience, tone, or era is redrawn.
+# Field meanings: toolkit/src/mystery_forge/catalog/models.py (class Ingredients).
+
+settings:
+  - id: night-ferry
+    name: Night ferry crossing a fjord
+    era_hints: [nineteen-fifties, nineteen-eighties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, noir, spooky, dramatic]
+  - id: antarctic-station
+    name: Antarctic research station in the polar night
+    era_hints: [nineteen-fifties, present-day, near-future]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [adventure, spooky, dramatic]
+  - id: circus-winter-quarters
+    name: Traveling circus in its winter quarters
+    era_hints: [victorian, nineteen-twenties, nineteen-fifties]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, comedic, spooky, dramatic]
+  - id: tidal-lighthouse
+    name: Lighthouse on a tidal island
+    era_hints: [age-of-sail, victorian, nineteen-fifties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, adventure, spooky, dramatic]
+  - id: museum-after-hours
+    name: Natural history museum after hours
+    era_hints: [victorian, nineteen-eighties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, adventure, comedic, spooky]
+  - id: small-town-radio
+    name: Small-town radio station
+    era_hints: [nineteen-fifties, nineteen-eighties, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [cozy, noir, comedic]
+  - id: orbital-hotel
+    name: Orbital hotel above the Earth
+    era_hints: [near-future, far-future]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [adventure, comedic, dramatic]
+  - id: ski-lodge-lockdown
+    name: Ski lodge in an avalanche lockdown
+    era_hints: [nineteen-fifties, nineteen-eighties, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [cozy, noir, dramatic]
+  - id: botanical-glasshouse
+    name: Botanical glasshouse
+    era_hints: [victorian, belle-epoque, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, spooky, dramatic]
+  - id: silent-film-studio
+    name: Silent film studio
+    era_hints: [nineteen-twenties]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [comedic, noir, dramatic]
+  - id: monastery-vineyard
+    name: Monastery vineyard at harvest time
+    era_hints: [medieval, renaissance, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [cozy, comedic, dramatic]
+  - id: submarine-base
+    name: Submarine research base
+    era_hints: [nineteen-fifties, nineteen-eighties, near-future]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [adventure, spooky, dramatic]
+  - id: desert-railway-junction
+    name: Desert railway junction
+    era_hints: [victorian, nineteen-twenties, nineteen-fifties]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [adventure, noir, dramatic]
+  - id: speakeasy
+    name: Jazz club with a hidden back room
+    era_hints: [nineteen-twenties]
+    audiences: [teens, adults, puzzle_fans]
+    tones: [noir, comedic, dramatic]
+  - id: floating-market
+    name: Floating market at dawn
+    era_hints: [age-of-sail, present-day, fantasy-world]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, adventure, comedic]
+  - id: post-office-sorting-room
+    name: Post office sorting room
+    era_hints: [victorian, nineteen-twenties, nineteen-fifties]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, noir, comedic]
+  - id: abandoned-theme-park
+    name: Abandoned theme park
+    era_hints: [nineteen-eighties, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [adventure, spooky, comedic]
+  - id: clockmaker-workshop
+    name: Clockmaker's workshop
+    era_hints: [renaissance, victorian, belle-epoque, fantasy-world]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, adventure, spooky]
+  - id: film-set-musical
+    name: Film set of a big musical
+    era_hints: [nineteen-fifties, nineteen-eighties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [comedic, dramatic, adventure]
+  - id: school-science-fair
+    name: High school science fair
+    era_hints: [nineteen-fifties, nineteen-eighties, present-day]
+    audiences: [kids, family, teens, puzzle_fans]
+    tones: [cozy, comedic, adventure]
+  - id: chess-tournament-hotel
+    name: Hotel that hosts a chess tournament
+    era_hints: [nineteen-fifties, nineteen-eighties, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [cozy, noir, dramatic]
+  - id: balloon-festival
+    name: Hot-air balloon festival
+    era_hints: [belle-epoque, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, adventure, comedic]
+  - id: archaeological-dig
+    name: Archaeological dig in the desert
+    era_hints: [nineteen-twenties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [adventure, spooky, dramatic]
+  - id: space-colony-greenhouse
+    name: Space colony greenhouse
+    era_hints: [near-future, far-future]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, adventure, dramatic]
+  - id: cruise-ship-kitchen
+    name: Cruise ship kitchen on the night of the captain's dinner
+    era_hints: [nineteen-fifties, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [comedic, noir, dramatic]
+  - id: royal-masquerade
+    name: Royal court masquerade ball
+    era_hints: [renaissance, victorian, fantasy-world]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [dramatic, noir, adventure]
+  - id: mountain-observatory
+    name: Mountain observatory
+    era_hints: [belle-epoque, nineteen-fifties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, spooky, dramatic]
+  - id: rare-map-library
+    name: Library of rare maps
+    era_hints: [renaissance, victorian, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, adventure, noir]
+  - id: toy-factory
+    name: Toy factory before the holidays
+    era_hints: [nineteen-fifties, nineteen-eighties, present-day]
+    audiences: [kids, family, teens, puzzle_fans]
+    tones: [cozy, comedic, adventure]
+  - id: fashion-week-backstage
+    name: Fashion week backstage
+    era_hints: [nineteen-fifties, nineteen-eighties, present-day]
+    audiences: [teens, adults, puzzle_fans]
+    tones: [comedic, dramatic, noir]
+  - id: boarding-school
+    name: Boarding school that some call haunted
+    era_hints: [victorian, nineteen-fifties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [spooky, cozy, comedic]
+  - id: guild-hall
+    name: Medieval guild hall on election day
+    era_hints: [medieval, fantasy-world]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [dramatic, comedic, adventure]
+  - id: canal-city-carnival
+    name: Canal city in carnival week
+    era_hints: [renaissance, age-of-sail, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [adventure, noir, dramatic]
+  - id: robot-toy-factory
+    name: Toy factory run by helpful robots
+    era_hints: [near-future]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, comedic, adventure]
+  - id: moon-base-school
+    name: School on a moon base during the eclipse week
+    era_hints: [far-future]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, adventure, comedic, dramatic]
+  - id: undersea-research-dome
+    name: Undersea research dome with a giant aquarium window
+    era_hints: [near-future, far-future]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [adventure, spooky, dramatic]
+  - id: dragon-post-office
+    name: Post office of a valley where dragons deliver the mail
+    era_hints: [fantasy-world]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [cozy, comedic, adventure]
+  - id: airship
+    name: Passenger airship on a long crossing
+    era_hints: [belle-epoque, nineteen-twenties, fantasy-world]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [adventure, noir, comedic]
+  - id: tea-plantation
+    name: Tea plantation in the monsoon
+    era_hints: [victorian, nineteen-twenties, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [cozy, dramatic, noir]
+  - id: ice-hotel
+    name: Ice hotel in its last week before the thaw
+    era_hints: [present-day, near-future]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [cozy, spooky, dramatic]
+  - id: fossil-auction-house
+    name: Auction house that sells dinosaur bones
+    era_hints: [victorian, present-day]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [noir, comedic, dramatic]
+  - id: ranger-station
+    name: Wildlife reserve ranger station
+    era_hints: [nineteen-eighties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [adventure, cozy, dramatic]
+  - id: board-game-convention
+    name: Board game convention
+    era_hints: [nineteen-eighties, present-day]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    tones: [comedic, cozy, adventure]
+  - id: generation-ship-archive
+    name: Archive deck of a generation ship
+    era_hints: [far-future]
+    audiences: [family, teens, adults, puzzle_fans]
+    tones: [spooky, dramatic, adventure]
+
+eras:
+  - id: ancient-world
+    name: Ancient world
+    group: historical
+    details: Oil lamps, wax tablets, scrolls, sundials, and water clocks. No paper money and no clocks with hands.
+  - id: medieval
+    name: Medieval
+    group: historical
+    details: Guilds, wax seals, parchment, church bells for the hours. Few people read. Travel by foot, horse, or boat.
+  - id: renaissance
+    name: Renaissance
+    group: historical
+    details: Printing presses, merchant ledgers, early maps, ciphers of courts and bankers. Clocks are rare and costly.
+  - id: age-of-sail
+    name: Age of Sail
+    group: historical
+    details: Ship's logs, flag signals, tide tables, ports, and long voyages. News travels at the speed of a ship.
+  - id: victorian
+    name: Victorian
+    group: historical
+    details: Telegrams, gas lamps, railway timetables, calling cards, and post several times a day.
+  - id: belle-epoque
+    name: Belle Epoque
+    group: historical
+    details: Early cars, world fairs, posters, the first telephones in rich homes, and airships in the news.
+  - id: nineteen-twenties
+    name: 1920s
+    group: historical
+    details: Radio broadcasts, silent films, typewriters, flapper fashion, and prohibition in some countries.
+  - id: nineteen-fifties
+    name: 1950s
+    group: historical
+    details: Rotary phones, jukeboxes, carbon copies, diners, and the space race on the front pages.
+  - id: nineteen-eighties
+    name: 1980s
+    group: historical
+    details: Pagers, cassette tapes, arcade games, early home computers, fax machines, and pay phones.
+  - id: present-day
+    name: Present day
+    group: modern
+    details: Smartphones, chat apps, CCTV, card payments, and smart homes. Plan why phones do not solve everything.
+  - id: near-future
+    name: Near future
+    group: future
+    details: Delivery drones, home assistants, lunar tourism, and face scanners. Keep the technology one step ahead.
+  - id: far-future
+    name: Far future
+    group: future
+    details: Starships, colony rules, and invented technology. State the limits of the technology up front.
+  - id: fantasy-world
+    name: Secondary fantasy world
+    group: fantasy
+    details: An invented world with its own maps and customs. State the rules and limits of any magic up front.
+
+goals:
+  - id: whodunit
+    name: Solve a murder
+    description: Find who killed the victim, how, and why.
+    formats: [case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: missing-person
+    name: Find a missing person
+    description: Someone vanished. Find where they are and why they left.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: recover-stolen-object
+    name: Recover a stolen object
+    description: Find who took the object and where it is now.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: expose-forgery
+    name: Expose a forgery
+    description: Prove that a famous document, painting, or will is fake, and find the forger.
+    formats: [case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: stop-sabotage
+    name: Stop a sabotage before a deadline
+    description: Someone plans to ruin an event or a machine. Find the plan before it happens.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: escape-locked-place
+    name: Escape a locked place
+    description: The players are locked in and must find the way out.
+    formats: [envelopes]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: treasure-hunt
+    name: Find a treasure
+    description: Follow an old trail of clues to a hidden treasure.
+    formats: [envelopes]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: clear-accused-friend
+    name: Clear a wrongly accused friend
+    description: A friend stands accused. Prove that they are innocent and find the real culprit.
+    formats: [case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: secret-admirer
+    name: Identify a secret admirer
+    description: Anonymous gifts and notes arrive. Find out who sends them.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens]
+  - id: decode-lost-message
+    name: Decode a lost message
+    description: An old message holds a secret. Rebuild and decode it.
+    formats: [envelopes]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: prevent-heist
+    name: Prevent a heist
+    description: A gang plans a robbery. Find the target, the time, and the inside person.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: plan-heist
+    name: Pull off a heist
+    description: The players are the crew. Find the codes, the guard times, and the way in.
+    formats: [envelopes]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: rigged-contest
+    name: Find who rigged a contest
+    description: A prize went to the wrong winner. Find who cheated and how.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: hidden-heir
+    name: Locate a hidden heir
+    description: A fortune waits for an heir that nobody knows. Find who it is.
+    formats: [envelopes, case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: lost-pet
+    name: Return a lost pet
+    description: A beloved animal is missing. Follow its trail and bring it home.
+    formats: [envelopes]
+    audiences: [kids, family]
+  - id: uncover-spy
+    name: Uncover a spy
+    description: Secrets leak from a closed group. Find the spy before the next leak.
+    formats: [envelopes, case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: lost-hour
+    name: Reconstruct a lost hour
+    description: Nobody can explain one hour of last night. Rebuild what happened in it.
+    formats: [case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: find-impostor
+    name: Find the impostor
+    description: One person in the group is not who they claim to be. Prove which one.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: reverse-whodunit
+    name: Prove what you already know
+    description: The culprit is known from the start. Find the proof of how they did it before they get away.
+    formats: [case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: rescue
+    name: Rescue someone in time
+    description: A person is trapped and sends clues. Find them before time runs out. They are safe at the end.
+    formats: [envelopes]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: break-time-loop
+    name: Break a time loop
+    description: The same evening repeats. Each stage is one loop with new evidence, until the players break it.
+    formats: [envelopes, case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+
+twists:
+  - id: victim-alive
+    name: The victim is alive
+    description: The victim faked the death or the disappearance, and the evidence of it was there all along.
+    formats: [case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: two-culprits
+    name: Two culprits acting apart
+    description: Two people each did part of it, without knowing about the other.
+    formats: [case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: accident-covered-up
+    name: An accident covered up
+    description: The crime was an accident, and the real wrong is the cover-up.
+    formats: [case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: client-is-culprit
+    name: The client is the culprit
+    description: The person who hired the players set up the whole thing.
+    formats: [envelopes, case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: witness-never-there
+    name: The witness was never there
+    description: A key witness could not have seen what they describe.
+    formats: [case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: wrong-victim
+    name: The wrong victim
+    description: The culprit targeted someone else, and the victim was a mistake.
+    formats: [case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: clock-changed
+    name: The clock was changed
+    description: Someone moved a clock, so every alibi based on it is wrong.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: identity-swap
+    name: Identity swap
+    description: Two people traded places, and the documents show small slips.
+    formats: [envelopes, case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: unreliable-narrator
+    name: The narrator's document lies
+    description: The document that tells the story to the players is unreliable, and other documents show it.
+    formats: [case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: protective-motive
+    name: A protective motive
+    description: The culprit acted to protect someone, not from greed.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: never-stolen
+    name: It was never stolen
+    description: The missing object is still in the room, hidden in plain sight.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: smaller-crime
+    name: The obvious suspect hides a smaller wrong
+    description: The obvious suspect acts guilty because of a different, smaller secret.
+    formats: [case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: ally-misled
+    name: The ally misled the team
+    description: The helper who guides the players hid a key fact for their own reason.
+    formats: [envelopes, case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: earlier-than-thought
+    name: It happened earlier
+    description: The event happened hours or days before everyone thinks.
+    formats: [case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: group-conspiracy
+    name: Everyone is a little guilty
+    description: Several people each did a small part of it together.
+    formats: [case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: ghost-is-a-person
+    name: The ghost is a hidden person
+    description: The "ghost" is someone who secretly lives in the building.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: code-was-love-letter
+    name: The code was a love letter
+    description: The coded message that looked like a threat is a love letter.
+    formats: [envelopes, case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: victim-set-trail
+    name: The victim set the trail
+    description: The victim left the puzzle trail on purpose, before it happened.
+    formats: [envelopes]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: copycat
+    name: A copycat
+    description: The event copies an old, famous case, but one detail differs.
+    formats: [case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: heir-in-plain-sight
+    name: The heir in plain sight
+    description: The missing heir works in the house as a member of staff.
+    formats: [envelopes, case_file]
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: everyday-weapon
+    name: An everyday tool
+    description: The tool of the crime is an ordinary object that everyone saw.
+    formats: [case_file]
+    audiences: [teens, adults, puzzle_fans]
+  - id: never-locked
+    name: The locked room was never locked
+    description: The "locked room" was open all the time, and a witness lied about it.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: animal-did-it
+    name: The animal did it
+    description: An animal caused the mess or the loss. For kids, it is a harmless and funny version.
+    formats: [envelopes, case_file]
+    audiences: [kids, family, teens]
+  - id: recruitment-test
+    name: The puzzles were a test
+    description: The whole trail was a test to recruit the players into a secret group.
+    formats: [envelopes]
+    audiences: [kids, family, teens, adults, puzzle_fans]
+
+frames:
+  - id: new-archivist
+    name: The new archivist
+    description: You sort the files of a colleague who left suddenly.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: found-phone
+    name: The found phone
+    description: You hold printouts from someone's lost phone.
+    audiences: [teens, adults, puzzle_fans]
+  - id: time-loop
+    name: The time loop
+    description: You live the same evening again, with new evidence each time.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: cold-case-box
+    name: The cold case box
+    description: A box of old case files arrives at your door.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: insurance-investigator
+    name: The insurance investigator
+    description: You check a large claim that looks wrong.
+    audiences: [teens, adults, puzzle_fans]
+  - id: wake-up-locked-in
+    name: Locked in
+    description: You wake up locked in a room, with no memory of how you got there.
+    audiences: [teens, adults, puzzle_fans]
+  - id: strange-inheritance
+    name: The strange inheritance
+    description: An odd relative left you a trail instead of a will.
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: museum-night-guard
+    name: The museum night guard
+    description: You start your first night shift, and something is already wrong.
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: leaked-dossier
+    name: The leaked dossier
+    description: You are a journalist with a dossier from an anonymous source.
+    audiences: [teens, adults, puzzle_fans]
+  - id: radio-listener
+    name: The radio listener
+    description: You decode a strange broadcast that only you seem to notice.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: trainee-exam
+    name: The trainee exam
+    description: The detective agency gives you a real case as your entrance exam.
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: secret-society
+    name: The secret society initiation
+    description: A secret society invites you, and the puzzles are your initiation.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: ships-log-adrift
+    name: The ship's log found adrift
+    description: You find the log of a ship that nobody has seen for weeks.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: letters-in-sequence
+    name: Letters in sequence
+    description: Letters arrive one after another, each with a new piece of the story.
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: rescue-clues
+    name: Clues from captivity
+    description: A trapped person sends you clues in secret.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: jury-room
+    name: The jury room
+    description: You are the jury, and you review the exhibits of a trial.
+    audiences: [teens, adults, puzzle_fans]
+  - id: stolen-game-master-notes
+    name: The stolen game master's notes
+    description: You hold the notes of a game master, and the game turns out to be real.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: time-traveller-diary
+    name: The time traveller's diary
+    description: You read the diary of someone who says they travel in time.
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: lost-and-found
+    name: The lost and found office
+    description: You work in a lost and found office, and one item tells a story.
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: ghost-hunter-show
+    name: The ghost hunter show
+    description: You review the material of a ghost hunting TV show.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: smart-house-logs
+    name: The smart house logs
+    description: You read the logs of a home assistant from the night in question.
+    audiences: [teens, adults, puzzle_fans]
+  - id: postal-inspector
+    name: The postal inspector
+    description: You check a bag of mail that was never delivered.
+    audiences: [kids, family, teens, adults, puzzle_fans]
+  - id: customs-officer
+    name: The customs officer
+    description: You inspect a suspicious shipment at the border.
+    audiences: [family, teens, adults, puzzle_fans]
+  - id: kids-club-neighbor
+    name: The kids' club and the new neighbor
+    description: Your club watches the mysterious new neighbor down the street.
+    audiences: [kids, family]
+
+tones:
+  - id: cozy
+    name: Cozy
+    description: >-
+      Warm and safe. Small communities, tea, gentle humor, and a satisfying fix at the end. Any crime stays
+      off-page. Also covers whimsical and melancholy stories.
+  - id: adventure
+    name: Adventure
+    description: >-
+      Movement and discovery. Maps, journeys, ticking clocks, and brave choices. Short, active sentences.
+  - id: noir
+    name: Noir
+    description: >-
+      Dry, tired voices and morally grey people. Rain, neon, cigarette smoke, and money. Clear facts behind the
+      mood. Also covers thriller stories.
+  - id: spooky
+    name: Spooky
+    description: >-
+      Eerie, never cruel. Creaks, cold rooms, and old legends with a rational answer. For kids, eerie but safe. Also
+      covers gothic stories.
+  - id: comedic
+    name: Comedic
+    description: >-
+      Light and funny. Odd characters, silly misunderstandings, and running jokes. The puzzles stay fair. Also
+      covers satirical stories.
+  - id: dramatic
+    name: Dramatic
+    description: >-
+      High stakes and strong feelings. Family secrets, betrayal, and hard choices. Also covers melancholy and
+      thriller stories.
+
+motifs:
+  - id: clocks
+    name: Clocks
+    puzzle_skins: Clock hands as codes, stopped times as alibis, chimes as counts, and a timetable as the final lock.
+  - id: birds
+    name: Birds
+    puzzle_skins: Bird ring numbers as codes, migration maps as routes, and bird songs as Morse transcripts.
+  - id: chess
+    name: Chess
+    puzzle_skins: Chess notation as grid coordinates, knight moves as paths, and captured pieces as counts.
+  - id: tarot
+    name: Tarot
+    puzzle_skins: Card numbers as indexes, a spread as a seating puzzle, and card names as anagrams.
+  - id: maps
+    name: Maps
+    puzzle_skins: Grid coordinates, compass walks, map legends as symbol keys, and contour lines as hidden letters.
+  - id: music
+    name: Music
+    puzzle_skins: Note letters on a staff, rhythm as Morse, and concert programs as timetables.
+  - id: perfume
+    name: Perfume
+    puzzle_skins: Ingredient lists as recipe indexes, bottle shapes as silhouettes, and scent notes as sorting rules.
+  - id: trains
+    name: Trains
+    puzzle_skins: Timetables as alibis, network maps as routes, and ticket numbers as codes.
+  - id: stamps
+    name: Stamps
+    puzzle_skins: Stamp values as numbers, postmarks as dates and places, and perforations as dot codes.
+  - id: botany
+    name: Botany
+    puzzle_skins: Latin plant names as anagrams, seed packets as recipe indexes, and leaf shapes as silhouettes.
+  - id: astronomy
+    name: Astronomy
+    puzzle_skins: Star charts as connect-the-dots, moon phases as sequences, and star coordinates as a grid.
+  - id: knots
+    name: Knots
+    puzzle_skins: Knot cords as binary or tally codes, and rope diagrams as paths.
+  - id: masks
+    name: Masks
+    puzzle_skins: Masks as overlay windows, identity swaps, and costume lists as logic grids.
+  - id: recipes
+    name: Recipes
+    puzzle_skins: Amounts as letter indexes, oven times as a timetable, and a menu as a strike-out puzzle.
+  - id: weather
+    name: Weather
+    puzzle_skins: Weather reports as alibi breakers, wind directions as compass walks, and symbols as a cipher.
+  - id: insects
+    name: Insects
+    puzzle_skins: Specimen labels as indexes, wing patterns as nonograms, and leg counts as arithmetic.
+  - id: mirrors
+    name: Mirrors
+    puzzle_skins: Mirror writing, the mirror alphabet, reflections in photos, and symmetry puzzles.
+  - id: typewriters
+    name: Typewriters
+    puzzle_skins: Keyboard shift ciphers, a stuck key as missing letters, and carbon copies as overlays.
+  - id: card-games
+    name: Card games
+    puzzle_skins: Card values as numbers, suits as symbols, and a dealt hand as a sorting puzzle.
+  - id: lighthouses
+    name: Lighthouses
+    puzzle_skins: Light patterns as Morse, a keeper's log as a timeline, and tide tables as calendar math.
+  - id: keys-and-locks
+    name: Keys and locks
+    puzzle_skins: Key bitting as digit codes, lock attempt logs as code-breaker puzzles, and key boards as counts.
+  - id: photographs
+    name: Photographs
+    puzzle_skins: Spot the difference, reflections, clocks in the background, and negatives as overlays.
+
+# The writer must never use these. Code rejects a draft that contains one, and the writer rewrites it.
+cliches:
+  names:
+    - Elara
+    - Silas
+    - Thorne
+    - Blackwood
+    - Voss
+    - Ravenwood
+    - Hawthorne
+    - Whitmore
+    - Aris
+    - Kael
+    - Lyra
+    - Seraphina
+    - Vance
+    - Ashford
+    - Marlowe
+    - Evangeline
+    - Isadora
+    - Cassius
+    - Zephyr
+    - Thaddeus
+    - Barnaby
+    - Mortimer
+    - Lucian
+    - Ophelia
+    - Montgomery
+  phrases:
+    - a tapestry of
+    - whispers of
+    - shadows danced
+    - little did they know
+    - testament to
+    - a chill ran down
+    - the air was thick with
+    - delve into
+    - a symphony of
+    - palpable tension
+    - a web of lies
+    - the plot thickens
+    - time stood still
+    - an eerie silence
+    - the game is afoot
+    - every shadow held a secret
+    - hung heavy in the air
+    - a sense of foreboding
+    - nestled
+    - in the dead of night
+  plots:
+    - A stormy night in a gothic mansion, with a butler.
+    - A rich old man poisoned at the reading of his will.
+    - The butler did it.
+    - The greedy nephew who inherits.
+    - Poison in the wine glass at a dinner party.
+    - The culprit is an evil twin that nobody mentioned.
+    - It was all a dream.
+    - The culprit has amnesia and did it without knowing.
+    - The detective's long-lost relative is the culprit.
+    - The famous riddle with a changed answer.
+    - A secret passage that the floor plan never shows.
+
+audience_rules:
+  kids:
+    max_words_per_document: 120
+    allow_murder: false
+    themes_to_avoid: [death, blood, weapons, fear of abandonment, romance, kidnapping, real violence]
+    decoders_preprinted: true
+    notes: >-
+      Ages 6 to 9. Lost or stolen items, pranks, and missing pets. Easy puzzles with pictures, mazes, counting, and
+      simple ciphers with the key printed next to them. Short sentences and 12 to 14 pt type. Few red herrings.
+  family:
+    max_words_per_document: 250
+    allow_murder: false
+    themes_to_avoid: [gore, detailed violence, romance plots, death of a child]
+    decoders_preprinted: false
+    notes: >-
+      Ages 10 to 13 with adults. Theft, sabotage, a kidnapping with a safe return, or a faked death. Easy to medium
+      puzzles. 11 to 12 pt type and a moderate amount of text.
+  teens:
+    max_words_per_document: 400
+    allow_murder: true
+    themes_to_avoid: [graphic detail, sexual content, self-harm]
+    decoders_preprinted: false
+    notes: >-
+      A murder may happen off-page. Easy to hard puzzles. Standard text. Keep any violence out of the
+      description.
+  adults:
+    max_words_per_document: 600
+    allow_murder: true
+    themes_to_avoid: [gratuitous gore, sexual violence]
+    decoders_preprinted: false
+    notes: >-
+      Murder, fraud, and espionage. Easy to expert puzzles. Dense documents are fine. Gore only when the config
+      asks for horror.
+  puzzle_fans:
+    max_words_per_document: 600
+    allow_murder: true
+    themes_to_avoid: [gratuitous gore, sexual violence]
+    decoders_preprinted: false
+    notes: >-
+      Adults who solve puzzle hunts. Prefer insight over grind, more meta puzzles, light signposting, and
+      extraction steps that players must find. Avoid trivial mechanics such as connect-the-dots.

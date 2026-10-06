@@ -1,0 +1,20 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop receipt">
+  <header class="receipt-head">
+    <p class="receipt-shop">{{ f.get("shop") or f.get("sender") or t("word_receipt") }}</p>
+    {% if f.get("address") %}<p class="receipt-address">{{ f.get("address") }}</p>{% endif %}
+    <p class="receipt-meta">
+      {% if f.get("date") %}<span>{{ f.get("date") }}</span>{% endif %}
+      {% if f.get("number") %}<span>{{ t("field_number") }} {{ f.get("number") }}</span>{% endif %}
+    </p>
+  </header>
+  <div class="receipt-rule" aria-hidden="true"></div>
+  <div class="doc-body receipt-body">{{ page.html }}</div>
+  {% if f.get("total") %}
+  <div class="receipt-rule" aria-hidden="true"></div>
+  <p class="receipt-total"><span>{{ t("field_total") }}</span><span>{{ f.get("total") }}</span></p>
+  {% endif %}
+  <div class="receipt-rule" aria-hidden="true"></div>
+  <p class="receipt-thanks">*** {{ t("word_thanks") }} ***</p>
+  {{ page_label(t, page) }}
+</article>

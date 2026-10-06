@@ -1,0 +1,23 @@
+<div class="safe hint-page">
+  <div class="hint-grid">
+    {% for card in content.cards %}
+    <div class="hint-card{% if card.is_answer %} hint-answer{% endif %}">
+      <div class="hint-outside fit">
+        <div class="hint-plate">
+          <p class="hint-code">{{ card.code }}</p>
+          <p class="hint-title">{{ card.title }}</p>
+          <p class="hint-label">{{ card.label }}</p>
+        </div>
+        <div class="hint-hatch" aria-hidden="true"><span>{{ t("hint_turn") }}</span></div>
+      </div>
+      <div class="hint-fold" aria-hidden="true"></div>
+      <div class="hint-inside">
+        <div class="hint-inside-text fit">
+          <p class="hint-inside-label">{{ card.code }} · {{ card.label }}</p>
+          <p class="hint-text{% if card.is_answer %} hint-answer-text{% endif %}">{{ card.text }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

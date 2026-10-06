@@ -1,0 +1,11 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop prop-full poster">
+  <div class="poster-frame">
+    {% if f.get("issuer") %}<p class="poster-issuer">{{ f.get("issuer") }}</p>{% endif %}
+    <h1 class="poster-headline">{{ f.get("headline") or page.title }}</h1>
+    {% if f.get("subheadline") %}<p class="poster-subheadline">{{ f.get("subheadline") }}</p>{% endif %}
+    <div class="doc-body poster-body">{{ page.html }}</div>
+    {% if f.get("reward") %}<p class="poster-reward"><span>{{ t("field_reward") }}</span> {{ f.get("reward") }}</p>{% endif %}
+  </div>
+  {{ page_label(t, page) }}
+</article>

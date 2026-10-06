@@ -91,9 +91,11 @@ clues:
     document: D5
     quote: Mr Ward still owes me forty pounds for the brass sextant
 intro: >-
-  Gull Rock, the morning of 15 March 1931. The lighthouse stood dark all night, and ships nearly hit the rocks.
-  The great lens is gone. The harbour master has sent you everything that the keeper wrote down.
-  Find out who took the lens, and how they reached the rock.
+  Gull Rock, the morning of 15 March 1931. The lighthouse stood dark all night, and two fishing boats nearly hit
+  the rocks in the storm. At dawn the keeper climbed to the lamp room and found it empty: the great lens, as tall as
+  a child, was gone. Only three other people could have been on the rock that night. The harbour master has sent you
+  the keeper's logbook and every paper from the island. Find out who took the lens, how they reached the rock, and
+  why, before the next storm comes in.
 deduction:
   culprit: felix-ward
   questions:

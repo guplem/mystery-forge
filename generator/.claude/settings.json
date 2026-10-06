@@ -25,6 +25,20 @@
     ]
   },
   "permissions": {
-    "allow": ["Bash(uv run .pskill/pskill.py *)"]
+    "allow": [
+      "Bash(uv run .pskill/pskill.py *)",
+      "Bash(uv run *pskill.py *)",
+      "Bash(uv run --project ../toolkit forge *)",
+      "Bash(uv run --project ../toolkit playwright install chromium)",
+      "Read",
+      "Grep",
+      "Glob",
+      "Write(games/**)",
+      "Edit(games/**)"
+    ]
+  },
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "900000",
+    "BASH_MAX_TIMEOUT_MS": "1800000"
   }
 }

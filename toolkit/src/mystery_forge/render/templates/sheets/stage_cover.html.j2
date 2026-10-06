@@ -1,0 +1,18 @@
+<div class="safe stage-cover">
+  <div class="stage-top">
+    <div class="stop-sign">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><polygon class="stop-outer" points="29.3,2 70.7,2 98,29.3 98,70.7 70.7,98 29.3,98 2,70.7 2,29.3"/><polygon class="stop-inner" points="31.2,7 68.8,7 93,31.2 93,68.8 68.8,93 31.2,93 7,68.8 7,31.2"/></svg>
+      <p class="stop-word">{{ t("stop") }}</p>
+    </div>
+    <h1 class="stage-envelope">{{ content.envelope }}</h1>
+    <p class="stage-open">{{ content.open_text }}</p>
+  </div>
+  <div class="stage-divider"><span>{{ t("stage_turn_page") }}</span></div>
+  <div class="stage-bottom">
+    <div class="read-aloud">
+      <p class="read-aloud-label">{{ t("stage_read_aloud") }}</p>
+      <h2 class="stage-label">{{ content.stage_label }}</h2>
+      {% if content.opening_text %}<p class="stage-opening">{{ content.opening_text }}</p>{% endif %}
+    </div>
+  </div>
+</div>

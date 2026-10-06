@@ -1,0 +1,18 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop phone fit">
+  <div class="phone-speaker" aria-hidden="true"></div>
+  <header class="phone-head">
+    <span class="phone-avatar" aria-hidden="true">{{ (f.get("contact") or page.title)[:1] }}</span>
+    <span class="phone-contact">{{ f.get("contact") or page.title }}</span>
+    {% if f.get("device") %}<span class="phone-device">{{ f.get("device") }}</span>{% endif %}
+  </header>
+  {% if f.get("date") %}<p class="chat-day">{{ f.get("date") }}</p>{% endif %}
+  <div class="doc-body chat-body">
+    {% for line in speaker_lines(page.html) %}
+    {% if line.speaker %}
+    <div class="bubble{% if line.speaker == f.get('owner') %} bubble-own{% endif %}"><span class="bubble-name">{{ line.speaker }}</span><span class="bubble-text">{{ line.html | safe }}</span></div>
+    {% else %}<div class="chat-note">{{ line.html | safe }}</div>{% endif %}
+    {% endfor %}
+  </div>
+  {{ page_label(t, page) }}
+</article>

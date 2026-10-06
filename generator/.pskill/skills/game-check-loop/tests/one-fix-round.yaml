@@ -1,0 +1,14 @@
+name: one fix round with two groups clears the errors
+inputs: {game_dir: games/demo, scope: full}
+scripts:
+  check:
+    - {exit_code: 0, stdout: '{"ok": false, "errors": 3, "warnings": 1, "report": "r.json", "fix_groups": [{"name": "P1", "files": ["puzzles/P1.yaml"], "findings_file": "f1.json"}, {"name": "story", "files": ["story.yaml"], "findings_file": "f2.json"}]}'}
+    - {exit_code: 0, stdout: '{"ok": true, "errors": 0, "warnings": 1, "report": "r.json", "fix_groups": []}'}
+answers:
+  fix:
+    - {status: fixed, changed_files: [puzzles/P1.yaml], summary: Fixed the quote.}
+    - {status: fixed, changed_files: [story.yaml], summary: Fixed the name.}
+expect:
+  path: [check, fix, check, clean]
+  status: succeeded
+  outputs: {ok: true, errors: 0, rounds: 1}

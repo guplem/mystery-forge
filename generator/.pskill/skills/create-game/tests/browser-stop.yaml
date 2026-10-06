@@ -1,0 +1,42 @@
+name: 'no browser: the user stops'
+inputs:
+  config: c.json
+scripts:
+  doctor:
+  - exit_code: 0
+    stdout: '{"ok": false, "browser": null, "fix": "Install Chrome or Edge, or run: uv run playwright install chromium"}'
+  setup:
+  - exit_code: 0
+    stdout: '{"ok": true, "game_dir": "games/g", "config_file": "c.json", "summary": {"players": 4, "duration_minutes": 90,
+      "difficulty": "medium", "language": "en", "audience": "family", "format": "both", "idea": "", "quality": "best", "pick_concept":
+      "ask", "host": "self_running"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20, "generation_minutes":
+      90}, "draw_file": "games/g/source/draw.json"}'
+  writer_tasks:
+  - exit_code: 0
+    stdout: '{"ok": true, "tasks": [{"name": "P1 caesar-cipher", "id": "P1", "stage": "A", "mechanic": "caesar-cipher", "documents":
+      ["D2"], "relies_on": []}, {"name": "P2 maze", "id": "P2", "stage": "B", "mechanic": "maze", "documents": ["D3"], "relies_on":
+      ["D1"]}]}'
+  render:
+  - exit_code: 0
+    stdout: '{"ok": true, "previews_dir": "games/g/render/previews", "fix_groups": []}'
+  status:
+  - exit_code: 0
+    stdout: '{"ok": true, "stale": []}'
+  export:
+  - exit_code: 0
+    stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
+      materials).pdf"]}'
+calls: {}
+answers:
+  browser_missing:
+  - choice: stop
+    rationale: The user said so.
+    $answered_by: human
+expect:
+  path:
+  - doctor
+  - browser_missing
+  - stopped
+  status: cancelled
+  outputs:
+    result: stopped

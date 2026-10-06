@@ -1,0 +1,185 @@
+# Evidence and document types for case files. The writer picks types that carry the facts that the case needs.
+# Field meanings: toolkit/src/mystery_forge/catalog/models.py (class EvidenceType).
+
+evidence_types:
+  - id: police-incident-report
+    name: Police incident report
+    carries: Time, place, the responding officers, and the first list of people present.
+    realism_tips:
+      - Use a form layout with a case number and checkbox fields.
+      - Use a typewriter or form font.
+      - Add a short, flat narrative in police language.
+    typical_fields: [case number, date and time reported, location, reporting officer, persons present, narrative]
+  - id: interview-transcript
+    name: Interview transcript
+    carries: Claims, alibis, and slips of the tongue.
+    realism_tips:
+      - Use a question and answer format with timestamps.
+      - Add notes such as "[pause]" and the officer's initials.
+      - Give each speaker a distinct voice.
+    typical_fields: [case number, interviewee, interviewer, date, start and end time, questions and answers]
+  - id: witness-statement
+    name: Witness statement
+    carries: Sightings with times and descriptions.
+    realism_tips:
+      - Sign and date it, with a handwriting font for the signature.
+      - Write it in the first person, in the witness's own words.
+    typical_fields: [witness name, address, date, statement text, signature, officer witness]
+  - id: phone-records
+    name: Phone records and call logs
+    carries: Who contacted whom, when, and from which cell tower.
+    realism_tips:
+      - Use a carrier-style table in a monospace font.
+      - Include a directory or contact list that maps numbers to names.
+      - Add a few ordinary calls around the important ones.
+    typical_fields: [date, time, caller number, called number, duration, cell tower, call or message type]
+  - id: chat-export
+    name: Text message or chat export
+    carries: Relationship tone and timing.
+    realism_tips:
+      - Draw a phone screen frame with timestamps and read receipts.
+      - Keep messages short, with natural typos and abbreviations.
+    typical_fields: [contact name, timestamp, message text, read receipt, attachments]
+  - id: email-printout
+    name: Email printout
+    carries: Motive, plans, and tone.
+    realism_tips:
+      - Print the headers (From, To, Date, Subject).
+      - Add quoted replies below the new text.
+      - Use invented company domains, never real ones.
+    typical_fields: [from, to, cc, date, subject, body, quoted reply]
+  - id: receipt
+    name: Receipt or ticket
+    carries: Presence at a place and time, and purchases.
+    realism_tips:
+      - Use a narrow thermal-receipt column in a monospace font.
+      - Add a barcode with a barcode font.
+      - Compute the totals in code.
+    typical_fields: [shop name, address, date, time, items, prices, total, payment method, receipt number]
+  - id: bank-statement
+    name: Bank statement or ledger
+    carries: Motive, such as debt or embezzlement.
+    realism_tips:
+      - Compute the running balance in code.
+      - Mix the important lines with ordinary ones.
+    typical_fields: [account holder, account number, period, date, description, debit, credit, balance]
+  - id: floor-plan
+    name: Map or floor plan
+    carries: Movement, distances, and line of sight.
+    realism_tips:
+      - Add a scale bar, a compass, and room labels.
+      - Show every door and passage that the solution uses.
+    typical_fields: [title, scale bar, compass, room labels, doors, legend]
+  - id: scene-photo
+    name: Crime scene photo or CCTV still
+    carries: Positions, objects, and clothing.
+    realism_tips:
+      - Use line art or vector compositions, never AI raster images for clue details.
+      - Add a timestamp overlay and an evidence number.
+    typical_fields: [camera or photographer, timestamp, location, evidence number, caption]
+  - id: access-log
+    name: Door access or CCTV log
+    carries: Entry and exit times.
+    realism_tips:
+      - Use badge ids that also appear on the staff roster.
+      - Print it as a dense system log in a monospace font.
+    typical_fields: [timestamp, door or camera, badge id, event (entry, exit, denied)]
+  - id: coroner-report
+    name: Autopsy or coroner report
+    carries: The time-of-death window, the cause, and wound details.
+    realism_tips:
+      - Add a body outline diagram with marks.
+      - Use medical abbreviations with a short glossary.
+      - Keep the details clinical, never graphic.
+    typical_fields: [case number, deceased, examiner, time of death window, cause of death, findings, diagram]
+  - id: lab-report
+    name: Forensic lab report
+    carries: Fingerprints, fibers, blood type, and toxicology.
+    realism_tips:
+      - Use match tables with positive and negative results.
+      - Name the samples by evidence number.
+    typical_fields: [lab number, sample id, test, result, analyst, date]
+  - id: newspaper-clipping
+    name: Newspaper clipping
+    carries: Background, the public timeline, and red herrings.
+    realism_tips:
+      - Use columns, a masthead, and a date.
+      - Add small ads, which can hide clues.
+    typical_fields: [masthead, date, page, headline, byline, article text, small ads]
+  - id: diary
+    name: Diary or journal
+    carries: Inner motive, and a document to read again later.
+    realism_tips:
+      - Use a handwriting font for short entries only, and print a readable copy.
+      - Date every entry.
+    typical_fields: [date, entry text, doodles or margin notes]
+  - id: letter-postcard
+    name: Letter or postcard
+    carries: Relationships and codes.
+    realism_tips:
+      - Add a postmark with a date and a town.
+      - Give each writer a consistent handwriting font and voice.
+    typical_fields: [sender, recipient, address, date, postmark, body, signature]
+  - id: staff-roster
+    name: Personnel file or staff roster
+    carries: Ids, roles, and shift times.
+    realism_tips:
+      - Print it as a table.
+      - Link its ids to the access logs.
+    typical_fields: [name, staff id, role, department, shift start, shift end, supervisor]
+  - id: legal-document
+    name: Will, contract, or insurance policy
+    carries: Motive, through who benefits.
+    realism_tips:
+      - Use a legal font, numbered clauses, and signatures.
+      - Put the key clause in plain sight among dull ones.
+    typical_fields: [title, parties, date, numbered clauses, beneficiaries, signatures, witnesses]
+  - id: public-schedule
+    name: Weather report or TV schedule
+    carries: Independent time anchors that break alibis.
+    realism_tips:
+      - Write it in a short public-record style.
+      - Use it to confirm or break a claim, not to hold the whole solution.
+    typical_fields: [date, time slots, programs or weather by hour, source]
+  - id: small-prop
+    name: Business card, matchbook, or ticket stub
+    carries: Small links to a place or a person.
+    realism_tips:
+      - Print it as a small cut-out at real size.
+      - Add an invented logo and an address.
+    typical_fields: [name, business, address, phone, date or seat]
+  - id: id-badge
+    name: ID badge or access card
+    carries: A person's id, role, and photo, which link to logs and rosters.
+    realism_tips:
+      - Print it at card size with a line-art photo.
+      - Reuse the exact id from the roster and the access log.
+    typical_fields: [name, photo, staff id, role, expiry date, barcode]
+  - id: guest-register
+    name: Hotel register or guest book
+    carries: Arrival and departure times, room numbers, and signatures.
+    realism_tips:
+      - Use several handwriting fonts, one per guest.
+      - Add ordinary guests around the important ones.
+    typical_fields: [date, guest name, room number, arrival time, departure time, signature]
+  - id: shipping-manifest
+    name: Shipping manifest or customs form
+    carries: What moved where, when, and who signed for it.
+    realism_tips:
+      - Use a dense form with item codes and weights.
+      - Compute the weights and totals in code.
+    typical_fields: [manifest number, vessel or carrier, origin, destination, items, weights, signatures, stamps]
+  - id: handwritten-note
+    name: Handwritten note
+    carries: A quick message, a reminder, or a slip.
+    realism_tips:
+      - Keep it under 40 words in a handwriting font.
+      - Print a readable copy in the readable mode.
+    typical_fields: [text, initials or signature, date (optional)]
+  - id: medical-record
+    name: Medical or pharmacy record
+    carries: Prescriptions, appointments, and access to substances.
+    realism_tips:
+      - Use a clinic letterhead and short medical abbreviations.
+      - Never name a real drug in a harmful way. Use invented names.
+    typical_fields: [patient, date, doctor, prescription, dosage, pharmacy stamp]

@@ -1,0 +1,15 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop prop-full letter">
+  {% if page.page_number == 1 %}
+  {% if f.get("letterhead") or f.get("sender") %}
+  <header class="letterhead">
+    <p class="letterhead-name">{{ f.get("letterhead") or f.get("sender") }}</p>
+    <div class="letterhead-rule"></div>
+  </header>
+  {% endif %}
+  {% if f.get("place") or f.get("date") %}<p class="letter-dateline">{{ [f.get("place", ""), f.get("date", "")] | select | join(", ") }}</p>{% endif %}
+  {% if f.get("recipient") %}<p class="letter-recipient">{{ f.get("recipient") }}</p>{% endif %}
+  {% endif %}
+  <div class="doc-body letter-body">{{ page.html }}</div>
+  {{ page_label(t, page) }}
+</article>

@@ -1,0 +1,20 @@
+{% from "macros.html.j2" import page_label, field_row %}
+<article class="prop prop-full briefing">
+  <header class="briefing-head">
+    <div class="briefing-seal" aria-hidden="true"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="27"/><circle cx="30" cy="30" r="21"/><path d="M30 14l4.7 9.6 10.6 1.5-7.7 7.5 1.8 10.5L30 38.2l-9.4 4.9 1.8-10.5-7.7-7.5 10.6-1.5z"/></svg></div>
+    <div>
+      {% if f.get("agency") %}<p class="briefing-agency">{{ f.get("agency") }}</p>{% endif %}
+      <h1 class="briefing-title">{{ page.title }}</h1>
+    </div>
+    <span class="mf-stamp briefing-stamp">{{ f.get("classification") or t("word_confidential") }}</span>
+  </header>
+  {% if page.page_number == 1 %}
+  <div class="briefing-fields">
+    {{ field_row(t, f, "case_number") }}
+    {% if f.get("recipient") %}<div class="field-row"><span class="field-label">{{ t("field_to") }}</span><span class="field-value">{{ f.get("recipient") }}</span></div>{% endif %}
+    {{ field_row(t, f, "date") }}
+  </div>
+  {% endif %}
+  <div class="doc-body briefing-body">{{ page.html }}</div>
+  {{ page_label(t, page) }}
+</article>

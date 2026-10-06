@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Mystery Forge</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='22' fill='%238c2f23'/%3E%3Ccircle cx='24' cy='20' r='6' fill='%23f6efe1'/%3E%3Cpath d='M20 24h8l3 12H17z' fill='%23f6efe1'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Icons, drawn inline: the page must work offline from file://, with no image files. -->
+    <svg class="icon-sprite" aria-hidden="true" focusable="false">
+      <symbol id="icon-seal" viewBox="0 0 48 48">
+        <path
+          d="M24 2l4 3.5 5-1.5 2.5 4.5 5 .5.5 5 4.5 2.5-1.5 5L46 24l-3.5 4 1.5 5-4.5 2.5-.5 5-5 .5-2.5 4.5-5-1.5L24 46l-4-3.5-5 1.5-2.5-4.5-5-.5-.5-5L2.5 31.5l1.5-5L2 24l3.5-4-1.5-5 4.5-2.5.5-5 5-.5L16.5 2.5l5 1.5z"
+          fill="currentColor"
+        />
+        <circle cx="24" cy="24" r="14.5" fill="none" stroke="#f6e7cf" stroke-opacity=".55" stroke-width="1.2" />
+        <circle cx="24" cy="20.5" r="4.6" fill="#f6e7cf" />
+        <path d="M20.8 23.5h6.4l2.4 9.5H18.4z" fill="#f6e7cf" />
+      </symbol>
+      <symbol id="icon-audience-kids" viewBox="0 0 24 24">
+        <path d="M12 2.5l6 7-6 8.5-6-8.5z" />
+        <path d="M12 2.5V18M6 9.5h12" />
+        <path d="M12 18c-1.6 1.2 1.6 2 0 3.5" />
+      </symbol>
+      <symbol id="icon-audience-family" viewBox="0 0 24 24">
+        <path d="M3 11.5L12 4l9 7.5" />
+        <path d="M5.5 10v10h13V10" />
+        <path d="M10 20v-5h4v5" />
+      </symbol>
+      <symbol id="icon-audience-teens" viewBox="0 0 24 24">
+        <path d="M4.5 15v-3a7.5 7.5 0 0 1 15 0v3" />
+        <rect x="3" y="14" width="4.5" height="6.5" rx="1.6" />
+        <rect x="16.5" y="14" width="4.5" height="6.5" rx="1.6" />
+      </symbol>
+      <symbol id="icon-audience-adults" viewBox="0 0 24 24">
+        <path d="M7 3h10l-.8 5.5a4.2 4.2 0 0 1-8.4 0z" />
+        <path d="M12 13v7.5M8 21h8" />
+        <path d="M7.4 6.5h9.2" />
+      </symbol>
+      <symbol id="icon-audience-puzzle_fans" viewBox="0 0 24 24">
+        <path
+          d="M4 8h3.5a2.5 2.5 0 1 1 5 0H16v3.5a2.5 2.5 0 1 1 0 5V20H4v-3.5a2.5 2.5 0 1 0 0-5z"
+          transform="translate(1 -1)"
+        />
+      </symbol>
+      <symbol id="icon-format-envelopes" viewBox="0 0 24 24">
+        <rect x="3" y="6" width="18" height="12.5" rx="1.5" />
+        <path d="M3.5 7l8.5 6 8.5-6" />
+      </symbol>
+      <symbol id="icon-format-case_file" viewBox="0 0 24 24">
+        <path d="M3 5.5h6l2 2.2h10V19H3z" />
+        <path d="M3 10.5h18" />
+        <path d="M7 14.5h6" />
+      </symbol>
+      <symbol id="icon-format-both" viewBox="0 0 24 24">
+        <rect x="2.5" y="4.5" width="13" height="9.5" rx="1.2" />
+        <path d="M3 5.3l6 4.2 6-4.2" />
+        <circle cx="16" cy="15.5" r="3.8" />
+        <path d="M18.8 18.3l3 3" />
+      </symbol>
+      <symbol id="icon-host-self_running" viewBox="0 0 24 24">
+        <path d="M6 3h9l3.5 3.5V21H6z" />
+        <path d="M9 10h6.5M9 13.5h6.5M9 17h3.5" />
+      </symbol>
+      <symbol id="icon-host-host_plays" viewBox="0 0 24 24">
+        <circle cx="8.5" cy="8" r="3" />
+        <circle cx="16" cy="9" r="2.6" />
+        <path d="M2.5 20c.4-3.6 2.8-6 6-6s5.6 2.4 6 6" />
+        <path d="M14.5 14.2c.5-.2 1-.3 1.5-.3 2.8 0 5 2.2 5.4 6.1" />
+      </symbol>
+      <symbol id="icon-host-game_master" viewBox="0 0 24 24">
+        <path d="M3 17.5l1.8-9.5 4.7 4.5L12 5.5l2.5 7 4.7-4.5 1.8 9.5z" />
+        <path d="M3.5 20.5h17" />
+      </symbol>
+      <symbol id="icon-warning" viewBox="0 0 24 24">
+        <path d="M12 3.5l9.5 16.5h-19z" />
+        <path d="M12 10v4.5M12 17.2v.3" />
+      </symbol>
+      <symbol id="icon-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5.5M12 7.8v.3" />
+      </symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M8 12.5l2.8 2.8L16.5 9.5" />
+      </symbol>
+      <symbol id="icon-download" viewBox="0 0 24 24">
+        <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5" />
+        <path d="M4.5 16.5V20h15v-3.5" />
+      </symbol>
+      <symbol id="icon-upload" viewBox="0 0 24 24">
+        <path d="M12 15.5v-11M7.5 9L12 4.5 16.5 9" />
+        <path d="M4.5 16.5V20h15v-3.5" />
+      </symbol>
+      <symbol id="icon-copy" viewBox="0 0 24 24">
+        <rect x="8.5" y="8.5" width="11.5" height="12" rx="1.6" />
+        <path d="M15.5 8.5V5A1.5 1.5 0 0 0 14 3.5H5.5A1.5 1.5 0 0 0 4 5v10a1.5 1.5 0 0 0 1.5 1.5h3" />
+      </symbol>
+      <symbol id="icon-reset" viewBox="0 0 24 24">
+        <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" />
+        <path d="M4.5 4v4.5H9" />
+      </symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24">
+        <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />
+      </symbol>
+    </svg>
+
+    <header class="masthead">
+      <div class="masthead__inner">
+        <div class="masthead__top">
+          <div class="brand">
+            <svg class="brand__seal" aria-hidden="true"><use href="#icon-seal" /></svg>
+            <div>
+              <p class="brand__kicker" data-text="page.kicker"></p>
+              <h1 class="brand__title" data-text="page.title">Mystery Forge</h1>
+            </div>
+          </div>
+          <div class="language-switch" role="group" aria-labelledby="ui-language-label">
+            <span id="ui-language-label" class="visually-hidden" data-text="page.ui_language">Page language</span>
+            <button type="button" class="language-switch__button" data-ui-language="en" lang="en">English</button>
+            <button type="button" class="language-switch__button" data-ui-language="es" lang="es">Español</button>
+          </div>
+        </div>
+        <p class="masthead__tagline" data-text="page.tagline"></p>
+        <h2 class="visually-hidden" data-text="how.title">How it works</h2>
+        <ol class="how-it-works">
+          <li class="how-it-works__step">
+            <span class="how-it-works__number" aria-hidden="true">1</span>
+            <div>
+              <strong data-text="how.step1.title"></strong>
+              <span data-text="how.step1.text"></span>
+            </div>
+          </li>
+          <li class="how-it-works__step">
+            <span class="how-it-works__number" aria-hidden="true">2</span>
+            <div>
+              <strong data-text="how.step2.title"></strong>
+              <span data-text="how.step2.text"></span>
+            </div>
+          </li>
+          <li class="how-it-works__step">
+            <span class="how-it-works__number" aria-hidden="true">3</span>
+            <div>
+              <strong data-text="how.step3.title"></strong>
+              <span data-text="how.step3.text"></span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </header>
+
+    <div class="layout">
+      <main id="config-form" class="form-column"></main>
+
+      <aside id="summary" class="summary" aria-labelledby="summary-title">
+        <div class="summary__card">
+          <div class="summary__heading">
+            <h2 id="summary-title" class="summary__title" data-text="summary.title"></h2>
+            <span class="summary__stamp" aria-hidden="true" data-text="summary.stamp"></span>
+          </div>
+          <dl id="estimate-list" class="estimate"></dl>
+          <p class="summary__note" data-text="summary.note"></p>
+
+          <h3 class="warnings__title" data-text="warnings.title"></h3>
+          <ul id="warning-list" class="warnings"></ul>
+
+          <div class="actions">
+            <button type="button" id="download-config" class="button button--primary">
+              <svg class="icon" aria-hidden="true"><use href="#icon-download" /></svg>
+              <span data-text="action.download"></span>
+            </button>
+            <button type="button" id="copy-prompt" class="button">
+              <svg class="icon" aria-hidden="true"><use href="#icon-copy" /></svg>
+              <span data-text="action.copy_prompt"></span>
+            </button>
+            <label class="button file-button">
+              <input type="file" id="config-file-input" class="visually-hidden" accept=".json,application/json" />
+              <svg class="icon" aria-hidden="true"><use href="#icon-upload" /></svg>
+              <span data-text="action.load"></span>
+            </label>
+            <button type="button" id="reset-config" class="button button--quiet">
+              <svg class="icon" aria-hidden="true"><use href="#icon-reset" /></svg>
+              <span data-text="action.reset"></span>
+            </button>
+          </div>
+          <p class="load-hint" data-text="load.hint"></p>
+
+          <div id="status-message" class="status" role="status" aria-live="polite"></div>
+          <div id="load-errors" class="load-errors" role="alert"></div>
+        </div>
+
+        <section id="next-steps" class="next-steps" aria-labelledby="next-steps-title" hidden>
+          <h2 id="next-steps-title" class="next-steps__title" data-text="next.title"></h2>
+          <ol class="next-steps__list">
+            <li data-text="next.step1"></li>
+            <li data-text="next.step2"></li>
+            <li id="next-step-3"></li>
+          </ol>
+          <p id="next-note" class="next-steps__note"></p>
+        </section>
+
+        <details id="prompt-panel" class="prompt-panel">
+          <summary data-text="prompt.title"></summary>
+          <label class="prompt-panel__help" for="prompt-text" data-text="prompt.help"></label>
+          <textarea id="prompt-text" class="prompt-panel__text" rows="10" readonly spellcheck="false"></textarea>
+        </details>
+      </aside>
+    </div>
+
+    <footer class="page-footer">
+      <p data-text="page.offline"></p>
+    </footer>
+
+    <a id="mobile-summary-bar" class="mobile-summary-bar" href="#summary">
+      <span id="mobile-summary-numbers" class="mobile-summary-bar__numbers"></span>
+      <span class="mobile-summary-bar__action" data-text="action.show_summary"></span>
+    </a>
+
+    <div id="drop-overlay" class="drop-overlay" hidden>
+      <div class="drop-overlay__card">
+        <svg class="drop-overlay__icon" aria-hidden="true"><use href="#icon-format-envelopes" /></svg>
+        <p data-text="drop.title"></p>
+      </div>
+    </div>
+
+    <script src="gameConfigSchema.js"></script>
+    <script src="configSchemaValidator.js"></script>
+    <script src="configEstimate.js"></script>
+    <script src="uiText.js"></script>
+    <script src="configForm.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

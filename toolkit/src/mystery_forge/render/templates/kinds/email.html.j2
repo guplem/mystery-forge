@@ -1,0 +1,13 @@
+{% from "macros.html.j2" import page_label, field_row %}
+<article class="prop prop-full email">
+  <header class="email-bar" aria-hidden="true"><span></span><span></span><span></span></header>
+  <h1 class="email-subject">{{ f.get("subject") or page.title }}</h1>
+  <div class="email-fields">
+    {{ field_row(t, f, "from") }}
+    {{ field_row(t, f, "to") }}
+    {{ field_row(t, f, "cc") }}
+    {{ field_row(t, f, "date") }}
+  </div>
+  <div class="doc-body email-body">{{ page.html }}</div>
+  {{ page_label(t, page) }}
+</article>

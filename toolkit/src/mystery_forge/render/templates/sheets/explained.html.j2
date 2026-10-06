@@ -1,0 +1,5 @@
+{% if step.heading %}<p class="explained-heading">{{ step.heading }}{% if step.points %} <span class="explained-points">{{ t("accusation_points", points=step.points) }}</span>{% endif %}</p>{% endif %}
+<p class="explained-text">{{ step.text }}</p>
+{% for citation in step.citations %}
+<p class="citation"><span class="citation-document">{{ citation.document }}:</span> <q>{{ citation.quote }}</q></p>
+{% endfor %}

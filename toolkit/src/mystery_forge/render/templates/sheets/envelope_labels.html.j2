@@ -1,0 +1,22 @@
+{% from "macros.html.j2" import scissors_icon %}
+<div class="safe labels-page">
+  <header class="sheet-header">
+    <p class="sheet-kicker">{{ content.title }}</p>
+    <h1>{{ t("labels_title") }}</h1>
+  </header>
+  <p class="sheet-intro">{{ scissors_icon() }} {{ t("labels_intro") }}</p>
+  <div class="label-grid">
+    {% for label in content.labels %}
+    <div class="envelope-label">
+      <div class="label-inner fit">
+        <div class="label-seal" aria-hidden="true"><span>{{ label.stage }}</span></div>
+        <div class="label-text">
+          <p class="label-game">{{ content.title }}</p>
+          <p class="label-envelope">{{ label.envelope }}</p>
+          <p class="label-open">{{ label.open_text }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

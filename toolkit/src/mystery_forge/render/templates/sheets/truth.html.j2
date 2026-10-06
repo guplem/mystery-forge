@@ -1,0 +1,13 @@
+<div class="safe section-page">
+  <header class="sheet-header">
+    <p class="sheet-kicker">{{ t("solutions_title") }}</p>
+    <h1>{{ t("truth_title") }}</h1>
+  </header>
+  {% if content.intro %}<p class="truth-text">{{ content.intro }}</p>{% endif %}
+  <div class="explained-blocks">
+    {% for step in content.items %}
+    {% if loop.index0 in content.subtitle_before %}<h2 class="section-title">{{ t("reveal_title") }}</h2>{% endif %}
+    <div class="explained-block">{% include "sheets/explained.html.j2" %}</div>
+    {% endfor %}
+  </div>
+</div>

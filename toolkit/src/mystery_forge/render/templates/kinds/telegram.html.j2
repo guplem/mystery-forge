@@ -1,0 +1,15 @@
+{% from "macros.html.j2" import page_label, field_row %}
+<article class="prop telegram">
+  <header class="telegram-head">
+    <p class="telegram-word">{{ t("word_telegram") }}</p>
+    <div class="telegram-stripes" aria-hidden="true"></div>
+  </header>
+  <div class="telegram-fields">
+    {% if f.get("sender") %}<div class="field-row"><span class="field-label">{{ t("field_from") }}</span><span class="field-value">{{ f.get("sender") }}</span></div>{% endif %}
+    {% if f.get("recipient") %}<div class="field-row"><span class="field-label">{{ t("field_to") }}</span><span class="field-value">{{ f.get("recipient") }}</span></div>{% endif %}
+    {{ field_row(t, f, "place") }}
+    {{ field_row(t, f, "date") }}
+  </div>
+  <div class="doc-body telegram-body">{{ page.html }}</div>
+  {{ page_label(t, page) }}
+</article>

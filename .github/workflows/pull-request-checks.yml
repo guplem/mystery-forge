@@ -59,6 +59,10 @@ jobs:
         working-directory: toolkit
         run: uv run playwright install --with-deps firefox
 
+      - name: Require the Firefox tests on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: echo "MYSTERY_FORGE_REQUIRE_FIREFOX=1" >> "$GITHUB_ENV"
+
       # One umbrella script, the same one that a developer runs locally, so CI and the local check cannot drift apart.
       # Order: JavaScript (format, types, tests), then the toolkit (format, lint, types, tests), then the pskill skills.
       - name: Run the checks

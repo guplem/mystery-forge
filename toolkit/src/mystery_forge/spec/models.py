@@ -22,6 +22,8 @@ Text = Annotated[str, StringConstraints(min_length=1)]
 # An int, not Literal[1]: the loader gives text, and pydantic converts "1" to 1 only for an int field.
 FormatVersion = Annotated[int, Field(ge=1, le=1)]
 Difficulty = Literal["easy", "medium", "hard", "expert"]
+# The config's visual styles without "auto": when the config says "auto", the story names the style it fits.
+VisualStyle = Literal["vintage", "noir", "modern", "victorian", "scifi", "fantasy", "kids", "minimal"]
 TIME_FORMATS: tuple[str, ...] = ("%Y-%m-%d %H:%M", "%Y-%m-%d")
 
 
@@ -180,6 +182,7 @@ class Story(SourceModel):
     deduction: Deduction | None = None
     epilogues: list[Epilogue] = Field(min_length=1)
     reveal: list[RevealStep] = []
+    visual_style: VisualStyle | None = None
 
     @model_validator(mode="after")
     def check_registry(self) -> Self:
@@ -254,6 +257,9 @@ class Puzzle(SourceModel):
     answer: ShortText
     accepted: list[ShortText] = []
     near_misses: list[NearMiss] = []
+    # Plausible wrong answers from the story world. The paper answer register lists them next to the real answers,
+    # so that scanning the register does not reveal which entries are real.
+    decoys: list[ShortText] = []
     answer_format: AnswerFormat
     params: dict[str, Any] = {}
     seed: int = 0

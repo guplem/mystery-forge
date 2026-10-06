@@ -1,0 +1,27 @@
+/* Fantasy: parchment, forest-green ink, carved capitals and old-book type. */
+.theme-fantasy {
+  --paper: #f0dfb8;
+  --paper-alt: #f8ecd0;
+  --ink: #2e2112;
+  --ink-soft: #6c5232;
+  --ink-faint: #a88d66;
+  --accent: #2f5d3a;
+  --accent-soft: #e9dcb8;
+  --stamp: #8a1d1d;
+  --hand-ink: #3b2a1a;
+  --rule: #c5a56c;
+  --note-paper: #f3e3a8;
+  --hatch: #4b3a22;
+  --texture:
+    radial-gradient(ellipse 50% 40% at 10% 15%, rgba(120, 72, 20, 0.17), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 90% 85%, rgba(120, 72, 20, 0.2), transparent 70%),
+    radial-gradient(ellipse 35% 30% at 80% 20%, rgba(120, 72, 20, 0.09), transparent 70%),
+    radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(90, 55, 15, 0.14) 100%);
+  --prop-shadow: 0 0.6mm 1.8mm rgba(70, 40, 10, 0.3);
+  --prop-border: 0.2mm solid #cfb07a;
+  --heading-spacing: 0.05em;
+  --frame-border: 0.9mm double var(--accent);
+}
+.theme-fantasy .cover-title {
+  font-size: 36pt;
+}
