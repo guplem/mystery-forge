@@ -1,0 +1,2902 @@
+# The puzzle mechanics catalog. Code reads it to pick mechanic candidates, to check variety, and to budget time.
+# Field meanings: toolkit/src/mystery_forge/catalog/models.py (class Mechanic).
+# hint_ladder: hint 1 = what you need and where to look, hint 2 = a nudge to the method, hint 3 = the method.
+# minutes: baseline for a group of 3 or 4 players. Solo players take about 1.3 times longer, kids 8 to 12 about 1.5.
+mechanics:
+  # Ciphers
+
+  - id: caesar-cipher
+    name: Caesar Shift
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Every letter moves the same number of places along the alphabet.
+    how_it_works: >-
+      Each letter of the message moves N places along the alphabet. Another document gives N in the world: a clock
+      that shows 3, "the third drawer", a house number. Players find N, then shift each letter back. Keep spaces and
+      punctuation, so the word shapes help.
+    material: A coded note, telegram, or wall writing. Optionally an alphabet strip printed on another prop.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 20 }
+    verification: built
+    builder: caesar-cipher
+    pitfalls:
+      - The shift is not clued, so players try all 25 shifts. It works, but it is boring.
+      - A message that is too short is hard to recognize when it is correct.
+      - Removed spaces and punctuation make it much harder. Keep them unless the difficulty is high.
+    hint_ladder:
+      - The coded text on <document> is the puzzle. The number that you need is on <other document>.
+      - The letters are real letters, just moved. Every letter moved by the same number of steps.
+      - Shift each letter back by <N> places in the alphabet. For example, D becomes A.
+    in_world_examples:
+      - A coded telegram from the smuggler, with the shift hidden in the stopped clock.
+      - A school club's secret note, shifted by the club's founding number.
+      - A Roman centurion's order, written the way his general taught him.
+    combines_documents: true
+
+  - id: atbash-cipher
+    name: Atbash Mirror Alphabet
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: The alphabet is flipped, so A becomes Z and B becomes Y.
+    how_it_works: >-
+      Each letter swaps with its mirror partner: A with Z, B with Y, and so on. The game clues the idea with words
+      like "mirror", "reflection", or "the end is the beginning". A prop can print A to M above Z to N.
+    material: A coded inscription or note. Often a second prop that shows the two half alphabets.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 8, hard: 12, expert: 18 }
+    verification: built
+    builder: atbash-cipher
+    pitfalls:
+      - Without a clue, it looks like a random substitution. Always clue the mirror idea.
+    hint_ladder:
+      - Look at the coded line on <document> and at its title.
+      - The title talks about reflections. Think of the alphabet in a mirror.
+      - Reverse the alphabet. A pairs with Z, B with Y, C with X.
+    in_world_examples:
+      - The words carved under the old mirror in the hall.
+      - A message from a twin who always did everything backwards.
+      - A temple inscription in the old priests' reversed alphabet.
+    combines_documents: false
+
+  - id: cryptogram
+    name: Keyword Substitution Cryptogram
+    category: cipher
+    player_action: decode
+    lookup_cipher: false
+    summary: Each letter is always replaced by the same other letter, as in a newspaper cryptogram.
+    how_it_works: >-
+      A one-to-one letter substitution. Either a keyword found elsewhere builds the key alphabet, or players break it
+      with letter frequency and word shapes. A known word (a signature, a date written in words) is the usual way in.
+    material: A coded letter or diary page with the spaces kept. Optionally a known word, such as a signature.
+    answer_kinds: [phrase, word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: medium, max: expert }
+    minutes: { easy: 10, medium: 15, hard: 22, expert: 35 }
+    verification: built
+    builder: cryptogram
+    pitfalls:
+      - A short message has several solutions. Use at least 80 letters without a key, and a known word below hard.
+      - Proper nouns cannot be broken without a known word.
+      - By convention, no letter maps to itself.
+    hint_ladder:
+      - The coded letter on <document> is the puzzle. The signature on <document> is a word that you already know.
+      - Each symbol always stands for the same letter. Start with short words.
+      - Find the one-letter word and the most common three-letter word, THE. Then fill in the other words.
+    in_world_examples:
+      - The spy's letter home, written in the agency's daily substitution.
+      - A puzzle column in the town newspaper that hides a confession.
+      - A love letter in the private code of two old friends.
+    combines_documents: false
+
+  - id: pigpen-cipher
+    name: Pigpen Cipher
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Letters become pieces of tic-tac-toe and X grids, with or without dots.
+    how_it_works: >-
+      Each letter sits in a cell of two grids and two X shapes. The cell's outline, with or without a dot, is the
+      symbol. The key is in the kit, or players rebuild it from a partial key.
+    material: Angular symbols on a wall, map, gravestone, or box lid. A key on another prop.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 13, expert: 18 }
+    verification: built
+    builder: pigpen-cipher
+    pitfalls:
+      - Many variants exist. Always ship the exact key variant that the game uses, or let players derive it.
+    hint_ladder:
+      - The symbols on <document> are the message. The key is on <other document>.
+      - These shapes are pieces of a grid. Find the grid drawing.
+      - Match each symbol to the grid cell with the same outline and dot. That cell's letter is the plain letter.
+    in_world_examples:
+      - The secret society's marks on the lodge door.
+      - Symbols scratched on the pirate's sea chest.
+      - A treehouse club's password on the ladder.
+    combines_documents: true
+
+  - id: morse-code
+    name: Visual Morse Code
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Short and long marks hidden in a picture or a log spell letters in Morse code.
+    how_it_works: >-
+      Dots and dashes hide in a visual: a fence with short and long planks, a bead necklace, a light log, stitches.
+      Clear gaps or a separator object split the letters. Players read the marks with a Morse table.
+    material: An illustration or a log with clear letter gaps. A Morse table in the kit unless the audience knows it.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 13, expert: 18 }
+    verification: built
+    builder: morse-code
+    pitfalls:
+      - Unclear letter separators are the top Morse failure. Always use a clear gap or a separator object.
+      - Do not expect players to know the table. Print it in the kit.
+    hint_ladder:
+      - Look at the <object> on <document>. The table that you need is on <other document>.
+      - Short and long marks, like a signal. The gaps split the letters.
+      - It is Morse code. Read each group of short and long marks as one letter with the table.
+    in_world_examples:
+      - The lighthouse keeper's log of long and short flashes.
+      - The prisoner's knitted scarf with short and long stitches.
+      - A ship's radio log written down by the night operator.
+    combines_documents: true
+
+  - id: braille
+    name: Braille Dots
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Groups of dots in a 2 by 3 cell spell letters in Braille.
+    how_it_works: >-
+      Dot cells of 2 columns and 3 rows hide in a picture: studs on a door, raindrops, cookies on a tray. Players
+      read each cell with a Braille chart.
+    material: Dot patterns in clear cells. Empty positions show as faint circles at hard difficulty.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 13, expert: 18 }
+    verification: built
+    builder: braille
+    pitfalls:
+      - Cell orientation and spacing can be unclear. Group each cell clearly.
+      - Use a strict 2 by 3 grid at easy difficulty.
+    hint_ladder:
+      - Look at the dots on <document>. The chart that you need is on <other document>.
+      - Count the dots in each small group. Each group is one letter.
+      - Each group is a Braille letter. Match the dot positions with the chart.
+    in_world_examples:
+      - The studs on the vault door of a museum for the blind.
+      - Cookies on the baker's tray, set out as a message.
+      - A note pressed into a library card by a blind witness.
+    combines_documents: true
+
+  - id: semaphore-flags
+    name: Flag Semaphore
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Two arm positions, each in one of 8 directions, show a letter.
+    how_it_works: >-
+      Each letter is a pair of arm angles. The arms hide in clock hands, stick figures, or tree branches. Players
+      read each pose with a semaphore chart.
+    material: Figures or paired hands, plus a chart that states the viewing side.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 14, expert: 20 }
+    verification: built
+    builder: semaphore-flags
+    pitfalls:
+      - The viewer's left and the signaller's left are different. State the convention in the key.
+    hint_ladder:
+      - Look at the figures on <document> and at the chart on <other document>.
+      - The figures all hold the same kind of pose. The arm angles matter.
+      - The arm angles are flag semaphore. Read each pose as one letter with the chart, from the viewer's side.
+    in_world_examples:
+      - Sailors on the ship's deck in a holiday photo.
+      - Scarecrows in a field, each with its arms at odd angles.
+      - Stopped clocks in a row, where the two hands are two flags.
+    combines_documents: true
+
+  - id: tap-code-polybius
+    name: Polybius Square and Tap Code
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Pairs of numbers from 1 to 5 name the row and the column of a letter in a 5 by 5 grid.
+    how_it_works: >-
+      The letters sit in a 5 by 5 grid, with I and J (or C and K) in one cell. Each pair of numbers gives the row and
+      then the column. Tap code shows the numbers as knocks, such as two knocks, a pause, and three knocks.
+    material: A prison wall scratch, a knock log, or number pairs on a receipt.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 15, expert: 20 }
+    verification: built
+    builder: tap-code-polybius
+    pitfalls:
+      - Row then column, or column then row? Clue the order.
+      - Clue which two letters share a cell.
+    hint_ladder:
+      - The numbers or knocks on <document> are the message.
+      - The numbers come in pairs, and no number is above 5.
+      - Write the alphabet in a 5 by 5 grid. The first number is the row, the second is the column.
+    in_world_examples:
+      - Knocks that the prisoner in the next cell logged on the wall.
+      - Number pairs on a pawn shop receipt.
+      - A radiator pipe that someone tapped all night, as heard by the night guard.
+    combines_documents: false
+
+  - id: vigenere-cipher
+    name: Vigenere With a Found Key
+    category: cipher
+    player_action: decode
+    lookup_cipher: false
+    summary: A keyword shifts each letter by a different amount, with a printed table to help.
+    how_it_works: >-
+      Each letter shifts by the letter of a keyword below it, and the keyword repeats. The keyword is the answer of
+      an earlier puzzle, so a wrong keyword gives nonsense. A printed table (row = key letter) does the shifting.
+    material: Ciphertext plus a table of 26 shifted alphabets as a prop.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: medium, max: hard }
+    minutes: { easy: 10, medium: 14, hard: 20, expert: 28 }
+    verification: built
+    builder: vigenere-cipher
+    pitfalls:
+      - It gets tedious when long. Keep the plain text at 25 letters or fewer.
+      - Not for kids.
+    hint_ladder:
+      - You need the coded text on <document>, the table on <other document>, and a key word from an earlier puzzle.
+      - The key word goes under the coded text, letter by letter. Each key letter picks a row of the table.
+      - In the row of the key letter, find the coded letter. The letter at the top of that column is the plain letter.
+    in_world_examples:
+      - The diplomat's dispatch, locked with the password from the last envelope.
+      - A will written in a code that only the true heir can read.
+      - The resistance's radio message, keyed by the name of the safe house.
+    combines_documents: true
+
+  - id: a1z26-cipher
+    name: Letter Numbers (A1Z26)
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Each number from 1 to 26 is a letter, so A is 1 and Z is 26.
+    how_it_works: >-
+      The warm-up cipher. A is 1, B is 2, up to Z is 26. Disguise the numbers as page numbers, prices, jersey
+      numbers, or room numbers.
+    material: A list of numbers inside a prop.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 4, medium: 6, hard: 10, expert: 15 }
+    verification: built
+    builder: a1z26-cipher
+    pitfalls:
+      - Too obvious when the numbers stand alone. Too hidden inside prices with decimals. Keep the numbers clean.
+    hint_ladder:
+      - The numbers on <document> are the message.
+      - No number is above 26. How many letters does the alphabet have?
+      - Turn each number into a letter. A is 1, B is 2, and so on.
+    in_world_examples:
+      - The jersey numbers of the team photo, in the order that the players stand.
+      - The page numbers that the thief folded in the library book.
+      - Locker numbers on the gym key list.
+    combines_documents: false
+
+  - id: phone-keypad
+    name: Phone Keypad
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Digits stand for the letters on an old phone keypad.
+    how_it_works: >-
+      Each digit is a key with 3 or 4 letters. Multi-tap repeats a digit to pick the letter (22 is B), so it has one
+      reading. T9 uses one digit per letter and can match several words, so the theme must pick one.
+    material: Phone notes, a pager log, or a sticky note with digits. A printed keypad.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 13, expert: 18 }
+    verification: built
+    builder: phone-keypad
+    pitfalls:
+      - Many kids do not know the old phone layout. Print the keypad.
+      - For T9, check that no other common word has the same digits, or let the theme decide.
+    hint_ladder:
+      - The digits on <document> are the message. Look at the phone on <other document>.
+      - Each digit is a button with letters on it.
+      - Multi-tap. Press the button once for its first letter, twice for its second, and so on. 22 is B.
+    in_world_examples:
+      - Digits on a sticky note next to the office phone.
+      - A pager message from 1995 that someone never deleted.
+      - The text that the kidnapped girl typed blind in her pocket.
+    combines_documents: true
+
+  - id: nato-alphabet
+    name: NATO Phonetic Alphabet
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Code words like Alfa, Bravo, and Charlie spell a word, one letter per code word.
+    how_it_works: >-
+      Each letter has a code word that radio operators use: Alfa for A, Bravo for B, up to Zulu for Z. The code words
+      hide in a radio log, a list of call signs, or ordinary text. Players take the first letter of each code word.
+    material: A radio log, a pilot's note, or a list of names that are code words. A code word list for kids.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 4, medium: 7, hard: 11, expert: 15 }
+    verification: built
+    builder: nato-alphabet
+    pitfalls:
+      - Too easy when the code words stand alone in a list. Hide them in a log or in sentences for medium.
+      - The spellings Alfa and Juliett are official. Use one spelling every time.
+    hint_ladder:
+      - Look at the radio log on <document>. Some words look out of place.
+      - Those words are radio code words. Each one stands for one letter.
+      - Take the first letter of each code word. Alfa is A, Bravo is B.
+    in_world_examples:
+      - The control tower's log on the night that the plane landed late.
+      - Call signs of the ships in the harbor master's book.
+      - A taxi radio message that the dispatcher wrote down.
+    combines_documents: false
+
+  - id: rail-fence
+    name: Rail Fence Transposition
+    category: cipher
+    player_action: decode
+    lookup_cipher: false
+    summary: The right letters are in the wrong order, written in a zigzag and read row by row.
+    how_it_works: >-
+      The message goes in a zigzag across K rows (rails), then is read row by row. All the letters are correct,
+      only their order changes. The game clues K, for example with a fence with 3 rails.
+    material: A line of real letters that looks scrambled.
+    answer_kinds: [phrase, word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: medium, max: hard }
+    minutes: { easy: 8, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: rail-fence
+    pitfalls:
+      - Many players do not know that transposition exists. Use it from medium up, or clue it strongly.
+    hint_ladder:
+      - The scrambled line on <document> is the message. Count the rails of the fence on <other document>.
+      - All the letters are correct, just in the wrong order. Think of a zigzag.
+      - Draw a zigzag on <K> lines. Fill the first line with the first letters, then the next lines. Read the zigzag.
+    in_world_examples:
+      - Letters painted on a farm fence, one rail at a time.
+      - The ranch hand's note, written the way his father taught him.
+      - A message in a ladder of mailboxes.
+    combines_documents: true
+
+  - id: overlay-mask
+    name: Cut-Out Mask (Cardan Grille)
+    category: cipher
+    player_action: physical
+    lookup_cipher: false
+    summary: A card with holes, laid over an innocent letter, shows only the letters of the message.
+    how_it_works: >-
+      Players cut the shaded windows out of a mask card and lay it over a full-page letter. The letters that show
+      through the windows form the message. Registration marks on both pages line them up.
+    material: A mask page with shaded windows and cut lines, plus a full letter with the same frame and marks.
+    answer_kinds: [word, phrase]
+    needs: { scissors: true, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 15, expert: 20 }
+    verification: built
+    builder: overlay-mask
+    pitfalls:
+      - Printer scaling breaks the alignment. Force "actual size" and add registration corners.
+      - Give a no-cut fallback, such as a list of window positions (row, column).
+      - Code places the message letters first, then the prose fills the rest. Never let the agent place them by hand.
+    hint_ladder:
+      - You need the card with grey boxes on <document> and the letter on <other document>.
+      - The grey boxes on the card are windows. The two pages have the same frame.
+      - Cut out the grey boxes and lay the card on the letter, corners aligned. Read the letters in the windows.
+    in_world_examples:
+      - A bookmark from the spy's desk with odd rectangles cut into it.
+      - The card that came with an inheritance letter, "for when you read it properly".
+      - A stencil from the printing shop that matches the newspaper page.
+    combines_documents: true
+
+  - id: book-cipher
+    name: Book Cipher Over Kit Documents
+    category: cipher
+    player_action: cross-reference
+    lookup_cipher: false
+    summary: Number triples point to a document, a line, and a word in the kit.
+    how_it_works: >-
+      Triples like 3-12-4 mean document 3, line 12, word 4 (or letter 4). The "book" is a document that is already
+      in the kit, such as a newspaper or a diary. Code counts by word or sentence, not by printed line.
+    material: Number triples on a scrap. The source document has line numbers in the margin, or none at high difficulty.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 7, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: book-cipher
+    pitfalls:
+      - Text reflow changes line numbers. Index by sentence or word count, or index the final rendered layout.
+      - Freeze the source document before code computes the indices.
+    hint_ladder:
+      - The number groups on <document> point into <other document>.
+      - Three numbers each, like a reference in a library.
+      - The numbers are document, line, and word. Find each word and read them in order.
+    in_world_examples:
+      - The numbers in the margin of the bishop's prayer book.
+      - A ransom note that refers to today's newspaper.
+      - The spy's grocery list that points into the town guidebook.
+    combines_documents: true
+
+  - id: symbol-substitution
+    name: Invented Symbol Alphabet
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Theme symbols replace letters, and partial keys on several props complete the alphabet.
+    how_it_works: >-
+      Each letter is a theme symbol: runes, star signs, gang tags, alien glyphs. Two to four partial keys sit on
+      different props. Players combine them, and known words (a name, a translated sign) give the missing symbols.
+    material: Symbol text plus 2 to 4 partial keys. A full key for kids.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 6, medium: 11, hard: 18, expert: 25 }
+    verification: built
+    builder: symbol-substitution
+    pitfalls:
+      - Symbols that look alike in black and white at small size. Keep each symbol clearly different.
+      - Every symbol in the message must be in a key, or in a known word whose other letters are known.
+    hint_ladder:
+      - The symbols on <document> are the message. You saw these symbols on other items too.
+      - Combine the partial keys from <documents>. A sign that you can already read gives the rest.
+      - Write each known symbol under its letter. Fill the gaps with the words that you can already read.
+    in_world_examples:
+      - The runes on the museum's new exhibit and on its gift shop sign.
+      - Alien glyphs on the crashed probe and in the lab notebook.
+      - The street gang's tags on three walls of the same alley.
+    combines_documents: true
+
+  - id: binary-bits
+    name: Binary Lamps
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Rows of lit and unlit items are binary numbers, and each number is a letter.
+    how_it_works: >-
+      Each row of on and off items (lit windows, filled circles, open shutters) is a 5-bit number. The number is a
+      letter with A = 1. One example row shows the bit order.
+    material: A building front or a switch panel in line art.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 14, expert: 20 }
+    verification: built
+    builder: binary-bits
+    pitfalls:
+      - Bit order (left is high or left is low). Clue it with one worked example row.
+    hint_ladder:
+      - Look at the rows of windows on <document>.
+      - Lit or unlit, just two states. Each row is a number.
+      - Read each row as binary with the left side high, then turn the number into a letter. A is 1.
+    in_world_examples:
+      - The hotel's lit windows in a photo taken at midnight.
+      - The switch panel in the engine room.
+      - The holes punched in an old computer card.
+    combines_documents: false
+
+  - id: cipher-wheel
+    name: Printable Cipher Wheel
+    category: cipher
+    player_action: physical
+    lookup_cipher: true
+    summary: Two paper discs, cut out and pinned, turn to line up a shifted alphabet.
+    how_it_works: >-
+      Two concentric paper discs, pinned with a brad or a pencil tip. Turning the inner disc to a key letter lines up
+      the two alphabets. The wheel can also check answers. A slide rule of two strips is the no-cut version.
+    material: Two discs on one page with cut lines and a center mark, plus the coded text.
+    answer_kinds: [word, phrase]
+    needs: { scissors: true, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 8, medium: 10, hard: 14, expert: 18 }
+    verification: built
+    builder: cipher-wheel
+    pitfalls:
+      - Cutting circles is slow for kids. Offer the strip version.
+    hint_ladder:
+      - Build the wheel from <document>. The key letter is on <other document>.
+      - The two discs turn. One position makes the coded text readable.
+      - Turn the inner disc so that the key letter is under A. Read each coded letter across to the plain letter.
+    in_world_examples:
+      - The decoder ring from a cereal box that the detective kept for years.
+      - A navigator's paper star wheel.
+      - The club's official decoder, mailed to every new member.
+    combines_documents: true
+
+  - id: scytale-strip
+    name: Scytale Strip Wrap
+    category: cipher
+    player_action: physical
+    lookup_cipher: false
+    summary: A long strip of letters, wrapped around a pencil, lines up into the message.
+    how_it_works: >-
+      A long strip of letters wraps around a rod, and the letters line up into the message. Real pencils vary, so
+      the reliable rule is "read every Nth letter". The wrap is the flavor.
+    material: Strips to cut out and tape end to end.
+    answer_kinds: [phrase, word]
+    needs: { scissors: true, tape: true, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 7, medium: 10, hard: 14, expert: 18 }
+    verification: built
+    builder: scytale-strip
+    pitfalls:
+      - Pencil sizes vary. Design the strip so that "every Nth letter" works without a pencil.
+    hint_ladder:
+      - The long strip on <document> is the message. The number that you need is on <other document>.
+      - This strip is too long for a bookmark. Wrap it around something round.
+      - Read every <N>th letter of the strip.
+    in_world_examples:
+      - A Spartan messenger's belt with letters along it.
+      - A paper ribbon from the gift box.
+      - A cash register tape that someone marked.
+    combines_documents: true
+
+  - id: music-staff-letters
+    name: Sheet Music Note Letters
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Notes on a staff name the letters A to G and spell words like CABBAGE or BADGE.
+    how_it_works: >-
+      Each note on a treble staff has a letter name from A to G. The notes in order spell a word made only of those
+      letters. A sound-free music puzzle.
+    material: A torn score page and a note chart (for example a piano poster).
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 9, hard: 13, expert: 18 }
+    verification: built
+    builder: music-staff-letters
+    pitfalls:
+      - The vocabulary is small. Only words made of A to G work.
+      - Many players cannot read music. Print a note chart in the kit.
+    hint_ladder:
+      - Look at the torn score on <document> and the poster on <other document>.
+      - Each note has a letter name.
+      - Name each note with the chart, from A to G. The note names in order spell a word.
+    in_world_examples:
+      - The last page of a song that the missing pianist left on the stand.
+      - A music teacher's exercise sheet with one odd line.
+      - A music box roll with one hand-written tune.
+    combines_documents: true
+
+  - id: fingerspelling-hands
+    name: Fingerspelling Hands
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Hand shapes from a manual alphabet spell a word.
+    how_it_works: >-
+      Hand shapes from a sign language alphabet (for example ASL) spell a word. A chart of the hand shapes is in
+      the kit.
+    material: Hand drawings from a vetted open glyph set, plus a chart.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 5, medium: 8, hard: 12, expert: 16 }
+    verification: built
+    builder: fingerspelling-hands
+    pitfalls:
+      - Use only a vetted open glyph set. Wrong hand shapes are inaccurate and disrespectful.
+    hint_ladder:
+      - Look at the hands on <document> and the chart on <other document>.
+      - The hands are making letters.
+      - Match each hand shape with the chart. The letters in order spell the word.
+    in_world_examples:
+      - Photos of a deaf witness who signed what she saw.
+      - The library flyer for a sign language class, with a note in the margin.
+      - Shadow puppets on the wall in a holiday photo.
+    combines_documents: true
+
+  - id: keyboard-shift
+    name: Keyboard Shift Cipher
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Each letter is the key next to the true letter on a QWERTY keyboard.
+    how_it_works: >-
+      The writer's hands were one key off. Each letter is the key to the right (or left) of the true letter on a
+      QWERTY keyboard. Players shift each letter back on a printed keyboard.
+    material: An email or chat log full of typos. A keyboard picture in the kit.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 9, hard: 13, expert: 18 }
+    verification: built
+    builder: keyboard-shift
+    pitfalls:
+      - AZERTY and QWERTZ keyboards break it. Choose the layout by the game language.
+      - Define what edge keys (P, L, M) do.
+    hint_ladder:
+      - Look at the typo-ridden message on <document> and the keyboard on <other document>.
+      - The typist's hands were in the wrong place.
+      - Shift each letter one key to the left on the keyboard.
+    in_world_examples:
+      - An email that the victim typed in the dark.
+      - A chat message sent from a phone in a pocket.
+      - The hacker's note, typed with gloves on.
+    combines_documents: true
+
+  - id: color-pattern-code
+    name: Color and Pattern Sequence
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: Sequences of patterned items (wires, potions) map to digits with a legend.
+    how_it_works: >-
+      A legend maps each pattern to a digit. A row of wires or vials gives the digits in order. The black and white
+      build uses hatch patterns plus letter labels, so it works for color-blind players and grey printers.
+    material: Wires or vials with patterns and labels, plus a legend on another prop.
+    answer_kinds: [digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 4, medium: 6, hard: 10, expert: 14 }
+    verification: built
+    builder: color-pattern-code
+    pitfalls:
+      - Never rely on hue alone. Always add patterns and labels.
+      - When color is on, use the color-blind safe palette.
+    hint_ladder:
+      - Look at the wires on <document> and the legend on <other document>.
+      - The wires match the legend on the box.
+      - Read the wires left to right. Each pattern is one digit of the legend.
+    in_world_examples:
+      - The bomb's wires and the engineer's color chart.
+      - The potion rack and the alchemist's ingredient legend.
+      - The seats of a cable car painted in the line's pattern.
+    combines_documents: true
+
+  - id: audio-transcript-substitute
+    name: Sound Transcript
+    category: cipher
+    player_action: decode
+    lookup_cipher: true
+    summary: A written transcript of a sound carries Morse, rhythm, or stressed words.
+    how_it_works: >-
+      A written transcript replaces a sound clue: a radio log with "[beep-beeeep-beep]", a bird song guide with
+      sound drawings, a voicemail with stressed words in capitals. The sound pattern carries the message.
+    material: A transcript or sound picture art with one fixed notation.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 14, expert: 18 }
+    verification: built
+    builder: audio-transcript-substitute
+    pitfalls:
+      - Long and short markers that are hard to tell apart. Use one consistent notation.
+    hint_ladder:
+      - Read the transcript on <document>, not only the words.
+      - The noises have a rhythm. Some are long, some are short.
+      - Long and short sounds are Morse code. Read each group as one letter.
+    in_world_examples:
+      - The voicemail transcript from the night of the theft.
+      - A bird watcher's notebook with song drawings.
+      - The radio operator's log of a broken signal.
+    combines_documents: false
+
+  # Wordplay
+
+  - id: anagram
+    name: Anagram
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: The letters of a phrase rearrange into the answer.
+    how_it_works: >-
+      The letters of a name, title, or signature rearrange into the answer, often a suspect's real name or a place.
+      A definition or a theme clue tells players what kind of word to look for.
+    material: A suspicious name tag, a title, a signature, or a shop sign.
+    answer_kinds: [word, name, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 10, hard: 15, expert: 22 }
+    verification: verified
+    builder: anagram
+    pitfalls:
+      - LLMs miscount letters all the time. Code checks that both sides use exactly the same letters.
+      - A long anagram without a definition is unfair.
+      - Check that no more obvious word uses the same letters.
+      - Not as a gate for kids. Letter-order puzzles are hard for dyslexic players.
+    hint_ladder:
+      - Look at the name on <document>. It seems made up.
+      - The name uses the same letters as something else in the story.
+      - Rearrange the letters of the name. The result is a <kind of thing> from the story.
+    in_world_examples:
+      - The alias that the con artist signed in the hotel register.
+      - The name of a ship that hides its true owner.
+      - A shop sign that a proud baker made from his own name.
+    combines_documents: false
+
+  - id: acrostic
+    name: Acrostic Letter or Poem
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: The first letters of the sentences, lines, or paragraphs spell the answer.
+    how_it_works: >-
+      The first letters of the sentences, lines, or paragraphs spell the answer. Variants use the last letters
+      (telestich) or the first words. The text reads oddly stiff, which is the clue.
+    material: A letter, poem, or list with fixed sentence or paragraph breaks.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 4, medium: 7, hard: 11, expert: 16 }
+    verification: verified
+    builder: acrostic
+    pitfalls:
+      - Text reflow at print time breaks line acrostics. Use sentences or paragraphs, or fixed line breaks.
+      - The agent writes the text under the constraint. Code extracts the letters and rejects a mismatch.
+    hint_ladder:
+      - Read the letter on <document> again. The writing feels stiff, as if forced.
+      - The message is not in the words. Look at where each sentence starts.
+      - Read down the first letter of each <sentence or line>.
+    in_world_examples:
+      - The kidnapped man's letter home, written under the captor's eye.
+      - A poem in the school yearbook that a student wrote for a secret friend.
+      - A shopping list that a prisoner smuggled out.
+    combines_documents: false
+
+  - id: hidden-every-nth
+    name: Every Nth Letter
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Every Nth letter of an ordinary text spells the hidden message.
+    how_it_works: >-
+      A normal-looking text hides the message in every Nth letter, counting letters only. Another document gives N.
+      Code checks the extraction, so the agent can write the text freely around the fixed letters.
+    material: A short notice, letter, or label. N on another prop.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: medium, max: hard }
+    minutes: { easy: 7, medium: 11, hard: 16, expert: 22 }
+    verification: verified
+    builder: hidden-every-nth
+    pitfalls:
+      - State whether spaces and punctuation count. The safe rule is to count letters only.
+      - A long text makes the count tedious. Keep the source under about 150 letters.
+      - The number N needs a clue, or players cannot find it.
+    hint_ladder:
+      - The notice on <document> hides a message. The number that you need is on <other document>.
+      - The message is spread out inside the text, at a fixed step.
+      - Count only letters. Take every <N>th letter and write them in order.
+    in_world_examples:
+      - A typed warning notice from the old printing shop.
+      - The label of a wine bottle from the cellar.
+      - A recipe card where the cook's grandchild hid a message.
+    combines_documents: true
+
+  - id: index-extraction
+    name: Indexed Letter Extraction
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Take letter N of each answer word, and the letters spell the final answer.
+    how_it_works: >-
+      Players get a list of words (or the answers to small clues) and a number for each. Letter N of each word gives
+      one letter of the answer. This is the core extraction step of puzzle hunts.
+    material: A clue list with numbers in brackets, or numbers hidden as page numbers, prices, or ages.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 11, hard: 16, expert: 22 }
+    verification: verified
+    builder: index-extraction
+    pitfalls:
+      - An index beyond the word length. Code checks every index.
+      - Off-by-one with spaces. State the rule, for example "ignore spaces".
+    hint_ladder:
+      - Look at the list on <document>. The numbers next to each item matter.
+      - Each number points to one letter of its word.
+      - Take letter <N> of each word, in list order.
+    in_world_examples:
+      - The guest list with each guest's room number.
+      - A museum label list with odd catalog numbers.
+      - The evidence log where each item has a shelf number.
+    combines_documents: false
+
+  - id: rebus
+    name: Rebus Picture Word
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Pictures and letters combine by sound, so EYE plus LAND is ISLAND.
+    how_it_works: >-
+      Icons and letters combine by their sound, with plus and minus letter steps. Players say the pictures aloud
+      and join the sounds. The icons come from a fixed library with one name each.
+    material: Icons plus letter steps (+ and - letters).
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 20 }
+    verification: panel
+    builder: null
+    pitfalls:
+      - A picture read as another word, such as a cat read as kitten. Use a fixed icon library with one name each.
+      - Sounds depend on accent and language. English only. Avoid it for other languages and multilingual groups.
+    hint_ladder:
+      - The pictures on <document> are one word.
+      - Say the pictures out loud, one after the other.
+      - Picture 1 is a <name>. Add the sounds of the pictures and do the letter steps.
+    in_world_examples:
+      - A child's drawing that the missing boy left on the fridge.
+      - An old pub sign that tells its true name.
+      - A riddle card from a party game in the attic.
+    combines_documents: false
+
+  - id: riddle
+    name: Riddle
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: A "what am I" verse whose answer is a word, often an object that unlocks the next step.
+    how_it_works: >-
+      A short verse describes a thing without naming it. The answer is a word, often an object in the story that
+      opens the next step. Letter-count blanks confirm the answer.
+    material: A verse on a scroll, plaque, or card, with letter-count blanks.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 4, medium: 8, hard: 13, expert: 18 }
+    verification: panel
+    builder: null
+    pitfalls:
+      - Several valid answers. Add letter-count blanks and one line that excludes the near answers.
+      - LLMs reuse famous riddles (keys but no locks). Never use a known riddle. Write a new one about a story object.
+    hint_ladder:
+      - The verse on <document> describes something in this story.
+      - Think of objects that you have seen in the kit. <restate the key line plainly>.
+      - It has <N> letters and starts with <letter>. It is the <kind of object> from <document>.
+    in_world_examples:
+      - The rhyme on the music box that the grandmother left.
+      - A riddle carved over the door of the tower.
+      - The sphinx statue's plaque in the museum.
+    combines_documents: false
+
+  - id: word-ladder
+    name: Word Ladder
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Change one letter per step to go from one word to another.
+    how_it_works: >-
+      Players go from word A to word B by changing one letter per step. Clues define the middle rungs. The changed
+      letters, or a shaded rung, give the answer.
+    material: A ladder graphic with blanks and a clue per rung.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 7, medium: 11, hard: 16, expert: 22 }
+    verification: built
+    builder: word-ladder
+    pitfalls:
+      - Rare middle words. Use a list of common words only.
+      - Each clue must fit one rung only.
+    hint_ladder:
+      - Fill the ladder on <document> from the top word to the bottom word.
+      - Each step changes only one letter. The clues help with each rung.
+      - Rung <N> is <word>. Change one letter at a time, then read the shaded rung.
+    in_world_examples:
+      - The word game that the old sailor played every night in his log.
+      - A school puzzle sheet in the teacher's desk.
+      - The password chain that the hacker changed one letter at a time.
+    combines_documents: false
+
+  - id: mini-crossword
+    name: Mini Crossword With Shaded Cells
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: A small crossword whose shaded cells spell the answer.
+    how_it_works: >-
+      A 5 by 5 to 9 by 9 grid with a clue list. Players fill the grid. The shaded cells, in reading order, spell the
+      answer. Code fills the grid with the answer seeded in. The agent writes the clues.
+    material: A grid plus a clue list.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 8, medium: 13, hard: 18, expert: 25 }
+    verification: built
+    builder: mini-crossword
+    pitfalls:
+      - LLM clues often fit several words. The crossings fix most of it. The panel checks each clue.
+    hint_ladder:
+      - Fill the grid on <document>. The grey squares matter.
+      - Start with the easy entries <clue numbers>.
+      - Fill the grid, then read the grey squares from left to right, top to bottom.
+    in_world_examples:
+      - The crossword in the victim's newspaper, half filled in.
+      - A puzzle page in the airline magazine on seat 14B.
+      - The weekly quiz in the parish newsletter.
+    combines_documents: false
+
+  - id: word-search
+    name: Word Search With Leftover Message
+    category: wordplay
+    player_action: search
+    lookup_cipher: false
+    summary: Find the theme words, then the unused letters spell a message.
+    how_it_works: >-
+      Players find the listed theme words in a letter grid. The letters that no word uses, read in order, spell the
+      message. Code places the words and pours the message into the leftover cells.
+    material: A letter grid plus a word list.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 8, medium: 12, hard: 16, expert: 22 }
+    verification: built
+    builder: word-search
+    pitfalls:
+      - A list word that appears twice by accident. Code checks it.
+      - Rude words by accident. Code scans all 8 directions.
+    hint_ladder:
+      - Find the words from the list on <document> in the grid.
+      - When all the words are found, some letters are never used.
+      - Read the unused letters left to right, top to bottom.
+    in_world_examples:
+      - A kids' menu puzzle from the diner where the suspect ate.
+      - The activity page that the twins left in the car.
+      - A word grid printed in the zoo's visitor guide.
+    combines_documents: false
+
+  - id: cryptic-clue
+    name: Cryptic Crossword Clue
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: A clue with a plain definition plus a wordplay part, for puzzle fans.
+    how_it_works: >-
+      Each clue has a definition at one end and wordplay (an anagram, a hidden word) in the rest. Both parts lead to
+      the same answer. Code checks the letter arithmetic of the wordplay.
+    material: A clue list, often with letter counts.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [adults, puzzle_fans]
+    difficulty: { min: hard, max: expert }
+    minutes: { easy: 12, medium: 16, hard: 20, expert: 30 }
+    verification: verified
+    builder: cryptic-clue
+    pitfalls:
+      - LLMs write cryptic-like clues with broken surfaces and unfair wordplay. Use only anagram and hidden-word types.
+      - Code checks that the anagram letters equal the answer letters.
+    hint_ladder:
+      - The clues on <document> each hide one word. The letter counts are in brackets.
+      - One end of each clue is a plain definition. The rest is wordplay.
+      - A word like "broken" signals an anagram. Rearrange the letters next to it to fit the definition.
+    in_world_examples:
+      - The retired code breaker's daily crossword.
+      - A clue sheet left by a puzzle setter who vanished.
+      - The newspaper contest that the victim always won.
+    combines_documents: false
+
+  - id: drop-quote
+    name: Drop Quote
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: The letters of each column fall into the grid to form a quote.
+    how_it_works: >-
+      The letters of each column sit in a pile below the grid, out of order. Players drop them into the column's
+      cells to form a quote. Black squares mark the word breaks.
+    material: A grid with black squares, and letter piles below each column.
+    answer_kinds: [phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [adults, puzzle_fans]
+    difficulty: { min: medium, max: hard }
+    minutes: { easy: 10, medium: 15, hard: 20, expert: 28 }
+    verification: built
+    builder: drop-quote
+    pitfalls:
+      - Columns that allow several fills. Keep the quote at 60 letters or fewer and check that it is unique.
+    hint_ladder:
+      - Work on the grid on <document>.
+      - Each column's letters fall straight down into that column.
+      - Start with the short words. Place letters only where they make real words across.
+    in_world_examples:
+      - The torn page of a motto that hung in the founder's office.
+      - A newspaper puzzle that hides the editor's last words.
+      - The family saying that the grandfather scrambled for his heirs.
+    combines_documents: false
+
+  - id: strike-out-words
+    name: Strike Out by Rules
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Cross out words by rules, and the words that remain form the answer.
+    how_it_works: >-
+      A grid of words and a short rule list: "cross out all colors, all animals, every word with a double letter".
+      The words that remain, read in order, form the answer. The rules can sit on several props.
+    material: A word grid and a short rule list.
+    answer_kinds: [phrase, word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 5, medium: 8, hard: 12, expert: 16 }
+    verification: built
+    builder: strike-out-words
+    pitfalls:
+      - A word that fits two categories (orange). Use it only on purpose, with a clue.
+    hint_ladder:
+      - Work on the word grid on <document> with the rules on <other document>.
+      - There are too many words. Some must go.
+      - Apply each rule and cross out the matching words. Read the remaining words in order.
+    in_world_examples:
+      - The cook's list of banned ingredients and the menu board.
+      - A teacher's word grid with "rules for the clever ones".
+      - The censor's orders for a wartime letter.
+    combines_documents: true
+
+  - id: connection-wall
+    name: Connection Wall
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Sort 16 words into 4 groups of 4, past some deliberate red herrings.
+    how_it_works: >-
+      Sixteen words or images go into 4 groups of 4. A few words seem to fit two groups, which makes it fun. The
+      group names, or a missing item, give the answer.
+    material: A grid of 16 tiles. Optional tiles to cut out.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: false
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 12, hard: 18, expert: 25 }
+    verification: verified
+    builder: connection-wall
+    pitfalls:
+      - An unplanned overlap that allows two valid groupings. Code checks each word against a category table.
+      - Plan 2 to 4 deliberate overlaps.
+      - It needs discussion. Avoid it for solo games.
+    hint_ladder:
+      - Sort the 16 words on <document>.
+      - There are 4 groups of 4. Some words seem to fit two groups.
+      - One group is <group name>. Find the other three, then read <the extraction rule>.
+    in_world_examples:
+      - The pinboard in the detective's office, with cards that need sorting.
+      - A quiz night answer sheet from the pub.
+      - The magician's notes on 16 tricks in 4 acts.
+    combines_documents: false
+
+  - id: missing-letters
+    name: Missing Letters
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Words with letters removed; the missing letters, in order, spell the answer.
+    how_it_works: >-
+      Words appear with letters removed (all vowels, or all Es). Players restore the words. The removed letters, in
+      order, spell the answer, or the restored words are the clue.
+    material: A water-damaged letter with gaps, or a smudged sign.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 5, medium: 8, hard: 12, expert: 16 }
+    verification: built
+    builder: missing-letters
+    pitfalls:
+      - A gap that allows several words. Code checks each gapped word against a dictionary.
+    hint_ladder:
+      - Read the damaged letter on <document>.
+      - Something faded away. The gaps hide letters.
+      - Fill each gap. The missing letters, in order, spell the answer.
+    in_world_examples:
+      - A letter that sat in a flooded basement.
+      - The shop sign that lost its painted letters.
+      - A note where the old typewriter's E key stuck.
+    combines_documents: false
+
+  - id: homophone-pairs
+    name: Sound-Alike Words
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Words or pictures have sound-alike partners, such as knight and night.
+    how_it_works: >-
+      Each picture or word has a partner that sounds the same (knight and night). The partners form the answer, or
+      they index into it. Code checks the pairs with a pronunciation dictionary.
+    material: Paired pictures, or a radio transcript with "misheard" words.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 6, medium: 9, hard: 13, expert: 18 }
+    verification: verified
+    builder: homophone-pairs
+    pitfalls:
+      - It depends on accent. English only. Disable it for other languages.
+    hint_ladder:
+      - Look at the words on <document>.
+      - Read them aloud.
+      - Each one sounds like another word. Write the sound-alike partners and take <the extraction rule>.
+    in_world_examples:
+      - The night nurse's notes, full of misheard words.
+      - A child's spelling test with odd mistakes.
+      - The transcript of a phone call on a bad line.
+    combines_documents: false
+
+  - id: hidden-word-sentence
+    name: Hidden Words Across Word Breaks
+    category: wordplay
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Theme words hide across the spaces between words, such as CAB IN Exile for CABIN.
+    how_it_works: >-
+      Each sentence hides one theme word across the spaces between words. Players ignore the spaces to find them.
+      Code removes the spaces and checks that only the planned words hide.
+    material: A newspaper column or a postcard.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 15, expert: 20 }
+    verification: verified
+    builder: hidden-word-sentence
+    pitfalls:
+      - Awkward prose. Accept it only when the prop explains it, such as a coded letter.
+      - Another theme word that hides by accident. Code checks it.
+    hint_ladder:
+      - Read the postcard on <document> slowly. It sounds odd.
+      - The words hide inside other words.
+      - Ignore the spaces. Each sentence hides one <kind of word>.
+    in_world_examples:
+      - A postcard from a prisoner whose mail the guards read.
+      - The odd small ads in the newspaper's back page.
+      - A tour guide's script with strange sentences.
+    combines_documents: false
+
+  # Logic
+
+  - id: logic-grid
+    name: Logic Grid
+    category: logic
+    player_action: logic
+    lookup_cipher: false
+    summary: Clue statements fix one unique assignment of people to attributes, such as who wore what.
+    how_it_works: >-
+      N people times K attributes, plus clue statements. Players fill a grid to find the one assignment that fits
+      every clue. In a mystery: who wore what, who was where at 9 pm. Code removes clues while a solver still finds
+      exactly one solution.
+    material: A clue list (often as witness quotes) plus an optional printed grid.
+    answer_kinds: [name, choice, digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: expert }
+    minutes: { easy: 8, medium: 14, hard: 22, expert: 35 }
+    verification: built
+    builder: logic-grid
+    pitfalls:
+      - LLM-written grids often have 0 or 2 or more solutions. Never ship a logic grid without the solver.
+      - Keep 4 by 4 for family games and 5 by 5 for adults.
+    hint_ladder:
+      - Use the statements on <document>. The grid on <other document> helps.
+      - Start with the clue that names a single fact.
+      - Mark each fact with a tick and each impossible pair with a cross. <one forced placement and why>.
+    in_world_examples:
+      - The witnesses' statements about the costume party.
+      - The cook's notes on who ate what at the dinner.
+      - The hotel staff's memories of who sat at which table.
+    combines_documents: false
+
+  - id: wordoku
+    name: Letter Sudoku
+    category: logic
+    player_action: logic
+    lookup_cipher: false
+    summary: A sudoku with letters, where a highlighted row spells the answer.
+    how_it_works: >-
+      A sudoku with letters instead of digits (4 by 4, 6 by 6, or 9 by 9). Each row, column, and box uses each
+      letter once. A highlighted row or diagonal spells the answer.
+    material: A grid with given letters, dressed as a vault keypad or tile floor.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 15, hard: 25, expert: 40 }
+    verification: built
+    builder: wordoku
+    pitfalls:
+      - A 9 by 9 takes 15 to 40 minutes. Budget the time.
+      - A plain sudoku feels off-theme. Dress it as a story object.
+      - The answer word needs distinct letters (9, 6, or 4 of them).
+    hint_ladder:
+      - Fill the grid on <document>.
+      - Each row, column, and box uses each letter once.
+      - Find the cell where only one letter fits, such as <cell>. Then read the highlighted row.
+    in_world_examples:
+      - The vault keypad with nine letter buttons.
+      - The tile floor of the old chapel.
+      - A puzzle that the prisoner scratched on the cell wall.
+    combines_documents: false
+
+  - id: nonogram
+    name: Nonogram
+    category: logic
+    player_action: logic
+    lookup_cipher: false
+    summary: Number clues for each row and column reveal a picture of a digit, letter, or object.
+    how_it_works: >-
+      Each row and column has numbers that give the lengths of its filled runs. Players fill cells until a picture
+      appears: a digit, a letter, or an object that is the answer. Code checks that a line solver needs no guess.
+    material: A grid with row and column clues (10 by 10 to 15 by 15, smaller for kids).
+    answer_kinds: [word, digits, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 14, hard: 22, expert: 35 }
+    verification: built
+    builder: nonogram
+    pitfalls:
+      - The picture is hard to read at low resolution. Use bold shapes.
+      - Uniqueness alone is not enough. It must be solvable without guessing.
+    hint_ladder:
+      - Fill the grid on <document> with its numbers.
+      - The numbers are lengths of filled runs.
+      - Start with the row whose numbers fill it almost fully, such as row <N>. Then work across.
+    in_world_examples:
+      - The weaver's pattern card for a rug.
+      - A pixel grid from an old computer game in the arcade.
+      - The cross-stitch chart in the grandmother's sewing box.
+    combines_documents: false
+
+  - id: mastermind-feedback
+    name: Code-Breaker Feedback
+    category: logic
+    player_action: logic
+    lookup_cipher: false
+    summary: Past guesses at a lock code, each with feedback, leave only one possible code.
+    how_it_works: >-
+      Several past guesses at a code, each with feedback: N digits right in the right place, M digits right in the
+      wrong place. Players deduce the code. Code adds guesses until exactly one code fits.
+    material: A scribbled lock attempt log or a safe-cracker's notebook.
+    answer_kinds: [digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 7, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: mastermind-feedback
+    pitfalls:
+      - Too many guesses make it a chore. Use 4 to 6 lines.
+    hint_ladder:
+      - Use the attempt log on <document>.
+      - Compare the lines with zero correct digits first.
+      - Remove the digits of the zero lines. Then test each place with the other lines.
+    in_world_examples:
+      - The thief's notebook of failed tries at the safe.
+      - The lock log of the hotel's smart door.
+      - A kid's notes from a code game with his brother.
+    combines_documents: false
+
+  - id: truth-liar-statements
+    name: Truth Tellers and Liars
+    category: logic
+    player_action: logic
+    lookup_cipher: false
+    summary: Suspects make statements, exactly K of them lie, and only one assignment works.
+    how_it_works: >-
+      Suspects make statements about each other. Exactly K of them lie. Players test who lies until only one
+      assignment of truth and lies is consistent. Code builds the statements from formal templates.
+    material: Short interview snippets.
+    answer_kinds: [name]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 7, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: truth-liar-statements
+    pitfalls:
+      - LLM wording drift ("one of us" vs "exactly one"). Keep the template wording, or re-check the meaning in code.
+    hint_ladder:
+      - Read the statements on <document>.
+      - Exactly <K> of them lie.
+      - Assume that <name> lies and test the other statements. Keep the one assumption that breaks nothing.
+    in_world_examples:
+      - The three guards who each blame another for the open gate.
+      - The siblings' answers about the broken vase.
+      - Pirates who argue over who buried the gold.
+    combines_documents: false
+
+  - id: timeline-order
+    name: Timeline Reconstruction
+    category: logic
+    player_action: logic
+    lookup_cipher: false
+    summary: Order events from several sources, then find the gap or the impossible event.
+    how_it_works: >-
+      Events with partial times come from several sources. Players put them in order and find the gap or the event
+      that cannot fit. Code checks that the planned order is the only one consistent with the stated times.
+    material: Event cards to cut and sort (optional) and a blank timeline sheet.
+    answer_kinds: [name, choice, digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 14, hard: 22, expert: 30 }
+    verification: built
+    builder: timeline-order
+    pitfalls:
+      - Time zones, 12 or 24 hour confusion, and unstated travel times. State all travel times.
+      - Offer the cards as a list for groups without scissors.
+    hint_ladder:
+      - Collect the times from <documents> on the timeline sheet.
+      - Put the events with exact times down first.
+      - Fill the other events between them. <Name> could not be there at <time>.
+    in_world_examples:
+      - The night of the gala, pieced together from receipts and messages.
+      - The ship's last day, from the log and the passengers' letters.
+      - A school day in which the trophy went missing.
+    combines_documents: true
+
+  - id: minesweeper-grid
+    name: Minesweeper Deduction
+    category: logic
+    player_action: logic
+    lookup_cipher: false
+    summary: Number cells count their hidden neighbors, and the safe cells or mines form the answer.
+    how_it_works: >-
+      Each number cell shows how many of its 8 neighbors hold a mine. Players deduce the mine positions. The mines
+      or the safe cells form a letter, or index into a letter grid.
+    material: A grid with numbers, dressed as a minefield map or a garden of traps.
+    answer_kinds: [word, digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 7, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: minesweeper-grid
+    pitfalls:
+      - It needs guessing when no solver checks it. Code checks that no guess is needed.
+    hint_ladder:
+      - Work on the map grid on <document>.
+      - A number counts its 8 neighbors.
+      - Start where a number equals its count of unknown neighbors. <one forced mine>.
+    in_world_examples:
+      - The old war map of the beach.
+      - The garden of traps behind the temple.
+      - A treasure map with numbered warning stones.
+    combines_documents: false
+
+  - id: seating-arrangement
+    name: Seating Arrangement
+    category: logic
+    player_action: logic
+    lookup_cipher: false
+    summary: Place people around a table or in rooms by constraints, and a position gives the answer.
+    how_it_works: >-
+      Players place people around a table or in rooms from constraint clues. One fixed seat breaks the symmetry. The
+      person in a marked seat is the answer.
+    material: A floor plan plus optional name tokens to cut out.
+    answer_kinds: [name, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 7, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: seating-arrangement
+    pitfalls:
+      - A round table has symmetry. Fix one seat.
+    hint_ladder:
+      - Use the floor plan on <document> and the notes on <other document>.
+      - Place the host first.
+      - Place each person whose clue fixes one seat. <one more placement>.
+    in_world_examples:
+      - The wedding seating chart that the planner lost.
+      - The dinner where the poison was in one glass.
+      - Rooms of the boarding house on the night of the fire.
+    combines_documents: true
+
+  # Deduction
+
+  - id: elimination-lineup
+    name: Suspect Lineup Elimination
+    category: deduction
+    player_action: deduction
+    lookup_cipher: false
+    summary: Witness clues cross out portraits in a lineup until one suspect remains.
+    how_it_works: >-
+      12 to 24 portraits with clear features (hat, glasses, scar). Each witness clue removes some. The last one is
+      the answer. Great for kids and for groups that split the clues.
+    material: A portrait grid built from bold parts, plus witness statements on other props.
+    answer_kinds: [name, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 18 }
+    verification: built
+    builder: elimination-lineup
+    pitfalls:
+      - Features that are hard to see in black and white at small size. Use bold, high-contrast features.
+      - Each clue must remove at least one portrait, and exactly one must remain.
+    hint_ladder:
+      - Use the portraits on <document> and the witness notes on <other documents>.
+      - Cross out anyone who does not fit the first witness.
+      - Apply each witness clue in turn. <the two suspects that remain>.
+    in_world_examples:
+      - The police lineup photos from the station.
+      - The class photo of the school trip.
+      - Passport photos of the ship's passengers.
+    combines_documents: true
+
+  - id: testimony-contradiction
+    name: Testimony Contradiction
+    category: deduction
+    player_action: deduction
+    lookup_cipher: false
+    summary: One witness statement contradicts a fact in another document, and the liar is the answer.
+    how_it_works: >-
+      Witness statements meet physical evidence. One statement contradicts a fact: rain against a dry umbrella, a
+      clock time against the TV schedule. Code stores each claim as a typed fact and finds the planned contradiction.
+    material: Interview transcripts plus evidence documents.
+    answer_kinds: [name, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 14, hard: 22, expert: 30 }
+    verification: built
+    builder: testimony-contradiction
+    pitfalls:
+      - The prose adds extra contradictions by accident. Check every transcript against the fact registry.
+      - The panel confirms that the prose states the facts clearly.
+    hint_ladder:
+      - Compare the statements on <documents> with <evidence document>.
+      - One statement disagrees with a fact that someone else recorded.
+      - Check each claim of time, place, and weather. <Name>'s claim about <fact> cannot be true.
+    in_world_examples:
+      - The gardener says that it rained, but the weather report says that it did not.
+      - A guest who "watched the match" while the TV schedule shows a film.
+      - The night guard who saw the moon on a night of full cloud.
+    combines_documents: true
+
+  - id: deduction
+    name: Whodunit Deduction
+    category: deduction
+    player_action: deduction
+    lookup_cipher: false
+    summary: Players use all the evidence to name the culprit, the method, and the motive.
+    how_it_works: >-
+      The case question: who did it, how, and why. Every suspect has means, motive, or opportunity. Only the culprit
+      has all three plus one lock clue (a fact that only the culprit could know or do). Each innocent suspect has an
+      exclusion clue.
+    material: The whole case file, plus an accusation sheet with multiple choice questions.
+    answer_kinds: [name, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: expert }
+    minutes: { easy: 10, medium: 18, hard: 25, expert: 35 }
+    verification: panel
+    builder: null
+    pitfalls:
+      - A second suspect who also fits every clue. Give each innocent suspect an exclusion clue.
+      - The culprit appears only late. The culprit must appear in stage 1 material.
+      - A solution that needs luck or intuition. Every step must cite a document.
+    hint_ladder:
+      - Lay out the evidence from <documents>. List each suspect's means, motive, and opportunity.
+      - Cross out each suspect that a document clears.
+      - The suspect who remains also has the lock clue in <document>. Check how and why against <documents>.
+    in_world_examples:
+      - The final report that the chief inspector wants on her desk.
+      - The jury's verdict sheet in a courtroom frame.
+      - The newspaper editor's question, "who do we name in tomorrow's paper?".
+    combines_documents: true
+
+  # Observation
+
+  - id: observation
+    name: Detail Observation
+    category: observation
+    player_action: observation
+    lookup_cipher: false
+    summary: A small detail in a document or picture (a price, a reflection, a stain) holds the answer.
+    how_it_works: >-
+      The answer sits in a detail that a careful reader notices: a price on a receipt, a reflection in a photo, the
+      date on a stamp, a name on a badge. A question points players to the kind of detail, not to its place.
+    material: An existing document or picture with the planted detail, plus a question.
+    answer_kinds: [word, number, name, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 4, medium: 8, hard: 12, expert: 16 }
+    verification: panel
+    builder: null
+    pitfalls:
+      - A detail that is too small to print or to see. Keep text at 7 pt or more.
+      - A question with several answers in the kit. The panel checks that only one detail fits.
+    hint_ladder:
+      - The answer is on <document>. Look at the details, not the main text.
+      - Look at the <kind of detail>, such as dates, prices, or reflections.
+      - Find the <detail> at <place> and read it.
+    in_world_examples:
+      - The coffee receipt that shows the suspect's real arrival time.
+      - The reflection in the shop window of the crime scene photo.
+      - The postmark on the envelope of an "unsent" letter.
+    combines_documents: false
+
+  - id: spot-the-difference
+    name: Spot the Difference
+    category: observation
+    player_action: observation
+    lookup_cipher: false
+    summary: Two scenes differ in N places, and the count or the positions give the answer.
+    how_it_works: >-
+      Two scenes differ in N places. The count is the answer, or the differences sit on letters or grid squares.
+      Code composes both scenes from vector parts and applies the exact differences.
+    material: Two line-art images side by side.
+    answer_kinds: [number, word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 5, medium: 8, hard: 12, expert: 16 }
+    verification: built
+    builder: spot-the-difference
+    pitfalls:
+      - AI raster images add extra differences. Compose the scenes from vectors only.
+      - Hard for low-vision players. Offer a large print version.
+    hint_ladder:
+      - Compare the two pictures on <document>.
+      - There are exactly <N> differences.
+      - Check the <area> first. The differences sit on <letters or squares>.
+    in_world_examples:
+      - Two security photos of the gallery, taken before and after the theft.
+      - The original painting and the forgery.
+      - Two copies of the same postcard, one changed by the spy.
+    combines_documents: false
+
+  - id: hidden-object-count
+    name: Hidden Object Count
+    category: observation
+    player_action: search
+    lookup_cipher: false
+    summary: Count one kind of object in a busy scene, and the count feeds a lock.
+    how_it_works: >-
+      Players count one kind of object in a busy scene. The count is a digit or a number of the lock. Code composes
+      the scene, so it knows the exact count.
+    material: A busy line-art scene.
+    answer_kinds: [number, digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 4, medium: 7, hard: 10, expert: 14 }
+    verification: built
+    builder: hidden-object-count
+    pitfalls:
+      - Partly hidden objects. State "whole objects only".
+    hint_ladder:
+      - Look at the scene on <document>.
+      - Count only the <objects>.
+      - Some are in <tricky place>. Count the whole objects in every part of the scene.
+    in_world_examples:
+      - The candles in the cathedral photo.
+      - The cats in the painting that hides the vault code.
+      - The keys on the hotel's key board.
+    combines_documents: false
+
+  - id: microtext-hidden
+    name: Hidden Microtext
+    category: observation
+    player_action: search
+    lookup_cipher: false
+    summary: Tiny text hides in a picture or a document border.
+    how_it_works: >-
+      Tiny text hides in a picture or a border. A magnifier helps. Text stays at 5 to 6 pt or larger, because home
+      printers lose anything smaller.
+    material: Microtext at 6 pt in a frame or a picture.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 4, medium: 7, hard: 11, expert: 15 }
+    verification: built
+    builder: microtext-hidden
+    pitfalls:
+      - Hard for low-vision players. Provide a large print version or a hint.
+    hint_ladder:
+      - Look closely at <document>.
+      - Look at the border.
+      - Use a magnifier on the frame at <place>.
+    in_world_examples:
+      - The fine print on the forged bank note.
+      - The border of the engraved invitation.
+      - Tiny writing on the hem of a painted coat.
+    combines_documents: false
+
+  - id: anachronism-hunt
+    name: Anachronism Hunt
+    category: observation
+    player_action: observation
+    lookup_cipher: false
+    summary: A document holds impossible details that expose it as a forgery.
+    how_it_works: >-
+      A document or scene holds N impossible details. The errors expose a forgery, or their first letters or count
+      form the answer. The errors contradict another kit document, not real-world trivia.
+    material: A document or a drawn scene, plus the reference document that it contradicts.
+    answer_kinds: [word, number, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 7, medium: 11, hard: 16, expert: 22 }
+    verification: panel
+    builder: null
+    pitfalls:
+      - Real-world trivia that players cannot know. Keep every error checkable against a kit document.
+      - LLMs invent dates. Compute dates in code.
+    hint_ladder:
+      - Compare <document> with <reference document>.
+      - Something here could not exist yet.
+      - Check each date, name, and object in <document> against <reference document>. <one error>.
+    in_world_examples:
+      - The "1920s" photo with a wristwatch that the catalog dates to 1960.
+      - A will that names a street that the city map says was built later.
+      - The forged diary that mentions an event before it happened.
+    combines_documents: true
+
+  - id: silhouette-match
+    name: Silhouette Match
+    category: observation
+    player_action: observation
+    lookup_cipher: false
+    summary: Match black silhouettes to objects, and each object carries a letter or digit.
+    how_it_works: >-
+      Players match each black silhouette to its object. Each object carries a letter or digit. The order of the
+      silhouettes gives the answer. Code draws both from the same vector, rotated or flipped for difficulty.
+    material: A row of silhouettes plus labeled objects.
+    answer_kinds: [digits, word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 4, medium: 7, hard: 10, expert: 14 }
+    verification: built
+    builder: silhouette-match
+    pitfalls:
+      - Silhouettes that look almost the same.
+    hint_ladder:
+      - Use the shadows on <document> and the objects on <other document>.
+      - Every shadow belongs to one object.
+      - Match each shadow to its object and write its label, in shadow order.
+    in_world_examples:
+      - Shadows of the museum's statues on the guard's floor plan.
+      - The outlines on the workshop wall where the tools hang.
+      - Shadow puppets from the theater's poster.
+    combines_documents: true
+
+  - id: visual-sequence
+    name: Visual Sequence
+    category: observation
+    player_action: logic
+    lookup_cipher: false
+    summary: Symbols change by a rule, and players pick the next one from lettered options.
+    how_it_works: >-
+      A row of symbols changes by a rule (a rotation, an added stroke). Players pick the next symbol from options
+      with letters. Code generates the symbols from the rule and checks that no option fits another simple rule.
+    material: A row of glyphs plus a set of options.
+    answer_kinds: [choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 18 }
+    verification: built
+    builder: visual-sequence
+    pitfalls:
+      - Several rules fit. The panel solvers check it a second time.
+    hint_ladder:
+      - Look at the row of symbols on <document>.
+      - Watch one part of the symbol at a time.
+      - The <feature> changes by <step> each time. Remove the options that break it.
+    in_world_examples:
+      - The moon phases carved on the clock tower.
+      - The test page of an intelligence exam for spies.
+      - A row of tiles in the temple floor.
+    combines_documents: false
+
+  - id: print-handwriting-match
+    name: Fingerprint and Handwriting Match
+    category: observation
+    player_action: observation
+    lookup_cipher: false
+    summary: Compare a sample with exemplars, and the match names the suspect.
+    how_it_works: >-
+      A sample (a latent print, the letters of a ransom note) meets exemplars from each suspect. The matching
+      exemplar names the suspect. Code generates the prints from parameters, and decoys differ in 2 or more features.
+    material: Generated print patterns (loops, whorls, arches), or handwriting in different fonts.
+    answer_kinds: [name, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 18 }
+    verification: built
+    builder: print-handwriting-match
+    pitfalls:
+      - Too subtle in black and white at home printer resolution. Exaggerate the features.
+    hint_ladder:
+      - Compare the sample on <document> with the cards on <other document>.
+      - Compare the pattern type first, loop, whorl, or arch.
+      - Look at <feature>. <Two candidates remain>.
+    in_world_examples:
+      - The print lifted from the broken window and the suspects' cards.
+      - The ransom note and letters from each suspect.
+      - The signature on the forged check and the bank's signature cards.
+    combines_documents: true
+
+  # Spatial
+
+  - id: maze
+    name: Maze With Letters on the Path
+    category: spatial
+    player_action: spatial
+    lookup_cipher: false
+    summary: Solve a maze, and the letters on the true path spell the answer.
+    how_it_works: >-
+      Players solve a maze. Letters on the one true path spell the answer. Dead ends carry decoy letters. Code
+      generates a perfect maze, places the answer letters on the path, and checks that the decoys form no word.
+    material: A maze page dressed as catacombs, a hedge garden, or a sewer map.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 18 }
+    verification: built
+    builder: maze
+    pitfalls:
+      - Decoy letters that also form words. Code checks the letters off the path.
+    hint_ladder:
+      - Solve the maze on <document>.
+      - Collect letters only on the true path.
+      - Start from the exit and work back. The letters on the path, from start to exit, spell the answer.
+    in_world_examples:
+      - The catacomb map that the monk drew for the novices.
+      - The hedge maze plan from the manor's gardener.
+      - A sewer map that the thieves used to escape.
+    combines_documents: false
+
+  - id: jigsaw-reassembly
+    name: Torn Document Jigsaw
+    category: spatial
+    player_action: physical
+    lookup_cipher: false
+    summary: Put the pieces of a torn photo or letter back together to read it.
+    how_it_works: >-
+      A torn photo or letter comes in 6 to 12 pieces. Players put them back together and read the message. Straight
+      tear lines are easier to cut than curves.
+    material: A page with irregular cut lines.
+    answer_kinds: [phrase, word]
+    needs: { scissors: true, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 7, medium: 10, hard: 14, expert: 18 }
+    verification: built
+    builder: jigsaw-reassembly
+    pitfalls:
+      - Cutting takes time. Keep 6 to 12 pieces.
+      - The no-cut fallback draws the pieces shuffled, and players place them in their heads.
+    hint_ladder:
+      - Cut out the pieces on <document>.
+      - Pieces with straight edges go outside.
+      - Build the frame first, then match the lines of text across the pieces.
+    in_world_examples:
+      - The letter that the suspect tore up and threw in the bin.
+      - A photo ripped apart in a fight.
+      - The map that the two brothers split between them.
+    combines_documents: false
+
+  - id: fold-in
+    name: Fold-In Reveal
+    category: spatial
+    player_action: physical
+    lookup_cipher: false
+    summary: Fold the page along marked lines, and separate parts align into a new word.
+    how_it_works: >-
+      Players fold the page along marked lines. Parts that were far apart line up into a new image or word, as in
+      a magazine fold-in. Code splits the message across the fold geometry.
+    material: A page with A and B fold arrows and a fold guide.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: true, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 8, hard: 12, expert: 16 }
+    verification: built
+    builder: fold-in
+    pitfalls:
+      - Printer scaling shifts the alignment. Use large letters and a generous tolerance.
+    hint_ladder:
+      - Look at the arrows at the edge of <document>.
+      - The arrows show folds.
+      - Fold the page so that A meets B. Read the word that the folded parts form.
+    in_world_examples:
+      - The back page of a satire magazine in the editor's office.
+      - A poster that the activist folded before she hung it.
+      - The menu that the waiter folded twice and left on the table.
+    combines_documents: false
+
+  - id: cube-net
+    name: Cube Net Folding
+    category: spatial
+    player_action: spatial
+    lookup_cipher: false
+    summary: A flat cube net with letters folds into a box, and the faces that meet give the answer.
+    how_it_works: >-
+      A cube net carries letters or symbols. Players fold it, for real or in their heads, to find which faces meet or
+      what reads around the cube. Code computes the face adjacency and rotates the letters correctly.
+    material: A net with fold lines and glue tabs.
+    answer_kinds: [word, digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 7, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: cube-net
+    pitfalls:
+      - Letter orientation after the fold. Code rotates each letter in the net.
+      - Scissors and tape make it easier but are optional. Mental folding is the fallback.
+    hint_ladder:
+      - The shape on <document> folds into a box.
+      - Face <N> is the top.
+      - Fold it, or picture it folded. <Two faces that meet>. Read the letters around the sides.
+    in_world_examples:
+      - The puzzle box that the toy maker left unfinished.
+      - A paper die from the board game in the attic.
+      - The gift box template from the shop's back room.
+    combines_documents: false
+
+  - id: tangram
+    name: Tangram
+    category: spatial
+    player_action: physical
+    lookup_cipher: false
+    summary: Cut 7 pieces and form the shown silhouette, and the pieces' letters give the answer.
+    how_it_works: >-
+      Players cut the 7 standard pieces and form the shown silhouette. Each piece carries a letter. A marked spot on
+      the silhouette selects the pieces in order. The extraction uses piece identity, not position.
+    material: A sheet of pieces plus a silhouette target.
+    answer_kinds: [word, digits]
+    needs: { scissors: true, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 8, medium: 12, hard: 16, expert: 22 }
+    verification: built
+    builder: tangram
+    pitfalls:
+      - Several valid tilings make letter positions unclear. Make the extraction depend on piece identity.
+    hint_ladder:
+      - Cut out the pieces on <document> and use the shape on <other document>.
+      - Use all 7 pieces.
+      - The big triangles form the <part>. Then read the letters of the pieces at the marked spots.
+    in_world_examples:
+      - The puzzle in the old sea captain's desk drawer.
+      - A tile set from the toy shop window.
+      - The broken plate that the cook glued back as a cat.
+    combines_documents: true
+
+  - id: grid-coordinates
+    name: Map Grid Coordinates
+    category: spatial
+    player_action: spatial
+    lookup_cipher: false
+    summary: Coordinates such as C4 point to map places, and their initials spell the answer.
+    how_it_works: >-
+      A list of coordinates (C4, H7) points to places on a gridded map. The places' initials or labels spell the
+      answer. Each cell holds one label only.
+    material: A gridded map plus a coordinate list in a diary or on a ransom note.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 5, medium: 8, hard: 12, expert: 16 }
+    verification: built
+    builder: grid-coordinates
+    pitfalls:
+      - A cell with 2 labels. One label per cell.
+    hint_ladder:
+      - Use the list on <document> with the map on <other document>.
+      - Letters and numbers, like on a map.
+      - C4 means column C, row 4. Take the first letter of each place.
+    in_world_examples:
+      - The coordinates in the explorer's notebook.
+      - A treasure note with grid squares instead of words.
+      - The battleship game that the prisoners played by letter.
+    combines_documents: true
+
+  - id: compass-walk
+    name: Compass Directions Walk
+    category: spatial
+    player_action: spatial
+    lookup_cipher: false
+    summary: Steps like "3 north, 2 east" trace a path, and the end point or the path shape gives the answer.
+    how_it_works: >-
+      Instructions like "3 north, 2 east" trace a path on a grid or map from a marked start. The visited cells, the
+      end point, or the shape that the path draws give the answer.
+    material: A grid map plus directions, such as a treasure note.
+    answer_kinds: [word, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 18 }
+    verification: built
+    builder: compass-walk
+    pitfalls:
+      - An unclear start point. Mark the start.
+    hint_ladder:
+      - Follow the directions on <document> on the map on <other document>.
+      - Start at the <start place>.
+      - Move one square per step in the stated direction. <First 3 moves>.
+    in_world_examples:
+      - The pirate's treasure note with steps from the old well.
+      - A scout's orienteering card.
+      - The smuggler's route through the marsh.
+    combines_documents: true
+
+  - id: mirror-writing
+    name: Mirror Writing
+    category: spatial
+    player_action: physical
+    lookup_cipher: false
+    summary: Text printed in mirror image, read with a mirror or against a window.
+    how_it_works: >-
+      The text is printed in mirror image. Players read it with a mirror, a phone camera, or by holding the page to a
+      window from the back. Normal 80 gsm paper works. Use it as a reveal step, not a full puzzle.
+    material: Mirrored handwriting on a note.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 2, medium: 4, hard: 6, expert: 8 }
+    verification: built
+    builder: mirror-writing
+    pitfalls:
+      - Too easy when it is obvious. Use it as one step in a larger puzzle.
+    hint_ladder:
+      - Look at the strange writing on <document>.
+      - Leonardo da Vinci wrote like this.
+      - Use a mirror, or hold the page to a window and read it from the back.
+    in_world_examples:
+      - The inventor's notebook, written backwards to hide his ideas.
+      - A note on the back of the bathroom mirror.
+      - The message that the girl wrote on a frosted window.
+    combines_documents: false
+
+  - id: dot-to-dot
+    name: Connect the Dots
+    category: spatial
+    player_action: spatial
+    lookup_cipher: false
+    summary: Join numbered dots to draw a letter or symbol.
+    how_it_works: >-
+      Players join numbered dots, or dots ordered by other answers, to draw a letter or symbol. Decoy dots raise the
+      difficulty.
+    material: A dot field with numbers. Decoy dots at higher difficulty.
+    answer_kinds: [word, digits, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 3, medium: 5, hard: 8, expert: 12 }
+    verification: built
+    builder: dot-to-dot
+    pitfalls:
+      - Too trivial for adults unless the order itself comes from another puzzle.
+    hint_ladder:
+      - Use the dots on <document>.
+      - Join the dots in number order.
+      - The line draws one <letter or symbol>. Read it.
+    in_world_examples:
+      - The star chart with numbered stars.
+      - A kids' activity page from the museum shop.
+      - Pin holes in the map that the spy marked.
+    combines_documents: false
+
+  - id: cut-strips
+    name: Shredded Document Strips
+    category: spatial
+    player_action: physical
+    lookup_cipher: false
+    summary: A document cut into vertical strips goes back into order.
+    how_it_works: >-
+      A document is cut into 6 to 10 vertical strips. Players reorder them by the letters that continue across the
+      cuts, a page number fragment, or a shown order. Code slices the rendered page.
+    material: A page with vertical cut lines and letters across the cuts.
+    answer_kinds: [phrase, word]
+    needs: { scissors: true, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 15, expert: 20 }
+    verification: built
+    builder: cut-strips
+    pitfalls:
+      - Too many strips. Keep 6 to 10.
+      - The no-cut fallback prints the strips shuffled with labels, and players write the order.
+    hint_ladder:
+      - Cut the strips on <document>.
+      - The letters continue across the strips.
+      - The strip with the letterhead goes first. Match the half letters at each edge.
+    in_world_examples:
+      - The memo that the accountant put through the shredder.
+      - A bank statement cut into ribbons.
+      - The love letter that the jealous sister cut up.
+    combines_documents: false
+
+  - id: overlay-stack
+    name: Overlay Stack
+    category: spatial
+    player_action: physical
+    lookup_cipher: false
+    summary: Two sheets that look like noise reveal a word when laid on top of each other.
+    how_it_works: >-
+      Each of two sheets looks like random noise. Laid on top of each other on a window or with tracing paper, they
+      reveal a word. Code splits the glyph into two random-looking halves.
+    material: Two pattern pages with registration marks.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 18 }
+    verification: built
+    builder: overlay-stack
+    pitfalls:
+      - It needs thin paper or a window. Thick paper fails in dim light. Provide a cut-out fallback.
+      - Printer scaling breaks it. Add registration marks and a print-at-100% note.
+    hint_ladder:
+      - Find the two noisy pages, <document> and <other document>.
+      - These two pages belong together.
+      - Stack them against a bright window with the corner marks aligned.
+    in_world_examples:
+      - Two halves of a secret that the twins each kept.
+      - The two stencil sheets from the forger's desk.
+      - Patterns on two shop windows that line up from one spot.
+    combines_documents: true
+
+  - id: clock-faces
+    name: Clock Hands Code
+    category: spatial
+    player_action: observation
+    lookup_cipher: false
+    summary: Clock times encode digits, letters, or numbers to add.
+    how_it_works: >-
+      Several clocks show times. The hour hands give digits, the hand angles act like semaphore letters, or the
+      times add up. The game states the reading rule.
+    material: Several clocks, such as stopped clocks in rooms or watches in photos.
+    answer_kinds: [digits, number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 8, hard: 12, expert: 16 }
+    verification: built
+    builder: clock-faces
+    pitfalls:
+      - A real hour hand sits between the numbers. Decide the convention and keep it.
+    hint_ladder:
+      - Look at the clocks on <documents>.
+      - Every clock stopped at a different time.
+      - Read only the hour hands, in the order of <the order clue>.
+    in_world_examples:
+      - The clocks in each room of the house, stopped on the night of the crime.
+      - Watches on the wrists of the people in a photo.
+      - The clock tower's faces on four postcards.
+    combines_documents: true
+
+  - id: route-shortest-path
+    name: Route Through a Network
+    category: spatial
+    player_action: spatial
+    lookup_cipher: false
+    summary: Find the shortest route on a network map, which can show if a suspect made it in time.
+    how_it_works: >-
+      A map with travel times on each link. Players find the shortest route. The total time or the stops give the
+      answer. It fits the question "could the suspect make it in time?". Code checks that the shortest path is unique.
+    material: A network map (metro, roads, tunnels) with travel times.
+    answer_kinds: [number, choice, word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 7, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: route-shortest-path
+    pitfalls:
+      - Ties. The shortest route must beat the next one by at least 2 units.
+      - Hidden one-way links. Show every link on the map.
+    hint_ladder:
+      - Use the network map on <document>.
+      - Add up the travel times along each route.
+      - <Closed link> is closed. Compare the routes from <start> to <end> and keep the shortest.
+    in_world_examples:
+      - The metro map with the times from the transit app.
+      - The tunnel network under the old fortress.
+      - The courier's road map with times in the margin.
+    combines_documents: false
+
+  # Math
+
+  - id: pictogram-algebra
+    name: Pictogram Equations
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Icons stand for numbers in a few equations, and players solve for a final expression.
+    how_it_works: >-
+      Icons (potions, coins, gears) stand for numbers in several equations. Players solve for the final
+      expression. Code builds a linear system with one integer solution.
+    material: Icon equations.
+    answer_kinds: [number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 18 }
+    verification: built
+    builder: pictogram-algebra
+    pitfalls:
+      - Hidden icon differences (2 or 3 items in a group) that are hard to see in print. Make counts obvious.
+      - Keep values from 1 to 20 for kids.
+    hint_ladder:
+      - Solve the icon sums on <document>.
+      - Start with the line that uses only one kind of icon.
+      - <Icon> is <value>. Put each known value into the next line.
+    in_world_examples:
+      - The alchemist's potion price list.
+      - The coin puzzle on the arcade wall.
+      - The gear ratios in the clockmaker's notes.
+    combines_documents: false
+
+  - id: number-sequence
+    name: Number Sequence
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Find the next or the missing number in a sequence.
+    how_it_works: >-
+      Players find the next number, or the missing one, in a sequence. Code computes the rule. The panel looks for
+      other simple rules that give a different term. A theme clue points to the rule.
+    material: Numbers on doors, in a ledger, or on a combination note.
+    answer_kinds: [number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 5, medium: 9, hard: 15, expert: 22 }
+    verification: verified
+    builder: number-sequence
+    pitfalls:
+      - Every finite sequence fits many rules. Give at least 5 terms and a theme clue to the rule.
+    hint_ladder:
+      - Look at the numbers on <document>.
+      - Look at the differences between the numbers.
+      - The rule is <rule type>. The number before the answer is <term>.
+    in_world_examples:
+      - House numbers on the street where every other house is missing.
+      - The ledger of a gambler who doubled each bet.
+      - The guard's patrol times in the logbook.
+    combines_documents: false
+
+  - id: magic-square
+    name: Magic Square
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Fill a grid so that all lines have the same sum, and a marked cell is the answer.
+    how_it_works: >-
+      Players fill a 3 by 3 or 4 by 4 grid so that every row, column, and diagonal has the same sum. A marked cell
+      is the answer. Code checks that the given cells allow one solution only.
+    material: A grid with some numbers given, dressed as a tile floor or a talisman.
+    answer_kinds: [number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 15, expert: 20 }
+    verification: built
+    builder: magic-square
+    pitfalls:
+      - Too few given cells, so several fills work. Code checks it.
+    hint_ladder:
+      - Fill the grid on <document>.
+      - Every row, column, and diagonal has the same sum.
+      - The sum is <N>. Fill the line with only one empty cell first.
+    in_world_examples:
+      - The talisman in the fortune teller's tent.
+      - The tile floor of the old bank's vault room.
+      - A puzzle engraved on a church bell.
+    combines_documents: false
+
+  - id: kakuro-mini
+    name: Mini Cross-Sum
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Fill digits so that each run adds up to its total, and the shaded cells give a code.
+    how_it_works: >-
+      Players fill digits 1 to 9 so that each run adds up to its total, with no repeats in a run. The shaded cells
+      give a code. Code checks that the solution is unique.
+    material: A small grid (6 by 6 at most).
+    answer_kinds: [digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 13, hard: 20, expert: 28 }
+    verification: built
+    builder: kakuro-mini
+    pitfalls:
+      - It eats time. Keep it small.
+    hint_ladder:
+      - Fill the grid on <document>.
+      - A run of 2 cells that adds up to 3 must be 1 and 2.
+      - Fill the runs with only one possible set of digits first. <one forced cell>.
+    in_world_examples:
+      - The puzzle page in the train company's magazine.
+      - The accountant's doodle on the back of an invoice.
+      - The lock of the music box, with sums on its lid.
+    combines_documents: false
+
+  - id: roman-base-conversion
+    name: Roman Numerals and Number Bases
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Roman numerals, number bases, or tally marks convert to the code.
+    how_it_works: >-
+      Dates in Roman numerals, numbers in base 2, 8, or 16, or tally marks convert to the code. The conversion is
+      short, and the material carries the theme.
+    material: Inscriptions, corner stones, or clock faces.
+    answer_kinds: [number, digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 4, medium: 7, hard: 10, expert: 14 }
+    verification: built
+    builder: roman-base-conversion
+    pitfalls:
+      - Clocks use both IIII and IV. Pick one and keep it.
+    hint_ladder:
+      - Look at the numbers on <document>.
+      - These are old-style numbers.
+      - Convert each one. MCM is 1900.
+    in_world_examples:
+      - The corner stone of the library.
+      - Roman numbers on the chapters of the diary.
+      - The tally marks that the prisoner scratched by the door.
+    combines_documents: false
+
+  - id: balance-scale
+    name: Balance Scales
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Pictures of balanced scales let players find the weight of a target object.
+    how_it_works: >-
+      Three or four pictured scales are in balance. Players compare them to find the weight of the target object.
+      Code solves the system.
+    material: Three or four scale drawings with clear angles and "=" or ">" signs.
+    answer_kinds: [number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 6, medium: 10, hard: 14, expert: 18 }
+    verification: built
+    builder: balance-scale
+    pitfalls:
+      - The tilt of a scale is hard to read in small black and white. Draw clear angles plus signs.
+    hint_ladder:
+      - Use the scales on <document>.
+      - Compare the two scales that share a box.
+      - <Object> weighs <value>. Put that value into the other scales.
+    in_world_examples:
+      - The spice merchant's scales in the market.
+      - The jeweler's notes on gold and silver weights.
+      - The postal scales in the sorting room.
+    combines_documents: false
+
+  - id: date-calendar-math
+    name: Calendar Arithmetic
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Players count days on a printed calendar, and the date is the code.
+    how_it_works: >-
+      Clues like "three days after the full moon, the Tuesday before the fair" lead to a date on a printed
+      calendar. The date is the code. Code computes every weekday.
+    material: A calendar page plus diary entries.
+    answer_kinds: [digits, number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 7, medium: 11, hard: 16, expert: 22 }
+    verification: built
+    builder: date-calendar-math
+    pitfalls:
+      - LLMs get weekdays wrong for real dates. Always compute them in code.
+    hint_ladder:
+      - Use the calendar on <document> and the diary on <other document>.
+      - Find the <event> on the calendar first.
+      - Count from <event> as the diary says. The month is <month>.
+    in_world_examples:
+      - The farmer's almanac with the moon phases.
+      - The diary of a girl who counted the days to the fair.
+      - The ship's calendar with the tide notes.
+    combines_documents: true
+
+  - id: ledger-audit
+    name: Ledger Audit
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: A ledger or receipts hide one error that names the embezzler or gives an amount.
+    how_it_works: >-
+      A ledger or a pile of receipts holds one error: sums that do not match, a duplicated invoice. The error names
+      the embezzler or gives an amount. Code generates consistent books, then adds exactly one planned error.
+    material: A typed ledger and receipts.
+    answer_kinds: [name, number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 13, hard: 20, expert: 28 }
+    verification: built
+    builder: ledger-audit
+    pitfalls:
+      - LLM-written numbers add arithmetic errors by accident. Generate every number in code.
+    hint_ladder:
+      - Check the ledger on <document> against <other document>.
+      - The totals do not match the bank slip.
+      - Add up <month>. The line that breaks the total is <line>.
+    in_world_examples:
+      - The club treasurer's books.
+      - The theater's ticket sales ledger.
+      - The receipts in the shop owner's shoe box.
+    combines_documents: true
+
+  - id: arithmetic-lock
+    name: Arithmetic Lock
+    category: math
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Numbers found in several documents combine by a stated formula into the lock code.
+    how_it_works: >-
+      A note gives a formula, such as "the year of the fire, minus the room number, times the number of
+      witnesses". Players find each number in the kit and compute the code. Code checks the arithmetic.
+    material: A formula note plus the documents that hold the numbers.
+    answer_kinds: [digits, number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 13, expert: 18 }
+    verification: verified
+    builder: arithmetic-lock
+    pitfalls:
+      - A number that appears twice in the kit with different values. Keep each fact in the fact registry.
+      - LLMs do arithmetic wrong. Code computes the result.
+    hint_ladder:
+      - The formula on <document> needs numbers from <documents>.
+      - Each word in the formula names a fact that you have seen.
+      - Find each number, then compute it in the stated order. <first number> is on <document>.
+    in_world_examples:
+      - The safe code that the old banker hid in a riddle for his heirs.
+      - A lab door code from the safety officer's sticky note.
+      - The bike lock combination that the kid made from family birthdays.
+    combines_documents: true
+
+  # Cross-reference
+
+  - id: cross-document-lookup
+    name: Cross-Document Lookup Chain
+    category: cross-reference
+    player_action: cross-reference
+    lookup_cipher: false
+    summary: Fact A in one document leads to fact B in another, hop by hop, to the answer.
+    how_it_works: >-
+      Fact A in document 1 leads to fact B in document 2, and so on: badge number, roster, locker, locker contents.
+      This is the backbone of case files. Code stores the facts in one registry and renders every id from it.
+    material: Three to five realistic documents.
+    answer_kinds: [name, number, word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 7, medium: 12, hard: 18, expert: 25 }
+    verification: built
+    builder: cross-document-lookup
+    pitfalls:
+      - Names or ids that change between documents (LLM drift). Render every id from the fact registry.
+      - Every hop must exist, and the chain must lead to one answer only.
+    hint_ladder:
+      - Start with <fact> on <document>.
+      - The <fact> appears somewhere else.
+      - Check <second document>, then follow the chain. The second-to-last hop is <hop>.
+    in_world_examples:
+      - The badge number from the CCTV still, to the staff roster, to the locker list.
+      - A license plate, to the parking log, to the guest register.
+      - The library card number, to the loan records, to the book.
+    combines_documents: true
+
+  - id: timetable-alibi
+    name: Timetable Alibi Check
+    category: cross-reference
+    player_action: cross-reference
+    lookup_cipher: false
+    summary: A timetable shows that only one suspect's claimed movements are impossible.
+    how_it_works: >-
+      A train or bus timetable plus each suspect's claimed movements. Only one alibi is impossible. Code holds the
+      schedule data and checks every claim for feasibility.
+    material: A timetable, tickets with times, and statements.
+    answer_kinds: [name, choice]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 13, hard: 20, expert: 28 }
+    verification: built
+    builder: timetable-alibi
+    pitfalls:
+      - Walking time is forgotten. State the transfer times.
+    hint_ladder:
+      - Compare the statements on <documents> with the timetable on <document>.
+      - Could each suspect really be where they claim?
+      - Check the <time> train. <Name>'s <leg> cannot work.
+    in_world_examples:
+      - The night train timetable and the tickets found in the coats.
+      - The ferry schedule and the islanders' statements.
+      - The school bus route and the students' excuses.
+    combines_documents: true
+
+  - id: phone-record-analysis
+    name: Call Log Analysis
+    category: cross-reference
+    player_action: cross-reference
+    lookup_cipher: false
+    summary: Call logs and message times show who called whom just before the event.
+    how_it_works: >-
+      Call logs, cell tower pings, and message times. Players find who called whom just before the event, or whose
+      phone moved. A directory maps the numbers to names. Code builds the logs from the true timeline.
+    material: A carrier-style printout in monospace columns, plus a directory.
+    answer_kinds: [name, number]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: hard }
+    minutes: { easy: 8, medium: 13, hard: 20, expert: 28 }
+    verification: built
+    builder: phone-record-analysis
+    pitfalls:
+      - Too much data with no anchor. Give a directory and a time window.
+    hint_ladder:
+      - Use the call log on <document> and the directory on <other document>.
+      - Look at the calls between <time> and <time>.
+      - Match the number <number> to the directory. That person called last.
+    in_world_examples:
+      - The victim's phone bill from the carrier.
+      - The hotel switchboard log.
+      - The pay phone records that the detective requested.
+    combines_documents: true
+
+  - id: redaction-fill
+    name: Redacted Document Reconstruction
+    category: cross-reference
+    player_action: cross-reference
+    lookup_cipher: false
+    summary: Black bars hide words, and their lengths plus other documents reveal the key word.
+    how_it_works: >-
+      Black bars hide words. The bar lengths (letter counts in a monospace font) and other documents let players
+      fill the gaps. The key hidden word is the answer. Code checks that each bar length equals its word length.
+    material: A report in a monospace font with black bars of exact width.
+    answer_kinds: [word, name]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 7, medium: 11, hard: 16, expert: 22 }
+    verification: verified
+    builder: redaction-fill
+    pitfalls:
+      - Proportional fonts make lengths unreadable. Use monospace for the redacted document.
+      - Only one word from the kit may fit. The panel checks it.
+    hint_ladder:
+      - Read the redacted report on <document> next to <other document>.
+      - Other files mention the same meeting.
+      - The bar is <N> letters long. Find the <N>-letter word in <other document> that fits.
+    in_world_examples:
+      - The government file released with black bars.
+      - A company memo that the lawyer marked before the trial.
+      - The diary page where someone inked out a name.
+    combines_documents: true
+
+  - id: directory-index
+    name: Directory Lookup
+    category: cross-reference
+    player_action: cross-reference
+    lookup_cipher: false
+    summary: Look up a name in a phone book, register, or catalog to get a number.
+    how_it_works: >-
+      Players look up a name in a phone book, hotel register, or library catalog to get a number. Decoy entries make
+      it a real search.
+    material: A directory page with 20 to 60 entries, decoys included.
+    answer_kinds: [number, digits]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 4, medium: 6, hard: 10, expert: 14 }
+    verification: built
+    builder: directory-index
+    pitfalls:
+      - Duplicate names.
+    hint_ladder:
+      - There is a directory in the kit, <document>.
+      - Look up the name from <other document>.
+      - Look under the surname <surname>. The number next to it is the answer.
+    in_world_examples:
+      - The town phone book from 1962.
+      - The hotel register at the front desk.
+      - The library card catalog drawer.
+    combines_documents: true
+
+  - id: recipe-index
+    name: Recipe Index
+    category: cross-reference
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Recipe amounts are letter positions, so "3 cups of FLOUR" gives O.
+    how_it_works: >-
+      A recipe, potion formula, or lab note gives amounts that are letter positions in each ingredient. "3 cups of
+      FLOUR" gives the 3rd letter, O. The letters in recipe order spell the answer.
+    material: A recipe card or a lab notebook page with whole-number amounts.
+    answer_kinds: [word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 13, expert: 18 }
+    verification: built
+    builder: recipe-index
+    pitfalls:
+      - Fractions in the amounts. Use whole numbers only.
+    hint_ladder:
+      - Read the recipe on <document>.
+      - The amounts are oddly specific.
+      - Use each amount as a letter position in its ingredient. Read the letters in recipe order.
+    in_world_examples:
+      - The grandmother's cake recipe with odd amounts.
+      - A potion formula in the wizard's notebook.
+      - The chemist's lab note on the bench.
+    combines_documents: false
+
+  # Meta
+
+  - id: meta-funnel
+    name: Metapuzzle Funnel
+    category: meta
+    player_action: wordplay
+    lookup_cipher: false
+    summary: Earlier answers combine in a final puzzle, which needs only most of them.
+    how_it_works: >-
+      Answers from earlier puzzles combine in a final puzzle: a sheet with slots, or a puzzle on the answers alone.
+      Typical solvers need 60 to 80% of the earlier answers. The game chooses the earlier answers backward from the
+      final design.
+    material: A final sheet with slots plus flavor text that hints at the mechanism.
+    answer_kinds: [word, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: medium, max: expert }
+    minutes: { easy: 10, medium: 15, hard: 22, expert: 30 }
+    verification: built
+    builder: meta-funnel
+    pitfalls:
+      - A final puzzle that needs 100% of the earlier answers. One stuck puzzle then blocks the ending.
+      - A mechanism without a clue.
+    hint_ladder:
+      - Collect your answers so far and the final sheet <document>.
+      - Your answers so far all have something in common.
+      - The mechanism is <mechanism>. <Place 2 answers in their slots>.
+    in_world_examples:
+      - The detective's case board, where every clue finally fits.
+      - The inheritance puzzle that only the complete set of answers opens.
+      - The final page of the club's initiation book.
+    combines_documents: true
+
+  - id: final-lock-assembly
+    name: Final Lock Assembly
+    category: meta
+    player_action: cross-reference
+    lookup_cipher: false
+    summary: Each stage gives one digit or symbol, and together they open the final lock.
+    how_it_works: >-
+      Each stage yields one digit or symbol. Together they open the final lock: a lookup table, a decoder, or the
+      last envelope. Each slot carries the icon of its stage, so the order is clear.
+    material: A final lock page with N slots.
+    answer_kinds: [digits, word]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: easy }
+    minutes: { easy: 3, medium: 5, hard: 8, expert: 12 }
+    verification: built
+    builder: final-lock-assembly
+    pitfalls:
+      - An unclear slot order. Mark each slot with the icon of its stage.
+    hint_ladder:
+      - Use the lock page on <document> and the answers from every envelope.
+      - Each envelope gave you one symbol.
+      - The order follows the envelope icons. <One digit>.
+    in_world_examples:
+      - The vault door with one dial per family member.
+      - The final chest of the treasure hunt.
+      - The control panel that needs every engineer's code.
+    combines_documents: true
+
+  - id: inventory-combination
+    name: Numbered Card Combination
+    category: meta
+    player_action: arithmetic
+    lookup_cipher: false
+    summary: Object cards carry numbers, and two objects that work together add up to a card that exists.
+    how_it_works: >-
+      Object cards carry numbers. Combining two objects adds their numbers. The sum is a card that exists only when
+      the combination is right. Wrong sums land on penalty or decoy cards.
+    material: Card sheets (9 per page) with big numbers, plus a card bank.
+    answer_kinds: [number]
+    needs: { scissors: true, tape: false, fold: false, color: false }
+    solo: true
+    parallel: true
+    audiences: [kids, family, teens, adults, puzzle_fans]
+    difficulty: { min: easy, max: medium }
+    minutes: { easy: 5, medium: 9, hard: 14, expert: 18 }
+    verification: built
+    builder: inventory-combination
+    pitfalls:
+      - Sums that hit an unrelated card. Code checks every plausible wrong sum.
+      - Hidden numbers on cards must be findable but not obvious.
+    hint_ladder:
+      - Look at the object cards that you have.
+      - Some objects work together.
+      - Try the <object> with the <object>. Add <number> and <number>.
+    in_world_examples:
+      - The key and the locked cabinet in the study.
+      - The battery and the old radio.
+      - The lens and the map table.
+    combines_documents: true
+
+  - id: recontextualized-document
+    name: Re-Read With New Eyes
+    category: meta
+    player_action: observation
+    lookup_cipher: false
+    summary: A document read early gains a new meaning after a later discovery.
+    how_it_works: >-
+      A document that players read early gains a new meaning once a later discovery changes the frame. The friendly
+      letter is a coded threat. A list of birds is a list of ships. The story plan sets it up, not the puzzle step.
+    material: An early document that already holds the hidden layer.
+    answer_kinds: [word, name, phrase]
+    needs: { scissors: false, tape: false, fold: false, color: false }
+    solo: true
+    parallel: false
+    audiences: [teens, adults, puzzle_fans]
+    difficulty: { min: medium, max: hard }
+    minutes: { easy: 8, medium: 12, hard: 18, expert: 25 }
+    verification: panel
+    builder: null
+    pitfalls:
+      - No signal that the old document matters again. Send players back explicitly ("read her letter again").
+    hint_ladder:
+      - Go back to <early document>.
+      - You have seen these words before. They mean something else now.
+      - Read <early document> with <the new mapping>.
+    in_world_examples:
+      - The aunt's cheerful postcards, which turn out to list the hiding places.
+      - The bird watching log that names the smuggling ships.
+      - The child's bedtime story that describes the real escape route.
+    combines_documents: true
