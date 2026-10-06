@@ -4,9 +4,17 @@ The Python package `mystery_forge` and its CLI `forge`. It loads configs, builds
 
 ## Module map
 
-| Module       | Concern                                                                                                           |
-| ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `answers.py` | Answer normalization and the salted SHA-256 hash. The JavaScript copy must match `contracts/answer-vectors.json`. |
+| Module              | Concern                                                                                                              |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `answers.py`        | Answer normalization and the salted SHA-256 hash. The JavaScript copy must match `contracts/answer-vectors.json`.    |
+| `config.py`         | Load and validate a user config against `contracts/game-config.schema.json`, fill the defaults, return `GameConfig`. |
+| `brief.py`          | The numbers that drive a generation (puzzle count, stages, solvers). Must match `contracts/estimate-vectors.json`.   |
+| `findings.py`       | `Finding`: the one shape of every problem that the loader and the checks report.                                     |
+| `yaml_loading.py`   | YAML where every scalar stays text (so `0420` keeps its zero), with the line of every value.                         |
+| `i18n.py`           | The fixed output texts in every game language, plus long dates and weekday names.                                    |
+| `spec/models.py`    | Pydantic models of `story.yaml`, `flow.yaml`, `puzzles/*.yaml`, and the document front matter.                       |
+| `spec/loader.py`    | Read a game's `source/` folder into the models, with one finding per problem.                                        |
+| `spec/documents.py` | Document bodies: `{{kind:id}}` references, Markdown directives, and plain text.                                      |
 
 ## Conventions
 

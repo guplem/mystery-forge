@@ -1,0 +1,12 @@
+format_version: 1
+structure: linear
+stages:
+  - id: A
+    label: The keeper's desk
+    opens_with: start
+  - id: B
+    label: The boathouse box
+    opens_with: P1
+    opening_text: Inside the boathouse box you find the boatman's papers.
+final_puzzle: P3
+accusation: true

@@ -1,0 +1,34 @@
+format_version: 1
+id: P3
+title: How did the thief reach the rock?
+stage: B
+mechanic: deduction
+difficulty: medium
+depends_on: [P1]
+in_world_reason: The causeway to Gull Rock is under water except at one time of the night.
+reveals: The thief walked over at low tide and carried the lens back to a boat.
+answer: low tide
+accepted: [the low tide, at low tide]
+answer_format:
+  kind: phrase
+  label: two words
+clues:
+  - id: tide-table
+    document: D4
+    quote: 'Low tide: 1:50 in the night'
+  - id: boots-wet
+    document: D4
+    quote: wet boot prints on the lamp room stairs, too big for Ana
+solution:
+  - text: The wet boot prints show that the thief came over the water that night.
+    uses: [boots-wet]
+  - text: The tide table shows that the causeway was dry only at low tide, at 1:50 in the night.
+    uses: [tide-table]
+hints:
+  - level: 1
+    text: Look at the boathouse papers for something about the sea.
+    points_to: [tide-table]
+  - level: 2
+    text: The boot prints were wet. When could someone walk to the rock?
+    points_to: [boots-wet, tide-table]
+canary: canary-golden-p3
