@@ -1,0 +1,17 @@
+<div class="safe results-page">
+  <header class="sheet-header">
+    <p class="sheet-kicker">{{ t("register_title") }}</p>
+    <h1>{{ t("results_title") }}</h1>
+  </header>
+  {% if content.first %}<p class="sheet-intro">{{ t("results_intro") }}</p>{% endif %}
+  <div class="results-columns">
+    {% for paragraph in content.paragraphs %}
+    <div class="result-paragraph">
+      <p class="result-number">§{{ paragraph.number }}</p>
+      <p class="result-message">{{ paragraph.message }}</p>
+      {% if paragraph.reveals %}<p class="result-reveals">{{ paragraph.reveals }}</p>{% endif %}
+      {% if paragraph.action %}<p class="result-action">{{ paragraph.action }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>

@@ -1,0 +1,28 @@
+{% from "macros.html.j2" import check_box, ornament %}
+<div class="safe manual-page">
+  {% if content.first %}
+  <header class="manual-hero">
+    <p class="sheet-kicker">{{ content.title }}</p>
+    <h1>{{ t("manual_title") }}</h1>
+    {% if content.tagline %}<p class="manual-tagline">{{ content.tagline }}</p>{% endif %}
+  </header>
+  {% else %}
+  <header class="manual-running"><span>{{ content.title }}</span><span>{{ t("manual_title") }}</span></header>
+  {% endif %}
+  {% for section in content.sections %}
+  <section class="manual-section">
+    <h2 class="section-title">{{ section.heading }}</h2>
+    {% for paragraph in section.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
+    {% if section.read_aloud %}<blockquote class="read-aloud-quote">{{ section.read_aloud }}</blockquote>{% endif %}
+    {% if section.table %}
+    <table class="manual-table">
+      <thead><tr>{% for header in section.table.headers %}<th>{{ header }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for row in section.table.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+    </table>
+    {% endif %}
+    {% if section.steps %}<ol class="manual-steps">{% for step in section.steps %}<li>{{ step }}</li>{% endfor %}</ol>{% endif %}
+    {% if section.checklist %}<ul class="manual-checklist">{% for item in section.checklist %}<li>{{ check_box() }}<span>{{ item }}</span></li>{% endfor %}</ul>{% endif %}
+  </section>
+  {% endfor %}
+  {% if content.last %}<footer class="manual-credit">{{ ornament() }}<p class="cover-credit">{{ t("made_with") }}</p></footer>{% endif %}
+</div>

@@ -1,0 +1,19 @@
+{% from "macros.html.j2" import warning_icon, ornament %}
+<div class="safe warning-page">
+  <div class="cover-frame fit">
+    <p class="cover-kicker">{{ content.title }}</p>
+    {{ ornament() }}
+    <h1 class="cover-title">{{ t(content.output ~ "_title") }}</h1>
+    {{ ornament() }}
+    <div class="warning-box">
+      {{ warning_icon() }}
+      <p class="warning-title">{{ t("warning_title") }}</p>
+      <p>{{ t(content.output ~ "_warning_text") }}</p>
+    </div>
+    {% if content.output == "hints" %}
+    <p class="warning-help">{{ t("hints_how_to") }}</p>
+    <p class="warning-help">{{ t("hints_companion") }}</p>
+    {% endif %}
+    <p class="cover-credit">{{ t("made_with") }}</p>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+/* Noir: black and bone, condensed capitals, one blood-red accent. */
+.theme-noir {
+  --paper: #efeeea;
+  --paper-alt: #f8f7f3;
+  --ink: #141414;
+  --ink-soft: #4a4a4a;
+  --ink-faint: #9a9a9a;
+  --accent: #8c1c13;
+  --accent-soft: #ebe6e2;
+  --stamp: #9b1c13;
+  --hand-ink: #1b1b1b;
+  --rule: #b8b7b2;
+  --note-paper: #ece6cf;
+  --hatch: #222222;
+  --texture:
+    radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.11) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.03));
+  --prop-shadow: 0 0.6mm 2mm rgba(0, 0, 0, 0.35);
+  --prop-border: 0.2mm solid #cfcdc7;
+  --heading-case: uppercase;
+  --heading-spacing: 0.06em;
+  --frame-border: 1mm solid var(--ink);
+}
+/* The cover title sits on a black band: a strong look without a full black page of ink. */
+.theme-noir .cover-page .cover-frame {
+  padding: 0 0 8mm;
+}
+.theme-noir .cover-heading {
+  align-self: stretch;
+  padding: 14mm 16mm 9mm;
+  background: #141414;
+  color: #efeeea;
+}
+.theme-noir .cover-heading .cover-title {
+  color: #efeeea;
+}
+.theme-noir .cover-heading .cover-tagline {
+  color: #cfcdc7;
+}
+.theme-noir .cover-title,
+.theme-noir .stage-envelope {
+  font-size: 46pt;
+  letter-spacing: 0.04em;
+}
+.theme-noir .sheet-header h1 {
+  font-size: 30pt;
+}
+.theme-noir .emblem-glass {
+  fill: none;
+}
+body.theme-noir.mode-low-ink .cover-heading {
+  background: none;
+  color: var(--ink);
+  border-bottom: 1mm solid var(--ink);
+}
+body.theme-noir.mode-low-ink .cover-heading .cover-title,
+body.theme-noir.mode-low-ink .cover-heading .cover-tagline {
+  color: var(--ink);
+}

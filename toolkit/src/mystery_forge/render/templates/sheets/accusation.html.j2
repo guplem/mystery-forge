@@ -1,0 +1,21 @@
+{% from "macros.html.j2" import check_box %}
+<div class="safe accusation-page">
+  <header class="sheet-header">
+    <p class="sheet-kicker">{{ t("deduction_title") }}</p>
+    <h1>{{ t("accusation_title") }}</h1>
+  </header>
+  <p class="sheet-intro">{{ t("accusation_intro") }}</p>
+  <p class="write-line"><span>{{ t("accusation_detectives") }}</span><span class="line"></span></p>
+  <ol class="accusation-questions">
+    {% for question in content.questions %}
+    <li class="accusation-question">
+      <div class="question-head"><span class="question-prompt">{{ question.prompt }}</span><span class="question-points">{{ t("accusation_points", points=question.points) }}</span></div>
+      <ul class="question-options">
+        {% for option in question.options %}<li>{{ check_box() }}<span>{{ option.text }}</span></li>{% endfor %}
+      </ul>
+      <p class="write-line"><span>{{ t("accusation_proof") }}</span><span class="line"></span></p>
+    </li>
+    {% endfor %}
+  </ol>
+  <p class="accusation-total">{{ t("accusation_total", total=content.total_points) }}</p>
+</div>

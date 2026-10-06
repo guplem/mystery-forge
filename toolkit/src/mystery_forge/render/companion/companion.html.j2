@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="{{ language }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#16130f" />
+    <title>{{ title }}</title>
+    <style>
+{{ style | safe }}
+    </style>
+  </head>
+  <body>
+    <noscript><p class="noscript">This page needs JavaScript. / Esta página necesita JavaScript.</p></noscript>
+    <div id="app" class="app"></div>
+    <script type="application/json" id="companion-data">{{ data_json | safe }}</script>
+{% for script in scripts %}
+    <script>
+{{ script | safe }}
+    </script>
+{% endfor %}
+  </body>
+</html>

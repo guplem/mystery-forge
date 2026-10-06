@@ -1,0 +1,27 @@
+/* Minimal: white paper, black type, thin rules, no decoration. */
+.theme-minimal {
+  --paper: #ffffff;
+  --paper-alt: #ffffff;
+  --ink: #111111;
+  --ink-soft: #555555;
+  --ink-faint: #9d9d9d;
+  --accent: #111111;
+  --accent-soft: #f3f3f3;
+  --stamp: #c0392b;
+  --hand-ink: #1b3c8f;
+  --rule: #dddddd;
+  --note-paper: #fbf3c4;
+  --hatch: #333333;
+  --texture: none;
+  --prop-shadow: none;
+  --prop-border: 0.25mm solid #d4d4d4;
+  --radius: 0;
+  --frame-border: 0.35mm solid var(--ink);
+}
+.theme-minimal .cover-page .cover-frame {
+  outline: none;
+}
+.theme-minimal .cover-title {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}

@@ -1,0 +1,27 @@
+/* Modern: clean white paper, a strong blue accent, condensed headings. */
+.theme-modern {
+  --paper: #ffffff;
+  --paper-alt: #f6f8fb;
+  --ink: #1b2231;
+  --ink-soft: #5a6476;
+  --ink-faint: #a0a8b6;
+  --accent: #2456d3;
+  --accent-soft: #eaf0fd;
+  --stamp: #d23c3c;
+  --hand-ink: #1d3fae;
+  --rule: #d6dbe4;
+  --note-paper: #fff3a6;
+  --hatch: #3c4658;
+  --texture: none;
+  --prop-shadow: 0 0.3mm 1.2mm rgba(15, 30, 60, 0.14);
+  --prop-border: 0.2mm solid #e1e5ec;
+  --radius: 1.6mm;
+  --heading-case: uppercase;
+  --heading-spacing: 0.03em;
+  --frame-border: 0.8mm solid var(--accent);
+}
+.theme-modern .cover-page .cover-frame {
+  outline: none;
+  border-width: 0;
+  border-top: 6mm solid var(--accent);
+}

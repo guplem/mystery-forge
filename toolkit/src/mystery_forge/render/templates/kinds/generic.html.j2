@@ -1,0 +1,6 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop prop-full generic">
+  <h1 class="generic-title">{{ page.title }}</h1>
+  <div class="doc-body generic-body">{{ page.html }}</div>
+  {{ page_label(t, page) }}
+</article>

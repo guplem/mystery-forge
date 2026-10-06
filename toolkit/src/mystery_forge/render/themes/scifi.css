@@ -1,0 +1,52 @@
+/* Sci-fi: cool console paper, a teal grid, wide technical capitals. */
+.theme-scifi {
+  --paper: #eef3f6;
+  --paper-alt: #f8fbfc;
+  --ink: #0f1d26;
+  --ink-soft: #4b6170;
+  --ink-faint: #93a7b3;
+  --accent: #0a7c89;
+  --accent-soft: #dcf0f2;
+  --stamp: #c2410c;
+  --hand-ink: #1d4f91;
+  --rule: #b7cbd5;
+  --note-paper: #fdf2b0;
+  --hatch: #24414f;
+  --texture:
+    linear-gradient(rgba(10, 124, 137, 0.07) 0.2mm, transparent 0.2mm),
+    linear-gradient(90deg, rgba(10, 124, 137, 0.07) 0.2mm, transparent 0.2mm);
+  --texture-size: 5mm 5mm;
+  --prop-shadow: 0 0 0 0.3mm rgba(10, 124, 137, 0.35);
+  --prop-border: 0;
+  --radius: 0;
+  --heading-case: uppercase;
+  --heading-spacing: 0.08em;
+  --frame-border: 0.5mm solid var(--accent);
+}
+.theme-scifi .prop-full::before,
+.theme-scifi .prop-full::after {
+  content: '';
+  position: absolute;
+  width: 8mm;
+  height: 8mm;
+  border: 0.7mm solid var(--accent);
+}
+.theme-scifi .prop-full::before {
+  top: 2mm;
+  left: 2mm;
+  border-right: 0;
+  border-bottom: 0;
+}
+.theme-scifi .prop-full::after {
+  right: 2mm;
+  bottom: 2mm;
+  border-left: 0;
+  border-top: 0;
+}
+.theme-scifi .cover-title,
+.theme-scifi .sheet-header h1 {
+  font-size: 30pt;
+}
+.theme-scifi .sheet-header h1 {
+  font-size: 21pt;
+}

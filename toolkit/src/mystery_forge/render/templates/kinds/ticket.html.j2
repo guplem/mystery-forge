@@ -1,0 +1,24 @@
+{% from "macros.html.j2" import page_label, field_row %}
+<article class="prop ticket">
+  <div class="ticket-main">
+    <p class="ticket-issuer">{{ f.get("issuer") or t("word_ticket") }}</p>
+    <h1 class="ticket-title">{{ page.title }}</h1>
+    {% if f.get("from") or f.get("to") %}
+    <p class="ticket-route"><span>{{ f.get("from", "") }}</span><span class="ticket-arrow" aria-hidden="true">→</span><span>{{ f.get("to", "") }}</span></p>
+    {% endif %}
+    <div class="ticket-fields">
+      {{ field_row(t, f, "passenger") }}
+      {{ field_row(t, f, "date") }}
+      {{ field_row(t, f, "time") }}
+      {{ field_row(t, f, "seat") }}
+      {{ field_row(t, f, "price") }}
+    </div>
+    <div class="doc-body ticket-body">{{ page.html }}</div>
+  </div>
+  <div class="ticket-stub">
+    <p class="ticket-stub-word">{{ t("word_ticket") }}</p>
+    {% if f.get("number") %}<p class="ticket-number">{{ t("field_number") }} {{ f.get("number") }}</p>{% endif %}
+    <div class="ticket-barcode" aria-hidden="true"></div>
+  </div>
+  {{ page_label(t, page) }}
+</article>

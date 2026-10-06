@@ -1,0 +1,10 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop prop-full notebook">
+  <div class="notebook-holes" aria-hidden="true"><span></span><span></span><span></span></div>
+  <header class="notebook-head">
+    {% if f.get("owner") %}<span class="notebook-owner">{{ f.get("owner") }}</span>{% endif %}
+    {% if f.get("date") %}<span class="notebook-date">{{ f.get("date") }}</span>{% endif %}
+  </header>
+  <div class="doc-body notebook-body">{{ page.html }}</div>
+  {{ page_label(t, page) }}
+</article>

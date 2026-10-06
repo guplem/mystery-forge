@@ -1,0 +1,30 @@
+/* Vintage: aged cream paper, oxblood ink accents, typewriter and fountain-pen details. */
+.theme-vintage {
+  --paper: #f4ead3;
+  --paper-alt: #fbf5e6;
+  --ink: #2a2017;
+  --ink-soft: #6a5944;
+  --ink-faint: #a8977f;
+  --accent: #7a2e1d;
+  --accent-soft: #f1e4c9;
+  --stamp: #a3271f;
+  --hand-ink: #1f3a6b;
+  --rule: #cdb994;
+  --note-paper: #f6e6a0;
+  --hatch: #5e4e3a;
+  --texture:
+    radial-gradient(ellipse 60% 45% at 14% 10%, rgba(139, 94, 40, 0.13), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 88% 92%, rgba(139, 94, 40, 0.16), transparent 70%),
+    linear-gradient(170deg, rgba(255, 255, 255, 0.25), rgba(120, 80, 30, 0.07));
+  --prop-shadow: 0 0.5mm 1.6mm rgba(70, 45, 15, 0.28);
+  --prop-border: 0.2mm solid #d6c39b;
+  --frame-border: 0.7mm double var(--accent);
+}
+.theme-vintage .sheet-header h1,
+.theme-vintage .cover-title {
+  font-weight: 900;
+}
+.theme-vintage .cover-tagline,
+.theme-vintage .stage-opening {
+  font-family: var(--font-display);
+}

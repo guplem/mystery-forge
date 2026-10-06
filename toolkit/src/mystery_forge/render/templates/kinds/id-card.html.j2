@@ -1,0 +1,17 @@
+{% from "macros.html.j2" import page_label, field_row %}
+<article class="prop id-card fit">
+  <header class="id-band"><span>{{ f.get("issuer") or t("word_identity") }}</span></header>
+  <div class="id-content">
+    <div class="id-photo" aria-hidden="true"><svg viewBox="0 0 60 75"><circle cx="30" cy="27" r="13"/><path d="M6 75c2-17 12-24 24-24s22 7 24 24"/></svg></div>
+    <div class="id-fields">
+      {{ field_row(t, f, "name") }}
+      {{ field_row(t, f, "role") }}
+      {{ field_row(t, f, "birth_date") }}
+      {{ field_row(t, f, "number") }}
+      {{ field_row(t, f, "expires") }}
+    </div>
+  </div>
+  <div class="id-signature"><span class="sign-line"></span></div>
+</article>
+{% if page.html %}<div class="doc-body prop-notes">{{ page.html }}</div>{% endif %}
+{{ page_label(t, page) }}

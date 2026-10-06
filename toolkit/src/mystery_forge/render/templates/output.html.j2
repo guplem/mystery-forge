@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="{{ language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="Mystery Forge">
+<title>{{ title }}</title>
+<style>
+{{ css }}
+</style>
+</head>
+<body class="{{ settings.body_classes }} output-{{ plan.id }}">
+{% for sheet in plan.sheets %}
+<section class="sheet sheet-{{ sheet.role }}" data-role="{{ sheet.role }}"{% if sheet.stage %} data-stage="{{ sheet.stage }}"{% endif %}>
+{% with content = sheet.content %}
+{% include "sheets/" ~ sheet.template %}
+{% endwith %}
+{% if sheet.corner %}<div class="corner-code">{{ sheet.corner }}</div>{% endif %}
+</section>
+{% endfor %}
+</body>
+</html>

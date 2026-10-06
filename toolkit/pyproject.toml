@@ -19,6 +19,7 @@ forge = "mystery_forge.cli:main"
 
 [dependency-groups]
 dev = [
+    "fonttools[woff]>=4.50",
     "mypy>=1.11",
     "pytest>=8",
     "pytest-cov>=6",
@@ -44,6 +45,8 @@ markers = ["browser: needs a Chromium-based browser (Chrome, Edge, or Playwright
 [tool.coverage.run]
 source = ["mystery_forge"]
 branch = true
+# Playwright's sync API runs the browser glue in greenlets, which coverage traces only when told to.
+concurrency = ["thread", "greenlet"]
 
 [tool.coverage.report]
 fail_under = 100

@@ -1,0 +1,23 @@
+{% from "macros.html.j2" import ornament, emblem %}
+<div class="safe cover-page">
+  <div class="cover-frame fit">
+    <div class="cover-heading">
+      <p class="cover-kicker">{{ t("cover_kicker") }}</p>
+      {{ ornament() }}
+      <h1 class="cover-title">{{ content.title }}</h1>
+      {% if content.tagline %}<p class="cover-tagline">{{ content.tagline }}</p>{% endif %}
+    </div>
+    {{ emblem() }}
+    <div class="cover-details">
+      <div class="cover-facts">
+        <span>{{ t("cover_players", count=content.players) }}</span>
+        <span class="cover-dot" aria-hidden="true">◆</span>
+        <span>{{ t("cover_duration", minutes=content.minutes) }}</span>
+      </div>
+      {% if content.names %}<p class="cover-names">{{ t("cover_detectives", names=content.names | join(", ")) }}</p>{% endif %}
+      {% if content.dedication %}<p class="cover-dedication">{{ content.dedication }}</p>{% endif %}
+    </div>
+    <div class="cover-warning"><span class="mf-stamp">{{ t("stop") }}</span><p>{{ t("cover_do_not_read") }}</p></div>
+    <p class="cover-credit">{{ t("made_with") }}</p>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+{% from "macros.html.j2" import page_label, field_row %}
+<article class="prop prop-full transcript">
+  <header class="transcript-head">
+    <p class="transcript-word">{{ t("word_transcript") }}</p>
+    <h1 class="transcript-title">{{ page.title }}</h1>
+    <div class="transcript-fields">
+      {{ field_row(t, f, "case_number") }}
+      {{ field_row(t, f, "subject") }}
+      {{ field_row(t, f, "interviewer") }}
+      {{ field_row(t, f, "place") }}
+      {{ field_row(t, f, "date") }}
+    </div>
+  </header>
+  <div class="doc-body transcript-body">
+    {% for line in speaker_lines(page.html) %}
+    {% if line.speaker %}<div class="dialogue-line"><span class="speaker">{{ line.speaker }}</span><span class="speech">{{ line.html | safe }}</span></div>
+    {% else %}<div class="dialogue-narration">{{ line.html | safe }}</div>{% endif %}
+    {% endfor %}
+  </div>
+  {{ page_label(t, page) }}
+</article>

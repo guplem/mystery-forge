@@ -1,0 +1,7 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop polaroid">
+  <div class="tape" aria-hidden="true"></div>
+  <div class="polaroid-picture doc-body">{{ page.html }}{% if f.get("date") %}<span class="photo-date">{{ f.get("date") }}</span>{% endif %}</div>
+  <p class="polaroid-caption">{{ f.get("caption") or page.title }}</p>
+</article>
+{{ page_label(t, page) }}

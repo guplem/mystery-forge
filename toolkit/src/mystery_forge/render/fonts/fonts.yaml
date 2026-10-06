@@ -1,0 +1,116 @@
+# Bundled fonts: subset to Latin and Latin Extended-A, converted to woff2 with fontTools.
+# Source: the google/fonts repository on GitHub. Each family keeps its license text in LICENSES/.
+families:
+  - family: Special Elite
+    license: Apache-2.0
+    license_file: LICENSES/SpecialElite-LICENSE.txt
+    source: https://github.com/google/fonts/tree/main/apache/specialelite
+    faces:
+      - { file: SpecialElite-400.woff2, weight: 400, style: normal }
+  - family: Courier Prime
+    license: OFL-1.1
+    license_file: LICENSES/CourierPrime-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/courierprime
+    faces:
+      - { file: CourierPrime-400.woff2, weight: 400, style: normal }
+      - { file: CourierPrime-700.woff2, weight: 700, style: normal }
+  - family: Caveat
+    license: OFL-1.1
+    license_file: LICENSES/Caveat-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/caveat
+    faces:
+      - { file: Caveat-400.woff2, weight: 400, style: normal }
+      - { file: Caveat-700.woff2, weight: 700, style: normal }
+  - family: Libre Baskerville
+    license: OFL-1.1
+    license_file: LICENSES/LibreBaskerville-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/librebaskerville
+    faces:
+      - { file: LibreBaskerville-400.woff2, weight: 400, style: normal }
+      - { file: LibreBaskerville-700.woff2, weight: 700, style: normal }
+      - { file: LibreBaskerville-400italic.woff2, weight: 400, style: italic }
+  - family: IM Fell English
+    license: OFL-1.1
+    license_file: LICENSES/IMFellEnglish-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/imfellenglish
+    faces:
+      - { file: IMFellEnglish-400.woff2, weight: 400, style: normal }
+      - { file: IMFellEnglish-400italic.woff2, weight: 400, style: italic }
+  - family: Playfair Display
+    license: OFL-1.1
+    license_file: LICENSES/PlayfairDisplay-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/playfairdisplay
+    faces:
+      - { file: PlayfairDisplay-400.woff2, weight: 400, style: normal }
+      - { file: PlayfairDisplay-900.woff2, weight: 900, style: normal }
+      - { file: PlayfairDisplay-400italic.woff2, weight: 400, style: italic }
+  - family: Old Standard TT
+    license: OFL-1.1
+    license_file: LICENSES/OldStandardTT-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/oldstandardtt
+    faces:
+      - { file: OldStandardTT-400.woff2, weight: 400, style: normal }
+      - { file: OldStandardTT-700.woff2, weight: 700, style: normal }
+  - family: Bebas Neue
+    license: OFL-1.1
+    license_file: LICENSES/BebasNeue-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/bebasneue
+    faces:
+      - { file: BebasNeue-400.woff2, weight: 400, style: normal }
+  - family: Oswald
+    license: OFL-1.1
+    license_file: LICENSES/Oswald-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/oswald
+    faces:
+      - { file: Oswald-400.woff2, weight: 400, style: normal }
+      - { file: Oswald-600.woff2, weight: 600, style: normal }
+  - family: Source Sans 3
+    license: OFL-1.1
+    license_file: LICENSES/SourceSans3-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/sourcesans3
+    faces:
+      - { file: SourceSans3-400.woff2, weight: 400, style: normal }
+      - { file: SourceSans3-700.woff2, weight: 700, style: normal }
+      - { file: SourceSans3-400italic.woff2, weight: 400, style: italic }
+  - family: Cinzel
+    license: OFL-1.1
+    license_file: LICENSES/Cinzel-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/cinzel
+    faces:
+      - { file: Cinzel-400.woff2, weight: 400, style: normal }
+      - { file: Cinzel-700.woff2, weight: 700, style: normal }
+  - family: EB Garamond
+    license: OFL-1.1
+    license_file: LICENSES/EBGaramond-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/ebgaramond
+    faces:
+      - { file: EBGaramond-400.woff2, weight: 400, style: normal }
+      - { file: EBGaramond-700.woff2, weight: 700, style: normal }
+      - { file: EBGaramond-400italic.woff2, weight: 400, style: italic }
+  - family: Orbitron
+    license: OFL-1.1
+    license_file: LICENSES/Orbitron-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/orbitron
+    faces:
+      - { file: Orbitron-500.woff2, weight: 500, style: normal }
+      - { file: Orbitron-800.woff2, weight: 800, style: normal }
+  - family: Share Tech Mono
+    license: OFL-1.1
+    license_file: LICENSES/ShareTechMono-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/sharetechmono
+    faces:
+      - { file: ShareTechMono-400.woff2, weight: 400, style: normal }
+  - family: Fredoka
+    license: OFL-1.1
+    license_file: LICENSES/Fredoka-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/fredoka
+    faces:
+      - { file: Fredoka-400.woff2, weight: 400, style: normal }
+      - { file: Fredoka-600.woff2, weight: 600, style: normal }
+  - family: Atkinson Hyperlegible
+    license: OFL-1.1
+    license_file: LICENSES/AtkinsonHyperlegible-OFL.txt
+    source: https://github.com/google/fonts/tree/main/ofl/atkinsonhyperlegible
+    faces:
+      - { file: AtkinsonHyperlegible-400.woff2, weight: 400, style: normal }
+      - { file: AtkinsonHyperlegible-700.woff2, weight: 700, style: normal }

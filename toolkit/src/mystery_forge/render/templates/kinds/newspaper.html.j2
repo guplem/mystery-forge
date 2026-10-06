@@ -1,0 +1,17 @@
+{% from "macros.html.j2" import page_label %}
+<article class="prop prop-full newspaper">
+  {% if page.page_number == 1 %}
+  <header class="masthead">
+    <p class="masthead-name">{{ f.get("masthead") or page.title }}</p>
+    <p class="masthead-line">
+      <span>{{ f.get("edition", "") }}</span>
+      <span>{{ f.get("date", "") }}</span>
+      <span>{% if f.get("price") %}{{ t("field_price") }}: {{ f.get("price") }}{% endif %}</span>
+    </p>
+  </header>
+  {% if f.get("headline") %}<h1 class="headline">{{ f.get("headline") }}</h1>{% endif %}
+  {% if f.get("subheadline") %}<p class="subheadline">{{ f.get("subheadline") }}</p>{% endif %}
+  {% endif %}
+  <div class="doc-body newspaper-body">{{ page.html }}</div>
+  {{ page_label(t, page) }}
+</article>
