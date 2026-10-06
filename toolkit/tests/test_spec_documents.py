@@ -37,7 +37,8 @@ def resolve(body: str, context: ReferenceContext, owner: str | None = None) -> t
 
 def test_registry_references_resolve_to_names_and_fields(context: ReferenceContext) -> None:
     resolved, rules = resolve(
-        "{{char:ana-ruiz}} ({{char:ana-ruiz.role}}, {{char:ana-ruiz.age}}) in {{place:kitchen}} with {{object:great-lens}}.",
+        "{{char:ana-ruiz}} ({{char:ana-ruiz.role}}, {{char:ana-ruiz.age}}) "
+        "in {{place:kitchen}} with {{object:great-lens}}.",
         context,
     )
     assert rules == []
