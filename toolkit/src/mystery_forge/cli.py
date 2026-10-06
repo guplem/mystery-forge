@@ -1,0 +1,304 @@
+"""The `forge` command line. Agents and pskill script blocks call it from `generator/`.
+
+Every verb prints ONE JSON object and exits 0 when it ran, also when it found problems (`"ok": false`), and 2 on a
+usage or environment error. pskill pauses a run on a non-zero exit and cuts stdout at 64 KiB, so the output stays
+small: at most `MAX_FINDINGS_IN_OUTPUT` findings, and the full report goes to a file under `<game>/reports/`.
+"""
+
+import argparse
+import json
+import os
+import secrets
+import sys
+from datetime import date
+from pathlib import Path
+from typing import Any, TextIO
+
+from pydantic import BaseModel
+
+from mystery_forge.assemble import assemble_game
+from mystery_forge.brief import Brief, derive_brief
+from mystery_forge.catalog.loader import design_rules_text, load_mechanics, mechanic_by_id
+from mystery_forge.config import ConfigLoadResult, GameConfig, load_config_file, normalize_config
+from mystery_forge.draw import Draw, draw_ingredients
+from mystery_forge.findings import Finding, count_errors, findings_to_json
+from mystery_forge.mechanics.registry import all_implementations
+from mystery_forge.paths import (
+    KnownFolderReader,
+    SystemFolders,
+    newest_config_file,
+    read_windows_known_folder,
+    slugify,
+    system_folders,
+)
+from mystery_forge.spec.documents import ALL_DIRECTIVES
+from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
+
+MAX_FINDINGS_IN_OUTPUT: int = 20
+RECENT_GAMES_TO_AVOID: int = 5
+MAX_SEED: int = 2_147_483_647
+SCHEMAS: dict[str, type[BaseModel]] = {"story": Story, "flow": Flow, "puzzle": Puzzle, "document": DocumentMeta}
+REFERENCE_FORMS: dict[str, str] = {
+    "{{char:<id>}}": "The character's name. Also .role, .age, .description.",
+    "{{place:<id>}}": "The location's name.",
+    "{{object:<id>}}": "The object's name.",
+    "{{event:<id>.date}}": "The event's start date in the game language. Also .time (HH:MM) and .weekday.",
+    "{{doc:<document id>}}": "The title of another document.",
+    "{{stage:<stage id>}}": "The envelope label, such as 'Envelope B' in the game language.",
+    "{{artifact}}": "The built material of the puzzle named in the front matter. Or {{artifact:<puzzle id>}}.",
+    "{{image:<id>}}": "The SVG image images/<id>.svg. Add a caption with {{image:<id>|caption}}.",
+}
+
+
+def find_system_folders() -> SystemFolders:
+    reader: KnownFolderReader = read_windows_known_folder if sys.platform == "win32" else (lambda name: None)
+    return system_folders(sys.platform, Path.home(), os.environ, reader)
+
+
+def random_seed() -> int:
+    return secrets.randbelow(MAX_SEED) + 1
+
+
+def probe_browser() -> str | None:  # pragma: no cover - launches a real browser; the browser tests cover rendering
+    """Return the name of the first browser that Playwright can start, or None."""
+    from playwright.sync_api import Error, sync_playwright
+
+    with sync_playwright() as playwright:
+        for channel in ("chrome", "msedge", None):
+            try:
+                browser = playwright.chromium.launch(channel=channel) if channel else playwright.chromium.launch()
+            except Error:
+                continue
+            browser.close()
+            return channel or "chromium"
+    return None
+
+
+def emit(output: TextIO, payload: dict[str, Any]) -> None:
+    output.write(json.dumps(payload, ensure_ascii=False) + "\n")
+
+
+def capped_findings(findings: list[Finding]) -> dict[str, Any]:
+    ordered: list[Finding] = sorted(findings, key=lambda finding: finding.severity != "error")
+    return {
+        "errors": count_errors(findings),
+        "warnings": len(findings) - count_errors(findings),
+        "findings": findings_to_json(ordered[:MAX_FINDINGS_IN_OUTPUT]),
+        "more_findings": max(0, len(findings) - MAX_FINDINGS_IN_OUTPUT),
+    }
+
+
+def write_report(game_dir: Path, name: str, payload: dict[str, Any]) -> Path:
+    reports: Path = game_dir / "reports"
+    reports.mkdir(parents=True, exist_ok=True)
+    path: Path = reports / f"{name}.json"
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
+def write_json(path: Path, model: BaseModel) -> None:
+    path.write_text(json.dumps(model.model_dump(mode="json"), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def command_setup(arguments: argparse.Namespace, output: TextIO) -> int:
+    folders: SystemFolders = find_system_folders()
+    config_path: Path | None = None
+    if arguments.config:
+        config_path = Path(arguments.config)
+        if not config_path.is_file():
+            emit(output, {"ok": False, "message": f"The config file {config_path} does not exist."})
+            return 2
+    elif not arguments.defaults:
+        config_path = newest_config_file(folders.downloads)
+        if config_path is None:
+            emit(output, {"ok": False, "findings": [not_found_finding(folders.downloads)]})
+            return 0
+    result: ConfigLoadResult = load_config_file(config_path) if config_path else normalize_config({"schema_version": 1})
+    if result.config is None:
+        findings: list[dict[str, Any]] = [finding.model_dump() for finding in result.findings]
+        emit(output, {"ok": False, "config_file": str(config_path), "findings": findings})
+        return 0
+    config: GameConfig = result.config
+    games_dir: Path = Path(arguments.games_dir)
+    brief: Brief = derive_brief(config, config.generation.seed or random_seed())
+    implemented: frozenset[str] = frozenset(all_implementations())
+    draw: Draw = draw_ingredients(config, brief, implemented, avoid_settings=recent_settings(games_dir))
+    game_dir: Path = new_game_folder(games_dir, config)
+    source: Path = game_dir / "source"
+    source.mkdir(parents=True)
+    write_json(source / "config.json", config)
+    write_json(source / "brief.json", brief)
+    write_json(source / "draw.json", draw)
+    emit(
+        output,
+        {
+            "ok": True,
+            "game_dir": str(game_dir),
+            "config_file": str(config_path) if config_path else None,
+            "summary": config_summary(config),
+            "brief": brief.model_dump(mode="json"),
+            "draw_file": str(source / "draw.json"),
+        },
+    )
+    return 0
+
+
+def not_found_finding(downloads: Path) -> dict[str, Any]:
+    return {
+        "severity": "error",
+        "rule": "config.not_found",
+        "message": f"No *.mystery-config.json file in {downloads}.",
+        "fix_hint": "Ask the user for the config file path, or use --defaults.",
+    }
+
+
+def config_summary(config: GameConfig) -> dict[str, Any]:
+    return {
+        "players": config.players.count,
+        "duration_minutes": config.duration_minutes,
+        "difficulty": config.difficulty,
+        "language": config.language,
+        "audience": config.audience,
+        "format": config.format,
+        "idea": config.theme.idea,
+        "quality": config.generation.quality,
+    }
+
+
+def recent_settings(games_dir: Path) -> frozenset[str]:
+    if not games_dir.is_dir():
+        return frozenset()
+    draws: list[Path] = sorted(games_dir.glob("*/source/draw.json"), key=lambda path: path.stat().st_mtime)
+    settings: set[str] = set()
+    for path in draws[-RECENT_GAMES_TO_AVOID:]:
+        settings.update(item["id"] for item in json.loads(path.read_text(encoding="utf-8"))["settings"])
+    return frozenset(settings)
+
+
+def new_game_folder(games_dir: Path, config: GameConfig) -> Path:
+    idea_words: str = " ".join(config.theme.idea.split()[:6])
+    base: str = f"{date.today().isoformat()}-{slugify(idea_words)}"
+    candidate: Path = games_dir / base
+    number: int = 2
+    while candidate.exists():
+        candidate = games_dir / f"{base}-{number}"
+        number += 1
+    return candidate
+
+
+def command_assemble(arguments: argparse.Namespace, output: TextIO) -> int:
+    game_dir: Path = Path(arguments.game)
+    result = assemble_game(game_dir)
+    if result.game is not None:
+        (game_dir / "game.json").write_text(result.game.model_dump_json(indent=2), encoding="utf-8")
+    report: Path = write_report(game_dir, "assemble", {"findings": findings_to_json(result.findings)})
+    emit(
+        output,
+        {
+            "ok": result.game is not None and count_errors(result.findings) == 0,
+            "game_written": result.game is not None,
+            "report": str(report),
+            **capped_findings(result.findings),
+        },
+    )
+    return 0
+
+
+def command_catalog(arguments: argparse.Namespace, output: TextIO) -> int:
+    implemented: set[str] = set(all_implementations())
+    if arguments.catalog_command == "rules":
+        output.write(design_rules_text())
+        return 0
+    if arguments.catalog_command == "list":
+        mechanics: list[dict[str, Any]] = [
+            {
+                "id": mechanic.id,
+                "name": mechanic.name,
+                "category": mechanic.category,
+                "player_action": mechanic.player_action,
+                "verification": mechanic.verification,
+                "implemented": mechanic.id in implemented,
+                "summary": mechanic.summary,
+            }
+            for mechanic in load_mechanics()
+            if not arguments.implemented or mechanic.id in implemented
+        ]
+        emit(output, {"ok": True, "mechanics": mechanics})
+        return 0
+    try:
+        mechanic = mechanic_by_id(arguments.mechanic_id)
+    except KeyError as error:
+        emit(output, {"ok": False, "message": str(error.args[0])})
+        return 2
+    implementation = all_implementations().get(mechanic.id)
+    emit(
+        output,
+        {
+            "ok": True,
+            "mechanic": mechanic.model_dump(mode="json"),
+            "implemented": implementation is not None,
+            "params_schema": implementation.params_model.model_json_schema() if implementation else None,
+        },
+    )
+    return 0
+
+
+def command_schema(arguments: argparse.Namespace, output: TextIO) -> int:
+    if arguments.name == "references":
+        emit(output, {"references": REFERENCE_FORMS, "directives": sorted(ALL_DIRECTIVES)})
+        return 0
+    emit(output, SCHEMAS[arguments.name].model_json_schema())
+    return 0
+
+
+def command_doctor(arguments: argparse.Namespace, output: TextIO) -> int:
+    folders: SystemFolders = find_system_folders()
+    browser: str | None = probe_browser()
+    payload: dict[str, Any] = {
+        "ok": browser is not None,
+        "python": sys.version.split()[0],
+        "browser": browser,
+        "desktop": str(folders.desktop),
+        "downloads": str(folders.downloads),
+    }
+    if browser is None:
+        payload["fix"] = "Install Google Chrome or Microsoft Edge, or run: uv run playwright install chromium"
+    emit(output, payload)
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="forge", description="Build, check, and render Mystery Forge games.")
+    verbs = parser.add_subparsers(dest="verb", required=True)
+    setup = verbs.add_parser("setup", help="Create a game folder from a config file.")
+    setup.add_argument("--config", help="The config file. Default: the newest *.mystery-config.json in Downloads.")
+    setup.add_argument("--defaults", action="store_true", help="Use the default config, with no file.")
+    setup.add_argument("--games-dir", default="games", help="The folder that holds the game folders.")
+    setup.set_defaults(handler=command_setup)
+    assemble = verbs.add_parser("assemble", help="Load, build, and assemble a game into game.json.")
+    assemble.add_argument("--game", required=True, help="The game folder (the parent of source/).")
+    assemble.set_defaults(handler=command_assemble)
+    catalog = verbs.add_parser("catalog", help="Read the mechanic catalog.")
+    catalog_verbs = catalog.add_subparsers(dest="catalog_command", required=True)
+    listing = catalog_verbs.add_parser("list", help="List the mechanics.")
+    listing.add_argument("--implemented", action="store_true", help="Only mechanics that the toolkit can use.")
+    show = catalog_verbs.add_parser("show", help="Show one mechanic and its params.")
+    show.add_argument("mechanic_id")
+    catalog_verbs.add_parser("rules", help="Print the design rules for game writers.")
+    catalog.set_defaults(handler=command_catalog)
+    schema = verbs.add_parser("schema", help="Print the JSON schema of a source file, or the reference forms.")
+    schema.add_argument("name", choices=[*SCHEMAS, "references"])
+    schema.set_defaults(handler=command_schema)
+    doctor = verbs.add_parser("doctor", help="Check the browser and the folders.")
+    doctor.set_defaults(handler=command_doctor)
+    return parser
+
+
+def main(argv: list[str] | None = None, output: TextIO | None = None) -> int:
+    stream: TextIO = output if output is not None else sys.stdout
+    if stream is sys.stdout and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    arguments: argparse.Namespace = build_parser().parse_args(argv)
+    handler = arguments.handler
+    exit_code: int = handler(arguments, stream)
+    return exit_code
