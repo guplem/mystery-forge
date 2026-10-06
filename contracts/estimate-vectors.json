@@ -1,0 +1,665 @@
+{
+  "description": "Shared test vectors for the game size estimate. The Python brief and the JavaScript configurator must give these exact integers. The formula: toolkit/src/mystery_forge/brief.py and configurator/configEstimate.js.",
+  "vectors": [
+    {
+      "name": "the default config",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 11,
+        "stage_count": 4,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 25,
+        "generation_minutes": 118,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "easy",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "easy",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 17,
+        "stage_count": 6,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 36,
+        "generation_minutes": 170,
+        "minutes_per_puzzle": 6
+      }
+    },
+    {
+      "name": "hard",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "hard",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 8,
+        "stage_count": 3,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 19,
+        "generation_minutes": 92,
+        "minutes_per_puzzle": 13
+      }
+    },
+    {
+      "name": "expert",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "expert",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 5,
+        "stage_count": 2,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 14,
+        "generation_minutes": 66,
+        "minutes_per_puzzle": 18
+      }
+    },
+    {
+      "name": "envelopes only: no case-file overhead",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "envelopes",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 13,
+        "stage_count": 5,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 29,
+        "generation_minutes": 138,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "case file only",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "case_file",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 11,
+        "stage_count": 4,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 25,
+        "generation_minutes": 118,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "fast quality: fewer solvers and less generation time",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "fast",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 11,
+        "stage_count": 4,
+        "parallel_width": 2,
+        "solver_count": 3,
+        "reading_words": 9000,
+        "printed_pages": 25,
+        "generation_minutes": 69,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "light reading",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "light"
+      },
+      "expected": {
+        "puzzle_count": 11,
+        "stage_count": 4,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 5400,
+        "printed_pages": 25,
+        "generation_minutes": 118,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "heavy reading",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "heavy"
+      },
+      "expected": {
+        "puzzle_count": 11,
+        "stage_count": 4,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 13500,
+        "printed_pages": 25,
+        "generation_minutes": 118,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "one player: the solo factor and width 1",
+      "input": {
+        "players": 1,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 5,
+        "stage_count": 3,
+        "parallel_width": 1,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 15,
+        "generation_minutes": 74,
+        "minutes_per_puzzle": 11
+      }
+    },
+    {
+      "name": "two players: width 1",
+      "input": {
+        "players": 2,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 7,
+        "stage_count": 4,
+        "parallel_width": 1,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 19,
+        "generation_minutes": 94,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "three players: width 2",
+      "input": {
+        "players": 3,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 11,
+        "stage_count": 4,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 25,
+        "generation_minutes": 118,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "eight players: width 4",
+      "input": {
+        "players": 8,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 20,
+        "stage_count": 4,
+        "parallel_width": 4,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 38,
+        "generation_minutes": 172,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "twelve players: the width stays at 4",
+      "input": {
+        "players": 12,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 20,
+        "stage_count": 4,
+        "parallel_width": 4,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 38,
+        "generation_minutes": 172,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "kids are slower",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "kids",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 8,
+        "stage_count": 3,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 19,
+        "generation_minutes": 92,
+        "minutes_per_puzzle": 13
+      }
+    },
+    {
+      "name": "a solo kid: 6 x 1.4 x 1.25 = 10.5 rounds up to 11",
+      "input": {
+        "players": 1,
+        "duration_minutes": 90,
+        "difficulty": "easy",
+        "audience": "kids",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 6,
+        "stage_count": 3,
+        "parallel_width": 1,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 16,
+        "generation_minutes": 80,
+        "minutes_per_puzzle": 11
+      }
+    },
+    {
+      "name": "adults",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "adults",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 11,
+        "stage_count": 4,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 25,
+        "generation_minutes": 118,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "teens",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "audience": "teens",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 11,
+        "stage_count": 4,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 25,
+        "generation_minutes": 118,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "puzzle fans",
+      "input": {
+        "players": 4,
+        "duration_minutes": 90,
+        "difficulty": "expert",
+        "audience": "puzzle_fans",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 5,
+        "stage_count": 2,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 9000,
+        "printed_pages": 14,
+        "generation_minutes": 66,
+        "minutes_per_puzzle": 18
+      }
+    },
+    {
+      "name": "puzzle count clamps up to 3",
+      "input": {
+        "players": 1,
+        "duration_minutes": 30,
+        "difficulty": "expert",
+        "audience": "kids",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 3,
+        "stage_count": 2,
+        "parallel_width": 1,
+        "solver_count": 5,
+        "reading_words": 3000,
+        "printed_pages": 11,
+        "generation_minutes": 54,
+        "minutes_per_puzzle": 32
+      }
+    },
+    {
+      "name": "puzzle count clamps down to 24",
+      "input": {
+        "players": 12,
+        "duration_minutes": 240,
+        "difficulty": "easy",
+        "audience": "family",
+        "format": "envelopes",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 24,
+        "stage_count": 5,
+        "parallel_width": 4,
+        "solver_count": 5,
+        "reading_words": 24000,
+        "printed_pages": 45,
+        "generation_minutes": 204,
+        "minutes_per_puzzle": 6
+      }
+    },
+    {
+      "name": "stage count clamps up to 2",
+      "input": {
+        "players": 8,
+        "duration_minutes": 30,
+        "difficulty": "expert",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 3,
+        "stage_count": 2,
+        "parallel_width": 4,
+        "solver_count": 5,
+        "reading_words": 3000,
+        "printed_pages": 11,
+        "generation_minutes": 54,
+        "minutes_per_puzzle": 18
+      }
+    },
+    {
+      "name": "stage count clamps down to 6",
+      "input": {
+        "players": 2,
+        "duration_minutes": 240,
+        "difficulty": "easy",
+        "audience": "family",
+        "format": "envelopes",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 24,
+        "stage_count": 6,
+        "parallel_width": 1,
+        "solver_count": 5,
+        "reading_words": 24000,
+        "printed_pages": 46,
+        "generation_minutes": 212,
+        "minutes_per_puzzle": 6
+      }
+    },
+    {
+      "name": "available time floors at 10 below the config range",
+      "input": {
+        "players": 4,
+        "duration_minutes": 20,
+        "difficulty": "easy",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 3,
+        "stage_count": 2,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 2000,
+        "printed_pages": 11,
+        "generation_minutes": 54,
+        "minutes_per_puzzle": 6
+      }
+    },
+    {
+      "name": "the shortest game",
+      "input": {
+        "players": 4,
+        "duration_minutes": 30,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 3,
+        "stage_count": 2,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 3000,
+        "printed_pages": 11,
+        "generation_minutes": 54,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "the longest game",
+      "input": {
+        "players": 4,
+        "duration_minutes": 240,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "both",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 24,
+        "stage_count": 6,
+        "parallel_width": 2,
+        "solver_count": 5,
+        "reading_words": 24000,
+        "printed_pages": 46,
+        "generation_minutes": 212,
+        "minutes_per_puzzle": 9
+      }
+    },
+    {
+      "name": "a long hard case file for six",
+      "input": {
+        "players": 6,
+        "duration_minutes": 180,
+        "difficulty": "hard",
+        "audience": "family",
+        "format": "case_file",
+        "quality": "fast",
+        "reading_load": "heavy"
+      },
+      "expected": {
+        "puzzle_count": 24,
+        "stage_count": 6,
+        "parallel_width": 3,
+        "solver_count": 3,
+        "reading_words": 27000,
+        "printed_pages": 46,
+        "generation_minutes": 116,
+        "minutes_per_puzzle": 13
+      }
+    },
+    {
+      "name": "a kids envelope game for five",
+      "input": {
+        "players": 5,
+        "duration_minutes": 60,
+        "difficulty": "easy",
+        "audience": "kids",
+        "format": "envelopes",
+        "quality": "best",
+        "reading_load": "light"
+      },
+      "expected": {
+        "puzzle_count": 12,
+        "stage_count": 3,
+        "parallel_width": 3,
+        "solver_count": 5,
+        "reading_words": 3600,
+        "printed_pages": 25,
+        "generation_minutes": 116,
+        "minutes_per_puzzle": 8
+      }
+    },
+    {
+      "name": "a solo expert",
+      "input": {
+        "players": 1,
+        "duration_minutes": 120,
+        "difficulty": "expert",
+        "audience": "adults",
+        "format": "both",
+        "quality": "fast",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 4,
+        "stage_count": 2,
+        "parallel_width": 1,
+        "solver_count": 3,
+        "reading_words": 12000,
+        "printed_pages": 12,
+        "generation_minutes": 40,
+        "minutes_per_puzzle": 23
+      }
+    },
+    {
+      "name": "seven players, medium length",
+      "input": {
+        "players": 7,
+        "duration_minutes": 75,
+        "difficulty": "medium",
+        "audience": "family",
+        "format": "envelopes",
+        "quality": "best",
+        "reading_load": "medium"
+      },
+      "expected": {
+        "puzzle_count": 19,
+        "stage_count": 4,
+        "parallel_width": 4,
+        "solver_count": 5,
+        "reading_words": 7500,
+        "printed_pages": 37,
+        "generation_minutes": 166,
+        "minutes_per_puzzle": 9
+      }
+    }
+  ]
+}

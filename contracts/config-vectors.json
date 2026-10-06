@@ -1,0 +1,677 @@
+{
+  "description": "Shared test vectors for contracts/game-config.schema.json. The Python toolkit and the JavaScript configurator must agree. A valid config gives no error, and after the defaults are applied each dotted path in normalized_summary holds the given value. An invalid config gives errors at exactly the paths in error_paths (sorted, without duplicates). An unknown key or a missing required key is reported at its own path, and the root is the empty path.",
+  "valid": [
+    {
+      "name": "only the schema version: every field takes its default",
+      "config": {
+        "schema_version": 1
+      },
+      "normalized_summary": {
+        "audience": "family",
+        "format": "both",
+        "players.count": 4,
+        "players.names": [],
+        "host": "self_running",
+        "duration_minutes": 90,
+        "difficulty": "medium",
+        "language": "en",
+        "theme.idea": "",
+        "theme.tone": "surprise",
+        "theme.era": "any",
+        "content.death_allowed": true,
+        "content.scary_level": "mild",
+        "content.reading_load": "medium",
+        "personalization.host_name": "",
+        "personalization.place": "",
+        "personalization.inside_jokes": [],
+        "personalization.dedication": "",
+        "puzzle_preferences.words": "neutral",
+        "puzzle_preferences.numbers": "neutral",
+        "puzzle_preferences.logic": "neutral",
+        "puzzle_preferences.visual": "neutral",
+        "puzzle_preferences.crafts": "neutral",
+        "puzzle_preferences.deduction": "neutral",
+        "equipment.printer": "color",
+        "equipment.ink_saving": false,
+        "equipment.paper": "A4",
+        "equipment.scissors": true,
+        "equipment.tape_or_glue": false,
+        "equipment.envelopes": true,
+        "assistance.hints": true,
+        "assistance.paper_answer_check": true,
+        "assistance.companion_page": true,
+        "visuals.style": "auto",
+        "visuals.images": "svg",
+        "visuals.readable_font": false,
+        "generation.quality": "best",
+        "generation.pick_concept": "ask",
+        "generation.seed": 0,
+        "output.folder": ""
+      }
+    },
+    {
+      "name": "every field set: no default replaces a given value",
+      "config": {
+        "schema_version": 1,
+        "audience": "adults",
+        "format": "case_file",
+        "players": {
+          "count": 6,
+          "names": ["Ana", "Biel", "Carla", "Dani", "Eva", "Ferran"]
+        },
+        "host": "game_master",
+        "duration_minutes": 120,
+        "difficulty": "hard",
+        "language": "ca",
+        "theme": {
+          "idea": "A theft in a lighthouse during a storm.",
+          "tone": "noir",
+          "era": "historical"
+        },
+        "content": {
+          "death_allowed": false,
+          "scary_level": "none",
+          "reading_load": "heavy"
+        },
+        "personalization": {
+          "host_name": "Marta",
+          "place": "Cadaques",
+          "inside_jokes": ["The broken kettle"],
+          "dedication": "For Pau, on his birthday."
+        },
+        "puzzle_preferences": {
+          "words": "like",
+          "numbers": "avoid",
+          "logic": "like",
+          "visual": "neutral",
+          "crafts": "avoid",
+          "deduction": "like"
+        },
+        "equipment": {
+          "printer": "black_and_white",
+          "ink_saving": true,
+          "paper": "Letter",
+          "scissors": false,
+          "tape_or_glue": true,
+          "envelopes": false
+        },
+        "assistance": {
+          "hints": false,
+          "paper_answer_check": false,
+          "companion_page": false
+        },
+        "visuals": {
+          "style": "victorian",
+          "images": "none",
+          "readable_font": true
+        },
+        "generation": {
+          "quality": "fast",
+          "pick_concept": "agent",
+          "seed": 12345
+        },
+        "output": {
+          "folder": "C:/Games/lighthouse"
+        }
+      },
+      "normalized_summary": {
+        "audience": "adults",
+        "format": "case_file",
+        "players.count": 6,
+        "language": "ca",
+        "theme.tone": "noir",
+        "content.death_allowed": false,
+        "puzzle_preferences.numbers": "avoid",
+        "equipment.paper": "Letter",
+        "equipment.envelopes": false,
+        "assistance.companion_page": false,
+        "visuals.readable_font": true,
+        "generation.seed": 12345,
+        "output.folder": "C:/Games/lighthouse"
+      }
+    },
+    {
+      "name": "a partial nested object keeps its given keys and fills the others",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": 1
+        },
+        "theme": {
+          "tone": "spooky"
+        }
+      },
+      "normalized_summary": {
+        "players.count": 1,
+        "players.names": [],
+        "theme.tone": "spooky",
+        "theme.idea": "",
+        "theme.era": "any"
+      }
+    },
+    {
+      "name": "empty nested objects take all their defaults",
+      "config": {
+        "schema_version": 1,
+        "players": {},
+        "equipment": {},
+        "generation": {}
+      },
+      "normalized_summary": {
+        "players.count": 4,
+        "equipment.printer": "color",
+        "equipment.scissors": true,
+        "generation.quality": "best"
+      }
+    },
+    {
+      "name": "the largest group with twelve names",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": 12,
+          "names": [
+            "Player 1",
+            "Player 2",
+            "Player 3",
+            "Player 4",
+            "Player 5",
+            "Player 6",
+            "Player 7",
+            "Player 8",
+            "Player 9",
+            "Player 10",
+            "Player 11",
+            "Player 12"
+          ]
+        }
+      },
+      "normalized_summary": {
+        "players.count": 12,
+        "audience": "family"
+      }
+    },
+    {
+      "name": "the shortest duration",
+      "config": {
+        "schema_version": 1,
+        "duration_minutes": 30
+      },
+      "normalized_summary": {
+        "duration_minutes": 30
+      }
+    },
+    {
+      "name": "the longest duration",
+      "config": {
+        "schema_version": 1,
+        "duration_minutes": 240
+      },
+      "normalized_summary": {
+        "duration_minutes": 240
+      }
+    },
+    {
+      "name": "the largest seed",
+      "config": {
+        "schema_version": 1,
+        "generation": {
+          "seed": 2147483647
+        }
+      },
+      "normalized_summary": {
+        "generation.seed": 2147483647,
+        "generation.quality": "best"
+      }
+    },
+    {
+      "name": "a player name of exactly 40 characters",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": 2,
+          "names": ["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "Bo"]
+        }
+      },
+      "normalized_summary": {
+        "players.count": 2
+      }
+    },
+    {
+      "name": "maxLength counts code points, not UTF-16 units: 40 emoji fit",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "names": ["😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"]
+        }
+      },
+      "normalized_summary": {
+        "players.count": 4
+      }
+    },
+    {
+      "name": "a kids game with no death and nothing scary",
+      "config": {
+        "schema_version": 1,
+        "audience": "kids",
+        "content": {
+          "death_allowed": false,
+          "scary_level": "none",
+          "reading_load": "light"
+        },
+        "visuals": {
+          "style": "kids",
+          "readable_font": true
+        }
+      },
+      "normalized_summary": {
+        "audience": "kids",
+        "content.death_allowed": false,
+        "content.scary_level": "none",
+        "content.reading_load": "light",
+        "visuals.style": "kids",
+        "visuals.images": "svg"
+      }
+    },
+    {
+      "name": "a Spanish envelope game on Letter paper",
+      "config": {
+        "schema_version": 1,
+        "language": "es",
+        "format": "envelopes",
+        "equipment": {
+          "paper": "Letter",
+          "printer": "black_and_white"
+        }
+      },
+      "normalized_summary": {
+        "language": "es",
+        "format": "envelopes",
+        "equipment.paper": "Letter",
+        "equipment.printer": "black_and_white",
+        "equipment.ink_saving": false
+      }
+    },
+    {
+      "name": "five inside jokes and texts at their maximum length",
+      "config": {
+        "schema_version": 1,
+        "theme": {
+          "idea": "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+        },
+        "personalization": {
+          "host_name": "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+          "place": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+          "inside_jokes": [
+            "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj",
+            "two",
+            "three",
+            "four",
+            "five"
+          ],
+          "dedication": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "output": {
+          "folder": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        }
+      },
+      "normalized_summary": {
+        "personalization.place": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+        "theme.tone": "surprise"
+      }
+    },
+    {
+      "name": "the smallest values of every number",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": 1
+        },
+        "duration_minutes": 30,
+        "generation": {
+          "seed": 0
+        }
+      },
+      "normalized_summary": {
+        "players.count": 1,
+        "duration_minutes": 30,
+        "generation.seed": 0
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "schema_version is missing",
+      "config": {
+        "audience": "family"
+      },
+      "error_paths": ["schema_version"]
+    },
+    {
+      "name": "schema_version is 2",
+      "config": {
+        "schema_version": 2
+      },
+      "error_paths": ["schema_version"]
+    },
+    {
+      "name": "schema_version is a string",
+      "config": {
+        "schema_version": "1"
+      },
+      "error_paths": ["schema_version"]
+    },
+    {
+      "name": "schema_version is true",
+      "config": {
+        "schema_version": true
+      },
+      "error_paths": ["schema_version"]
+    },
+    {
+      "name": "the root is an array",
+      "config": [1],
+      "error_paths": [""]
+    },
+    {
+      "name": "the root is null",
+      "config": null,
+      "error_paths": [""]
+    },
+    {
+      "name": "an unknown key at the top level",
+      "config": {
+        "schema_version": 1,
+        "colour": "red"
+      },
+      "error_paths": ["colour"]
+    },
+    {
+      "name": "an unknown key in players",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": 3,
+          "nickname": "x"
+        }
+      },
+      "error_paths": ["players.nickname"]
+    },
+    {
+      "name": "an unknown key in theme",
+      "config": {
+        "schema_version": 1,
+        "theme": {
+          "mood": "dark"
+        }
+      },
+      "error_paths": ["theme.mood"]
+    },
+    {
+      "name": "two unknown keys in generation",
+      "config": {
+        "schema_version": 1,
+        "generation": {
+          "model": "x",
+          "budget": 3
+        }
+      },
+      "error_paths": ["generation.budget", "generation.model"]
+    },
+    {
+      "name": "players.count is 0",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": 0
+        }
+      },
+      "error_paths": ["players.count"]
+    },
+    {
+      "name": "players.count is 13",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": 13
+        }
+      },
+      "error_paths": ["players.count"]
+    },
+    {
+      "name": "players.count is a fraction",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": 4.5
+        }
+      },
+      "error_paths": ["players.count"]
+    },
+    {
+      "name": "players.count is a string",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": "4"
+        }
+      },
+      "error_paths": ["players.count"]
+    },
+    {
+      "name": "players.count is a boolean",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "count": true
+        }
+      },
+      "error_paths": ["players.count"]
+    },
+    {
+      "name": "players is a number, not an object",
+      "config": {
+        "schema_version": 1,
+        "players": 4
+      },
+      "error_paths": ["players"]
+    },
+    {
+      "name": "duration_minutes is 29",
+      "config": {
+        "schema_version": 1,
+        "duration_minutes": 29
+      },
+      "error_paths": ["duration_minutes"]
+    },
+    {
+      "name": "duration_minutes is 241",
+      "config": {
+        "schema_version": 1,
+        "duration_minutes": 241
+      },
+      "error_paths": ["duration_minutes"]
+    },
+    {
+      "name": "thirteen player names",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "names": ["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12"]
+        }
+      },
+      "error_paths": ["players.names"]
+    },
+    {
+      "name": "a player name of 41 characters",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "names": ["Ann", "Bo", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]
+        }
+      },
+      "error_paths": ["players.names.2"]
+    },
+    {
+      "name": "a player name that is a number",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "names": ["Ann", 7]
+        }
+      },
+      "error_paths": ["players.names.1"]
+    },
+    {
+      "name": "players.names is a string",
+      "config": {
+        "schema_version": 1,
+        "players": {
+          "names": "Ann"
+        }
+      },
+      "error_paths": ["players.names"]
+    },
+    {
+      "name": "an unknown audience",
+      "config": {
+        "schema_version": 1,
+        "audience": "toddlers"
+      },
+      "error_paths": ["audience"]
+    },
+    {
+      "name": "audience is a number",
+      "config": {
+        "schema_version": 1,
+        "audience": 3
+      },
+      "error_paths": ["audience"]
+    },
+    {
+      "name": "the paper size has the wrong case",
+      "config": {
+        "schema_version": 1,
+        "equipment": {
+          "paper": "a4"
+        }
+      },
+      "error_paths": ["equipment.paper"]
+    },
+    {
+      "name": "theme.tone is null",
+      "config": {
+        "schema_version": 1,
+        "theme": {
+          "tone": null
+        }
+      },
+      "error_paths": ["theme.tone"]
+    },
+    {
+      "name": "theme.idea has 501 characters",
+      "config": {
+        "schema_version": 1,
+        "theme": {
+          "idea": "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+        }
+      },
+      "error_paths": ["theme.idea"]
+    },
+    {
+      "name": "personalization.host_name has 61 characters",
+      "config": {
+        "schema_version": 1,
+        "personalization": {
+          "host_name": "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+        }
+      },
+      "error_paths": ["personalization.host_name"]
+    },
+    {
+      "name": "six inside jokes",
+      "config": {
+        "schema_version": 1,
+        "personalization": {
+          "inside_jokes": ["a", "b", "c", "d", "e", "f"]
+        }
+      },
+      "error_paths": ["personalization.inside_jokes"]
+    },
+    {
+      "name": "an inside joke of 201 characters",
+      "config": {
+        "schema_version": 1,
+        "personalization": {
+          "inside_jokes": [
+            "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
+          ]
+        }
+      },
+      "error_paths": ["personalization.inside_jokes.0"]
+    },
+    {
+      "name": "the seed is negative",
+      "config": {
+        "schema_version": 1,
+        "generation": {
+          "seed": -1
+        }
+      },
+      "error_paths": ["generation.seed"]
+    },
+    {
+      "name": "the seed is above the 32-bit limit",
+      "config": {
+        "schema_version": 1,
+        "generation": {
+          "seed": 2147483648
+        }
+      },
+      "error_paths": ["generation.seed"]
+    },
+    {
+      "name": "a boolean field holds a string",
+      "config": {
+        "schema_version": 1,
+        "equipment": {
+          "ink_saving": "yes"
+        }
+      },
+      "error_paths": ["equipment.ink_saving"]
+    },
+    {
+      "name": "a preference holds an unknown level",
+      "config": {
+        "schema_version": 1,
+        "puzzle_preferences": {
+          "logic": "love"
+        }
+      },
+      "error_paths": ["puzzle_preferences.logic"]
+    },
+    {
+      "name": "output.folder has 401 characters",
+      "config": {
+        "schema_version": 1,
+        "output": {
+          "folder": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        }
+      },
+      "error_paths": ["output.folder"]
+    },
+    {
+      "name": "several errors at several levels are all reported",
+      "config": {
+        "schema_version": 3,
+        "audience": "toddlers",
+        "players": {
+          "count": 0,
+          "extra": 1
+        },
+        "unknown": true
+      },
+      "error_paths": ["audience", "players.count", "players.extra", "schema_version", "unknown"]
+    }
+  ]
+}

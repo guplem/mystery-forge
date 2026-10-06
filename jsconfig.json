@@ -12,5 +12,10 @@
     "noUncheckedIndexedAccess": true,
     "types": ["node"]
   },
-  "include": ["globals.d.ts", "configurator/**/*.js", "toolkit/src/mystery_forge/render/companion/**/*.js"]
+  "include": [
+    "globals.d.ts",
+    "configurator/**/*.js",
+    "toolkit/src/mystery_forge/render/companion/**/*.js",
+    "scripts/**/*.js"
+  ]
 }

@@ -1,0 +1,43 @@
+format_version: 1
+id: P1
+title: The keeper's coded line
+stage: A
+mechanic: caesar-cipher
+difficulty: easy
+in_world_reason: Tom writes his private notes in a simple code, so the crew cannot read them.
+reveals: Tom hid the spare keys in the boathouse.
+answer: boathouse
+answer_format:
+  kind: word
+  label: one word
+  length: 9
+near_misses:
+  - answer: yxlxqeorpb
+    message: You moved the letters the wrong way. Count back, not forward.
+params:
+  shift: 3
+  plaintext: KEYS IN THE BOATHOUSE
+seed: 11
+clues:
+  - id: three-back
+    document: D2
+    quote: like the tide, my code goes back three steps
+  - id: coded-line
+    document: D2
+    quote: the line in code at the foot of the page
+solution:
+  - text: The logbook says that the code goes back three steps.
+    uses: [three-back]
+  - text: Move each letter of the coded line three letters back. It reads KEYS IN THE BOATHOUSE.
+    uses: [coded-line]
+hints:
+  - level: 1
+    text: Look at the foot of the logbook page.
+    points_to: [coded-line]
+  - level: 2
+    text: Tom says how his code works, in the same entry.
+    points_to: [three-back]
+  - level: 3
+    text: Replace each letter with the letter three places earlier in the alphabet.
+    points_to: [three-back, coded-line]
+canary: canary-golden-p1

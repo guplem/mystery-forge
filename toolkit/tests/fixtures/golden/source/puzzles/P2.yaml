@@ -1,0 +1,44 @@
+format_version: 1
+id: P2
+title: The store room lock
+stage: A
+mechanic: arithmetic-lock
+difficulty: easy
+in_world_reason: The store room has a four-dial lock, and the keeper set it from the supply receipt.
+reveals: Felix delivered a coil of rope more than the order asked for.
+answer: '0726'
+answer_format:
+  kind: digits
+  label: a 4-digit code
+  length: 4
+params:
+  digits: 4
+  steps:
+    - { label: oil, value: 7 }
+    - { label: flour, value: 2 }
+    - { label: rope, value: 6 }
+  expression: oil * 100 + flour * 10 + rope
+seed: 5
+clues:
+  - id: lock-rule
+    document: D2
+    quote: the store lock is the receipt, read top to bottom, with a zero in front
+  - id: receipt-lines
+    document: D3
+    quote: 'Lamp oil: 7 barrels'
+solution:
+  - text: The logbook says that the lock code comes from the receipt, top to bottom, with a zero in front.
+    uses: [lock-rule]
+  - text: The receipt lists 7 barrels of oil, 2 sacks of flour, and 6 coils of rope. The code is 0726.
+    uses: [receipt-lines]
+hints:
+  - level: 1
+    text: You need the logbook and the supply receipt.
+    points_to: [lock-rule, receipt-lines]
+  - level: 2
+    text: Read only the numbers on the receipt.
+    points_to: [receipt-lines]
+  - level: 3
+    text: Write a zero, then the three numbers of the receipt in order.
+    points_to: [lock-rule, receipt-lines]
+canary: canary-golden-p2

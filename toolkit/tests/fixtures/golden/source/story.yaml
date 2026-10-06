@@ -1,0 +1,146 @@
+format_version: 1
+title: The Lens of Gull Rock
+tagline: The light went dark, and the great lens was gone by dawn.
+premise: >-
+  On a stormy night in 1931 someone took the brass-and-glass lens from the Gull Rock lighthouse.
+  Three people were on the rock. The harbour master asks you to find out who took it, and how.
+setting: Gull Rock lighthouse, a small island off a fishing town
+era: 1931
+tone: cozy
+truth: >-
+  Felix Ward, the supply boatman, owed money to a collector in town. He came back to the rock at low tide
+  after his evening delivery, climbed the lamp room while Tom slept, and carried the lens to his boat.
+  Ana Ruiz stayed in the kitchen all night. Maud Price, the inspector, only arrived the next morning.
+characters:
+  - id: tom-bell
+    name: Tom Bell
+    role: lighthouse keeper
+    description: The keeper. He writes everything in his logbook, some of it in code.
+    age: 61
+  - id: ana-ruiz
+    name: Ana Ruiz
+    role: cook
+    description: The cook of the lighthouse. She bakes bread every night for the morning.
+    age: 34
+    is_suspect: true
+  - id: felix-ward
+    name: Felix Ward
+    role: supply boatman
+    description: He brings oil, flour, and rope to the rock once a week.
+    age: 42
+    is_suspect: true
+    is_culprit: true
+    secret: He owes money to a collector of ship instruments.
+  - id: maud-price
+    name: Maud Price
+    role: lighthouse inspector
+    description: She inspects the lighthouses of the coast.
+    age: 50
+    is_suspect: true
+locations:
+  - id: lamp-room
+    name: the lamp room
+    description: The glass room at the top of the tower.
+  - id: kitchen
+    name: the kitchen
+    description: A warm room at the foot of the tower.
+  - id: boathouse
+    name: the boathouse
+    description: A shed by the landing stage, where the keeper keeps the spare keys.
+objects:
+  - id: great-lens
+    name: the great lens
+    description: A brass-and-glass lens as tall as a child.
+timeline:
+  - id: delivery
+    start: 1931-03-14 18:00
+    end: 1931-03-14 18:40
+    location: boathouse
+    participants: [felix-ward, tom-bell]
+    description: Felix delivers the supplies and leaves.
+    known_to_players: true
+  - id: baking
+    start: 1931-03-14 21:00
+    end: 1931-03-15 05:00
+    location: kitchen
+    participants: [ana-ruiz]
+    description: Ana bakes bread all night.
+  - id: theft
+    start: 1931-03-15 01:30
+    end: 1931-03-15 02:30
+    location: lamp-room
+    participants: [felix-ward]
+    description: Felix climbs to the lamp room and takes the lens.
+  - id: inspection
+    start: 1931-03-15 09:00
+    location: lamp-room
+    participants: [maud-price, tom-bell]
+    description: Maud arrives for her inspection and finds the lamp empty.
+    known_to_players: true
+clues:
+  - id: wet-boots
+    document: D4
+    quote: wet boot prints on the lamp room stairs, too big for Ana
+  - id: kitchen-all-night
+    document: D2
+    quote: Ana sang in the kitchen until the bread was out at five
+  - id: maud-ticket
+    document: D5
+    quote: Return ticket, 15 March 1931, first ferry, 8:15
+  - id: felix-debt
+    document: D5
+    quote: Mr Ward still owes me forty pounds for the brass sextant
+intro: >-
+  Gull Rock, the morning of 15 March 1931. The lighthouse stood dark all night, and ships nearly hit the rocks.
+  The great lens is gone. The harbour master has sent you everything that the keeper wrote down.
+  Find out who took the lens, and how they reached the rock.
+deduction:
+  culprit: felix-ward
+  questions:
+    - id: who
+      prompt: Who took the great lens?
+      options:
+        - { id: ana, text: 'Ana Ruiz, the cook' }
+        - { id: felix, text: 'Felix Ward, the boatman' }
+        - { id: maud, text: 'Maud Price, the inspector' }
+      correct: felix
+      points: 50
+      proven_by: [wet-boots, felix-debt]
+    - id: why
+      prompt: Why did the thief take it?
+      options:
+        - { id: debt, text: To pay a debt }
+        - { id: revenge, text: For revenge on the keeper }
+        - { id: prank, text: As a prank }
+      correct: debt
+      points: 25
+      proven_by: [felix-debt]
+  exclusions:
+    - suspect: ana-ruiz
+      clues: [kitchen-all-night]
+      explanation: Tom heard Ana sing in the kitchen all night.
+    - suspect: maud-price
+      clues: [maud-ticket]
+      explanation: Maud came on the first ferry the next morning.
+epilogues:
+  - id: solved
+    min_score_percent: 75
+    title: Case closed
+    text: Felix confesses. The lens is back in the lamp room before the next storm.
+  - id: partial
+    min_score_percent: 40
+    title: Close, but not quite
+    text: You found part of the truth. The lens comes back, but the full story stays in the fog.
+  - id: unsolved
+    min_score_percent: 0
+    title: The light stays dark
+    text: The thief stays free, and Gull Rock waits for a new lens.
+reveal:
+  - text: The thief came by water at night, so it was someone with a boat.
+    clues: [wet-boots]
+  - text: Ana could not have done it, because she was in the kitchen all night.
+    clues: [kitchen-all-night]
+  - text: Maud was not on the rock that night.
+    clues: [maud-ticket]
+  - text: Felix needed money and owed it to a collector of brass instruments.
+    clues: [felix-debt]
