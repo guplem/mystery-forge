@@ -12,7 +12,8 @@ from mystery_forge.game import Game
 from mystery_forge.i18n import text
 from mystery_forge.render.sheets import OUTPUT_FILES, OutputId, Sheet
 
-COMPANION_FILE: str = "companion.html"
+# The companion page keeps this name from the render folder to the exported folder, so the manual can name it.
+COMPANION_FILE: str = "Game companion.html"
 
 
 @dataclass(frozen=True)

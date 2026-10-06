@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from mystery_forge import cli
+from mystery_forge.cli_output import MAX_FINDINGS_IN_OUTPUT
 from mystery_forge.paths import SystemFolders
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
@@ -60,6 +61,8 @@ def test_setup_uses_the_newest_config_in_downloads_and_writes_the_game_folder(
     assert result["config_file"].endswith("party.mystery-config.json")
     assert result["brief"]["puzzle_count"] > 0
     assert result["summary"]["language"] == "en"
+    assert result["summary"]["pick_concept"] == "ask"
+    assert result["summary"]["host"] == "self_running"
 
 
 def test_setup_with_an_explicit_config_and_a_random_seed(
@@ -148,7 +151,7 @@ def test_findings_in_the_output_are_capped(tmp_path: Path, monkeypatch: pytest.M
     for index in range(30):
         (documents / f"D{index + 10}.md").write_text("no front matter", encoding="utf-8")
     _, result = run(["assemble", "--game", str(tmp_path)], monkeypatch)
-    assert len(result["findings"]) == cli.MAX_FINDINGS_IN_OUTPUT
+    assert len(result["findings"]) == MAX_FINDINGS_IN_OUTPUT
     assert result["more_findings"] > 0
 
 
@@ -224,3 +227,12 @@ def test_find_system_folders_and_random_seed_use_the_real_system() -> None:
     assert isinstance(cli.find_system_folders(), SystemFolders)
     seed = cli.random_seed()
     assert 1 <= seed <= 2_147_483_647
+
+
+def test_setup_accepts_the_word_defaults_as_the_config(
+    tmp_path: Path, folders: SystemFolders, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    code, result = run(["setup", "--config", "defaults", "--games-dir", str(tmp_path / "g")], monkeypatch, folders)
+    assert code == 0
+    assert result["ok"] is True
+    assert result["config_file"] is None
