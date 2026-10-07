@@ -1,0 +1,90 @@
+format_version: 1
+id: P6
+title: Fenna's Padlock on the Tower Door
+stage: B
+mechanic: arithmetic-lock
+difficulty: medium
+depends_on: [P1, P4, P5]
+in_world_reason: >-
+  At eight this morning Fenna locked the tower door with her own equipment padlock, so that Rudy cannot climb up
+  alone. Rudy reads all her notes in the van, so she built the code from three facts that only careful readers of
+  her trail can know.
+reveals: >-
+  The code of the padlock on the tower door. Greta and Hubert can wait in the clock room before 15:10, Rudy never
+  reaches the wheels, and the four o'clock whistle blows on time.
+answer: '3172'
+answer_format:
+  kind: digits
+  label: a 4-digit padlock code
+  length: 4
+near_misses:
+  - answer: '2417'
+    message: You added all three numbers. Fenna puts two of them in brackets, and the brackets say to multiply.
+  - answer: '3187'
+    message: Close. That is the time when the porter wrote Mr Platt in. Fenna wants the time when he left the set.
+  - answer: '150592'
+    message: The lock has only four dials. Do the multiplication in the brackets first, then add the time.
+decoys:
+  - '0317'
+  - '1517'
+  - '2400'
+params:
+  digits: 4
+  steps:
+    - { label: left, value: 2340 }
+    - { label: viewers, value: 13 }
+    - { label: steps, value: 64 }
+  expression: left + viewers * steps
+seed: 6
+clues:
+  - id: padlock-formula
+    document: D18
+    quote: The code of the padlock is the time when R. left the set on Night 2, read as one four-digit number, plus (the millions of viewers that Crown wants, times the steps up to the clock room).
+  - id: padlock-order
+    document: D18
+    quote: First do the multiplication in the brackets, then add the time.
+  - id: padlock-why
+    document: D18
+    quote: He means to push that thing into the wheels at 15:17, and then the four o'clock whistle never blows.
+  - id: stairs-count
+    document: D4
+    quote: I have never set foot in the clock room, because my bad knee will not take sixty-four steps.
+  - id: alone-in-tower
+    document: D11
+    quote: '15:10 to 15:25: R. Platt alone in the clock room. No crew.'
+solution:
+  - text: >-
+      Fenna's note says why the tower door matters: Rudy will be alone in the clock room from 15:10 and means to jam
+      the wheels at 15:17. Her padlock code is a formula of three numbers from earlier puzzles and documents.
+    uses: [padlock-why, alone-in-tower, padlock-formula]
+  - text: >-
+      The time when R. left the set on Night 2 is the time of the little clocks on the lid of the Night 2 tape box
+      (puzzle P1). Read as one four-digit number, it is 2340.
+    uses: [padlock-formula]
+  - text: >-
+      The millions of viewers that Crown wants is the number in the wire picture (puzzle P5): 13.
+    uses: [padlock-formula]
+  - text: >-
+      The steps up to the clock room are in Rudy's own statement: sixty-four steps, so 64.
+    uses: [stairs-count]
+  - text: >-
+      Multiply in the brackets first: 13 times 64 is 832. Then add the time: 2340 plus 832 is 3172.
+    uses: [padlock-order, padlock-formula]
+hints:
+  - level: 1
+    text: >-
+      You need Fenna's note about the tower door, the lid of the Night 2 tape box, the wire picture from Crown
+      Television, and Rudy Platt's statement.
+    points_to: [padlock-formula, stairs-count]
+  - level: 2
+    text: >-
+      Each part of Fenna's formula names a number that you already found: one on the lid of the Night 2 tape box,
+      one in the wire picture, and one in what Rudy said about his bad knee.
+    points_to: [padlock-formula, stairs-count]
+  - level: 3
+    text: >-
+      Write the code of the little clocks as one number. Multiply the millions from the wire picture by the steps
+      in Rudy's statement. Add the two results.
+    points_to: [padlock-formula, padlock-order, stairs-count]
+canary: canary-p6-vlvzop
+is_meta: true

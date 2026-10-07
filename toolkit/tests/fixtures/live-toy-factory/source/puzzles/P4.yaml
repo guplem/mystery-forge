@@ -1,0 +1,88 @@
+format_version: 1
+id: P4
+title: Strips from the Van Bin
+stage: B
+mechanic: cut-strips
+difficulty: medium
+depends_on:
+  - P3
+in_world_reason: >-
+  Rudy wrote the secret part of his live plan on a page, then cut it into strips and threw them in the bin of the
+  crew van, so that nobody could read it. Fenna fished the strips out and put them in her tape case.
+reveals: >-
+  At 15:17 today, alone in the clock room, Rudy will push a wooden wedge into the wheels of the tower clock, so the
+  clock stops on camera and the four o'clock whistle never blows.
+answer: WOODEN WEDGE
+accepted:
+  - A WOODEN WEDGE
+  - THE WOODEN WEDGE
+  - WEDGE
+near_misses:
+  - answer: WOOD
+    message: Close. Read the whole row on the strips. What kind of wooden thing does he push into the wheels?
+  - answer: CLOCK WHEELS
+    message: That is where it goes. What does Rudy push into them?
+  - answer: WHISTLE
+    message: The whistle is what he wants to stop. What does he push into the clock to do it?
+decoys:
+  - BRASS WINDING KEY
+  - GOLD TIE PIN
+  - SPARE KEY
+answer_format:
+  kind: phrase
+  label: What Rudy will push into the clock (2 words)
+params:
+  message: '15:17 LIVE: I PUSH THE WOODEN WEDGE INTO THE CLOCK WHEELS. NO WHISTLE AT FOUR.'
+  strips: 8
+  orientation: vertical
+  rows: 4
+clues:
+  - id: strips-from-bin
+    document: D16
+    quote: Rudy cut up a page of his plan for the live show, so that nobody could read it.
+    note: The strips are a cut-up page of Rudy's plan.
+  - id: dots-give-order
+    document: D16
+    quote: He always puts little dots at the top of his secret pages before he cuts them, so that he can put them back together later.
+    note: The number of dots at the top of each strip gives its place.
+  - id: read-row-by-row
+    document: D16
+    quote: Put the strips back in his order and read them row by row.
+  - id: alone-in-clock-room
+    document: D11
+    quote: '15:10 to 15:25: R. Platt alone in the clock room. No crew.'
+    note: Rudy has the clock room to himself at the time of the plan.
+  - id: clock-stops-live
+    document: D11
+    quote: '15:17: the clock stops again, live on camera.'
+    note: The call sheet says the clock stops, but never says how. The strips say how.
+solution:
+  - text: Cut the strips apart. Each strip has a symbol and a number of dots at the top.
+    uses:
+      - strips-from-bin
+  - text: Lay the strips side by side in dot order, from the strip with one dot to the strip with eight dots.
+    uses:
+      - dots-give-order
+  - text: Read the rows from left to right, top row first. The page gives Rudy's plan for 15:17, and it names what he will push into the clock wheels.
+    uses:
+      - read-row-by-row
+  - text: Compare with the call sheet. Rudy is alone in the clock room from 15:10 to 15:25, and the clock "stops again" at 15:17. The strips show how he will stop it. The answer is the two words of the thing that he will push into the wheels.
+    uses:
+      - alone-in-clock-room
+      - clock-stops-live
+hints:
+  - level: 1
+    text: Use the paper strips from the van bin and Fenna's note that comes with them. Rudy's call sheet helps you check what you find.
+    points_to:
+      - strips-from-bin
+  - level: 2
+    text: Fenna says that Rudy is a tidy man. Look closely at the top of each strip. What is different from strip to strip?
+    points_to:
+      - dots-give-order
+  - level: 3
+    text: Put the strip with one dot on the left, then two dots, and so on up to eight. Read every row from left to right. Find what Rudy will push into the clock wheels at 15:17.
+    points_to:
+      - dots-give-order
+      - read-row-by-row
+      - clock-stops-live
+canary: canary-p4-eccsza

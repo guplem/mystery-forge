@@ -10,6 +10,17 @@ def test_paginate_fills_each_page_up_to_the_budget() -> None:
     assert paginate([], lambda item: item, 6) == []
 
 
+def test_paginate_moves_a_heading_to_the_page_of_the_item_after_it() -> None:
+    def is_heading(item: str) -> bool:
+        return item.startswith("#")
+
+    def cost(item: str) -> float:
+        return 1 if is_heading(item) else 3
+
+    assert paginate(["a", "#h", "b"], cost, 5, is_heading) == [["a"], ["#h", "b"]]
+    assert paginate(["#h", "#i", "b"], cost, 4, is_heading) == [["#h", "#i", "b"]]
+
+
 def test_number_sheets_counts_the_whole_output() -> None:
     assert [item.corner for item in number_sheets([sheet(None), sheet("A")])] == ["1/2", "2/2"]
 

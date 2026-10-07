@@ -1,17 +1,21 @@
 <div class="safe solution-page">
   <header class="sheet-header solution-header">
     <div class="puzzle-badge inline"><span>{{ t("puzzle_badge") }}</span><strong>{{ content.code }}</strong></div>
-    <h1>{{ content.title }}</h1>
+    <h1>{{ content.title }}{% if not content.first %} <span class="heading-continued">({{ t("continued") }})</span>{% endif %}</h1>
   </header>
+  {% if content.first %}
   <div class="answer-box">
     <p class="answer-label">{{ t("solution_answer") }}</p>
     <p class="answer-text">{{ content.answer }}</p>
     {% if content.accepted %}<p class="answer-accepted">{{ t("solution_accepted") }}: {{ content.accepted | join(" · ") }}</p>{% endif %}
   </div>
   <h2 class="section-title">{{ t("solution_steps") }}</h2>
+  {% endif %}
+  {% set ns = namespace(number=content.start - 1) %}
   <ol class="explained-list">
     {% for step in content.steps %}
-    <li>{% include "sheets/explained.html.j2" %}</li>
+    {% if not step.continued %}{% set ns.number = ns.number + 1 %}{% endif %}
+    <li value="{{ ns.number }}"{% if step.continued %} class="explained-continued"{% endif %}>{% include "sheets/explained.html.j2" %}</li>
     {% endfor %}
   </ol>
 </div>

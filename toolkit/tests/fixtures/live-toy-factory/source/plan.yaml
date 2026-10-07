@@ -1,0 +1,311 @@
+format_version: 1
+motif: "Clocks. The tower clock that stops at 3:17 is the heart of the case, and every stage reads time: Fenna marks
+  her tape box with little clock faces instead of words (P1), the tape log and the porter's book run by the minute,
+  and Rudy's call sheet is a timetable toward the four o'clock whistle. The motif pays off in the final lock (P6):
+  Fenna builds the code of her padlock on the tower door from a clock time that the players read in P1, so a time
+  that they decoded at the start is what keeps the clock running at the end."
+puzzles:
+  - id: P1
+    stage: A
+    title: Little Clocks on the Tape Box
+    mechanic: clock-faces
+    difficulty: easy
+    depends_on: []
+    answer: '2340'
+    in_world_reason: Rudy reads every label in the van and wipes off what he does not like, so Fenna never writes
+      words on her tape boxes. She marks the moments that matter with small clock faces, and on the lid of the Night
+      2 box she drew the moment when "R." left the set.
+    reveals: On Night 2 (20 to 21 December) Rudy left the set at 23:40. The porter wrote him in at 23:55, which fits
+      the 15-minute drive, so his "in bed at midnight" story starts true, and the players must look later in the night.
+    documents:
+      - D13
+    relies_on:
+      - D4
+    notes: 'Mode "hour": four clocks, read left to right, the hour hand gives the digit (12 means 0). The lid states
+      the reading rule in Fenna''s words, for example "short hands only, left to right", next to "R. off set, Night
+      2". This is the first puzzle: keep it short, and let it teach the answer check (a 4-digit time). The solution
+      cites D13 and D4 (Rudy''s claim that the porter wrote him in at five to midnight). Never print 23:40 in words
+      or digits anywhere in stage A.'
+  - id: P2
+    stage: A
+    title: Rudy's Scrambled Reminders
+    mechanic: anagram
+    difficulty: easy
+    depends_on: []
+    answer: MILL LANE
+    in_world_reason: Rudy keeps his tricks secret even from his own crew, so that their scared faces look real on
+      camera. In his pocket notebook he scrambles the key word of each trick. Fenna found this torn-out page under
+      the seat of the van.
+    reveals:
+      For Night 2 Rudy planned to park his car in Mill Lane behind the factory, out of range of the gate microphone,
+      and to walk in through the back yard door.
+    documents:
+      - D14
+    relies_on:
+      - D2
+    notes: 'One scrambled line is the puzzle: "Night 2: park the car in ____ ____, so the gate mic does not hear it"
+      with the scrambled letters and letter-count blanks (4, 4). Two or three other lines are plain, harmless showman
+      notes (lights, a creaking door sound, coffee for Fenna); they must not mention the voice, the tube, the note,
+      or a wedge. The solution cites D14 and D2 (mic 2 by the gate hut heard only snoring all night, so no car came
+      to the gate). Never write Mill Lane anywhere else in stage A.'
+  - id: P3
+    stage: A
+    title: Pen Marks on the Leader Tape
+    mechanic: morse-code
+    difficulty: medium
+    depends_on: []
+    answer: FEATHERS
+    in_world_reason: Fenna learned Morse code at radio school and marks the white leader of her reels with short and
+      long pen strokes, which Rudy cannot read. She locked her last papers in her tape case with a word lock, and
+      on the leader of Tape Seven she wrote, in Morse, what she saw at the tower on 22 December. That word opens the
+      case.
+    reveals: 'Fenna saw that the "ghost" of the tower has feathers: something alive lives up there. This opens envelope
+      B, where Hubert''s log tells what he found behind the dial.'
+    documents:
+      - D15
+    relies_on:
+      - D2
+      - D5
+    notes: 'Plaintext "THE GHOST HAS FEATHERS" (or similar, with the answer in it), clear gaps between letters and
+      a wider gap between words. Print the Morse chart (include_reference_chart: true), because the audience is a
+      family. Fenna''s label on the case says that its word is on the leader of Tape Seven. The solution cites D15,
+      D2 (the 03:09 tapping and wings under the clock room), and D5 (the jackdaw column). This is the gate of stage
+      A and the medium step of the ramp. Never write any form of "feather" anywhere else in stage A.'
+  - id: P4
+    stage: B
+    title: Strips from the Van Bin
+    mechanic: cut-strips
+    difficulty: medium
+    depends_on:
+      - P3
+    answer: WOODEN WEDGE
+    in_world_reason: Rudy wrote the secret part of his live plan on a page, then cut it into strips and threw them
+      in the bin of the crew van, so that nobody could read it. Fenna fished the strips out and put them in her tape
+      case.
+    reveals: At 15:17 today, alone in the clock room, Rudy will push a wooden wedge into the wheels of the tower clock,
+      so the clock stops on camera and the four o'clock whistle never blows.
+    documents:
+      - D16
+    relies_on:
+      - D11
+    notes: 'Message in Rudy''s voice, for example "15:17 LIVE: I PUSH THE WOODEN WEDGE INTO THE CLOCK WHEELS. NO WHISTLE
+      AT FOUR." 6 to 8 vertical strips, about 4 rows; the scissors are available, and the no-cut fallback prints labeled
+      strips. The solution cites D16 and D11 (the call sheet: alone in the clock room 15:10 to 15:25, and "the clock
+      stops again" at 15:17). This is the twist of the human plan in envelope B. Never write "wedge" anywhere else
+      in the game material.'
+  - id: P5
+    stage: B
+    title: A Picture by Wire
+    mechanic: nonogram
+    difficulty: easy
+    depends_on:
+      - P3
+    answer: '13'
+    in_world_reason: Crown Television sends small pictures to its crews by wire, as rows and columns of numbers that
+      say how many squares to fill. The station wired Rudy's van the target for the Christmas special, and Fenna kept
+      the blank grid with its numbers.
+    reveals: Crown Television wants 13 million viewers for the Christmas special. Without them, After Hours Haunts
+      ends in January, so Rudy needs a story big enough for every newspaper.
+    documents:
+      - D17
+    relies_on:
+      - D8
+    notes: 'Let the builder draw the digits in the pixel font. Under the grid, a typed line from the station such
+      as "Target for 23 December: ______ million viewers" (no digits). The solution cites D17 and D8 (the station
+      letter: the show ends unless the special brings the viewers back). Never write 13 as a number on its own anywhere
+      in the game material.'
+  - id: P6
+    stage: B
+    title: Fenna's Padlock on the Tower Door
+    mechanic: arithmetic-lock
+    difficulty: medium
+    depends_on:
+      - P1
+      - P4
+      - P5
+    answer: '3172'
+    in_world_reason: At eight this morning Fenna locked the tower door with her own equipment padlock, so that Rudy
+      cannot climb up alone. Rudy reads all her notes, so she built the code from things that only careful readers
+      of her trail can know.
+    reveals: The code of the padlock on the tower door. Greta and Hubert can wait in the clock room before 15:10,
+      the wedge never reaches the wheels, and the four o'clock whistle blows on time.
+    documents:
+      - D18
+    relies_on:
+      - D4
+      - D11
+    notes: 'The meta and climax. Steps: left = 2340 (the P1 time on the Night 2 tape box, read as one number), viewers
+      = 13 (P5), steps = 64 (D4: the steps up to the clock room). Expression "left + viewers * steps"; the code computes
+      it, so check that it gives the answer. Fenna''s note states the formula in words and with clear brackets, for
+      example "the time when R. left the set, as one number, plus (the millions that Crown wants times the steps up
+      to the clock room)". It says why the door matters now (P4: what Rudy will push into the wheels) without the
+      word itself. Then the players fill in the accusation form.'
+story_documents:
+  - id: D1
+    kind: letter
+    stage: A
+    title: Greta's letter to the reporters
+    purpose: "The case briefing in Greta's short, practical voice: the deadline, the whistle, the loading time, and
+      her worries about Mr Brook, Hubert, and Anneliese. The quotes already fill about 232 words of the 250-word limit,
+      so add only a greeting, a signature, and a few joining words. Stage A rule: never write the time 23:40, the
+      place name Mill Lane, or any form of the word feather (puzzle answers of stage A must not appear in stage A
+      text)."
+    must_contain:
+      - The first brass key went missing on 11 December, eight days before the television people arrived.
+      - The goods train leaves Wickfold station at 6 p.m. sharp, and it will not wait for us.
+      - The tower clock blows the four o'clock whistle, and that whistle sends everyone to the loading bay.
+      - Loading 2,400 robots takes 90 minutes, the lorries need 15 minutes to the station, and the station master closes
+        the goods yard at 5:45, so we must start at four.
+      - On the shop floor nobody may wear a watch near the machines, and the presses are so loud that only the whistle
+        reaches every hall.
+      - On his first visit Mr Brook asked me twice at what time exactly our four o'clock whistle blows.
+      - Manchester is five hours from Wickfold by car, and there is no night train.
+      - In January a new electric clock takes the place of the old tower clock, and Hubert has hardly spoken to me since
+        I told him.
+      - Mr Brook of Tollmann Toys came here on 19 December and again on 22 December, and both times he asked about our
+        train.
+      - Mr Brook telephoned me from the Hotel Carrow in Manchester at 08:15 on 21 December.
+      - Anneliese spent the night of 20 December in Birmingham, for her interview at the art school.
+      - My daughter Anneliese wants the television crew gone, and she tells them so to their faces.
+  - id: D2
+    kind: notebook
+    stage: A
+    title: Fenna's tape log
+    purpose: 'Fenna''s handwritten log of the microphones, by the minute, under one heading per night: "Night 1, 19
+      to 20 December" and "Night 2, 20 to 21 December". Mic 1 is in the packing hall, mic 2 by the gate hut, mic 3
+      under the clock room. The 03:09 entry goes under Night 1; the steps, the voice, and the snoring go under Night
+      2. Do not log when Rudy left the set. Stage A rule: never write the time 23:40, the place name Mill Lane, or
+      any form of the word feather (puzzle answers of stage A must not appear in stage A text).'
+    must_contain:
+      - 'The old speaking tube in the packing hall goes to one place only: the clock room at the top of the tower.'
+      - "20 December, 03:09, mic 3 under the clock room: tapping, a flutter of wings, and a sharp 'chak, chak'."
+      - "21 December, 03:17, mic 1 in the packing hall: a low man's voice from the speaking tube says 'The robots
+        will never leave.'"
+      - '21 December, 02:41 to 02:46, mic 3 under the clock room: slow steps on the tower stairs, and a man groans.'
+      - '21 December, 03:41 to 03:45, mic 3: steps go down the tower stairs.'
+      - Our van typewriter drops the tail of every capital R, so I write these logs by hand.
+      - '21 December, 02:30 to 04:00, mic 2 by the gate hut: loud snoring, without a break.'
+  - id: D3
+    kind: photo
+    stage: A
+    title: Fenna's photo list
+    purpose: "Fenna's numbered list of the photos that she took, with short captions. It puts Rudy, his tie pin,
+      and his shoes in stage A material. Stage A rule: never write the time 23:40, the place name Mill Lane, or any
+      form of the word feather (puzzle answers of stage A must not appear in stage A text)."
+    must_contain:
+      - 'Photo 4, 20 December, 22:00: Rudy Platt in front of the tower, in his smooth town shoes, with his lucky gold
+        tie pin in the shape of a television aerial on a dark red silk tie.'
+      - "Photo 2, 20 December, 07:35: the typed note on Mrs Kessler's door. Every capital R in it has lost its tail
+        and looks like a P."
+      - 'Photo 6, 20 December, 17:45: red paint on our van that says GO HOME TV.'
+  - id: D4
+    kind: transcript
+    stage: A
+    title: Rudy Platt's statement
+    purpose: 'A transcript of what Rudy told Greta on 22 December, in his loud, charming voice. His planned lies:
+      the hotel, the knee, and the lost pin. It also gives the 64 steps (as words) that the final puzzle needs. Stage
+      A rule: never write the time 23:40, the place name Mill Lane, or any form of the word feather (puzzle answers
+      of stage A must not appear in stage A text).'
+    must_contain:
+      - On the night of 20 December I went to bed at the Swan Hotel at midnight and slept until eight.
+      - 'Ask the night porter: he wrote me in at five to midnight.'
+      - I have never set foot in the clock room, because my bad knee will not take sixty-four steps.
+      - I lost my lucky tie pin somewhere in town on the 21st.
+  - id: D5
+    kind: newspaper
+    stage: A
+    title: The Wickfold Gazette, 16 December 1958
+    purpose: 'The article about the clock that stops at 3:17, with a short nature column about the jackdaw on the
+      same page. The players work for this paper. Describe the bird only with the quoted words. Stage A rule: never
+      write the time 23:40, the place name Mill Lane, or any form of the word feather (puzzle answers of stage A must
+      not appear in stage A text).'
+    must_contain:
+      - The jackdaw, a small crow with a grey neck, nests in towers and chimneys and carries off anything that shines.
+      - Since 12 December the tower clock of Kessler & Daughters has stopped at 3:17 every night.
+  - id: D10
+    kind: letter
+    stage: A
+    title: Anneliese's note to her mother
+    purpose: "Anneliese's quick, proud, and sorry note: she painted the van, but she was on the train to Birmingham.
+      Do not give the hostel times; the register in stage B gives them. Stage A rule: never write the time 23:40,
+      the place name Mill Lane, or any form of the word feather (puzzle answers of stage A must not appear in stage
+      A text)."
+    must_contain:
+      - I painted GO HOME TV on their van, and I am sorry, but at 21:15 that same evening I was on the train to Birmingham.
+      - If the Hallworth's order goes well, Mother needs me to paint robot faces all through 1959, and art school must
+        wait.
+  - id: D6
+    kind: notebook
+    stage: B
+    title: Hubert Dunn's clock log
+    purpose: "Hubert's careful clock log from 11 to 22 December: the spare key, the morning windings, his confession,
+      and the page about the nest, the shoe print, and the silk. This page is the mid-game twist. The quotes fill
+      about 212 words, so keep the dates and joining words short. Stage B rule: never write the word wedge, and never
+      write the number 13 or 3172 on its own."
+    must_contain:
+      - 'Big brass winding key gone from its hook by the window, so I wound the clock at 6 p.m. with the little spare
+        key, which gives only a half winding: nine hours and seventeen minutes.'
+      - I am ashamed to write it, but I slept in the gate hut from half past two until four.
+      - Behind the dial I found a heap of twigs, and in it the big winding key, seven robot keys, a thimble, sweet papers,
+        and a gold tie pin shaped like a television aerial.
+      - Everything in the nest came from our own works, the keys, the thimble from the packing hall, the sweet papers
+        from our canteen, all except that pin.
+      - On a sharp edge of the clock works, beside the speaking tube, hung a torn scrap of dark red silk, like a piece
+        of a tie.
+      - Every morning at 7 a.m. I set the hands and give a second half winding with the spare key, so the clock runs
+        to 4:17 p.m. and the four o'clock whistle still blows.
+      - On the dusty top step I saw the print of a smooth town shoe. Miss Okafor and I both wear boots.
+      - Wound with the big key at 6 p.m. yesterday, and the clock ran all night without a stop.
+  - id: D7
+    kind: form
+    stage: B
+    title: The night book of the Swan Hotel
+    purpose: "A page of Walter Gedge's night book for 20 to 21 December, with a few other guests around Rudy's lines.
+      Stage B rule: never write the word wedge, and never write the number 13 or 3172 on its own."
+    must_contain:
+      - 23:55, Mr Platt, room 7, in.
+      - 02:20, Mr Platt, room 7, went out by car. 04:05, Mr Platt back, with dust and cobwebs on his coat.
+  - id: D8
+    kind: letter
+    stage: B
+    title: Letter from Crown Television to Rudy Platt
+    purpose: "The station's letter that gives Rudy his motive. The wire picture of P5 belongs to the same station,
+      so use the same letterhead name, Crown Television. Stage B rule: never write the word wedge, and never write
+      the number 13 or 3172 on its own."
+    must_contain:
+      - Unless your Christmas special on 23 December brings the viewers back, After Hours Haunts will end in January.
+  - id: D9
+    kind: letter
+    stage: B
+    title: Mr Brook's offer, with his hotel bill
+    purpose: "Oscar Brook's polite written offer from Tollmann Toys, with the Hotel Carrow bill pinned to it. It
+      clears Mr Brook and explains his questions about the whistle and the train. Stage B rule: never write the word
+      wedge, and never write the number 13 or 3172 on its own."
+    must_contain:
+      - Hotel Carrow, Manchester. One night, 20 to 21 December 1958, Mr O. Brook, room 12.
+      - 'Night porter: 21 December, 03:00, pot of tea to room 12, taken at the door by Mr Brook himself.'
+      - I asked about your whistle and your train because our own lorry would load at your bay right after the London
+        crates.
+      - Tollmann Toys would like to sell your Rocket Rex robots in our own shops, and we can only do that if the Hallworth's
+        order goes well.
+  - id: D11
+    kind: form
+    stage: B
+    title: Call sheet for the live Christmas special
+    purpose: "Rudy's minute-by-minute call sheet for the live show on 23 December, 15:00 to 16:15, with crew names
+      and camera places. It says only that the clock stops; it never says how. Stage B rule: never write the word
+      wedge, and never write the number 13 or 3172 on its own."
+    must_contain:
+      - '15:10 to 15:25: R. Platt alone in the clock room. No crew.'
+      - '15:17: the clock stops again, live on camera.'
+      - If the four o'clock whistle stays silent live on air, and the robots miss their train, every newspaper in the
+        country will write about us.
+  - id: D12
+    kind: form
+    stage: B
+    title: Register of the college hostel in Birmingham
+    purpose: "A copy of the sign-in register of the Edgbaston School of Art hostel, with a few other students around
+      Anneliese's line. It clears Anneliese. Stage B rule: never write the word wedge, and never write the number
+      13 or 3172 on its own."
+    must_contain:
+      - Miss A. Kessler, arrived 20 December 23:40, left 21 December 16:00.

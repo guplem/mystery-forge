@@ -5,7 +5,9 @@ labels, answer register, detective notes), then each stage behind its STOP cover
 the last stage, so it travels in the last envelope.
 """
 
-from dataclasses import dataclass
+import math
+from dataclasses import dataclass, replace
+from typing import Final
 
 from markupsafe import Markup
 
@@ -15,13 +17,35 @@ from mystery_forge.i18n import text
 from mystery_forge.render.answer_register import AnswerRegister, RegisterEntry, ResultParagraph, build_answer_register
 from mystery_forge.render.document_body import insert_artifacts, insert_images, split_pages
 from mystery_forge.render.kinds import DocumentKind, document_kind
+from mystery_forge.render.layout import Tightness, page_budget, split_text, text_height, tightness
 from mystery_forge.render.sheets import Sheet, paginate
 from mystery_forge.spec.models import AccusationQuestion, Stage
 
-REGISTER_ENTRIES_PER_SHEET: int = 108
-# A rough count of printed lines: the result paragraphs sit in two columns of about 40 characters.
-RESULT_LINES_PER_SHEET: int = 96
-RESULT_CHARACTERS_PER_LINE: int = 40
+# The flow groups of the materials. The sizes are millimetres on the printed page, as `themes/base.css` sets them.
+REGISTER_GROUP: Final[str] = "register"
+RESULTS_GROUP: Final[str] = "results"
+NOTES_GROUP: Final[str] = "notes"
+ACCUSATION_GROUP: Final[str] = "accusation"
+LABELS_GROUP: Final[str] = "labels"
+# The sheet header (kicker and title) plus the intro paragraph under it.
+HEADER_MM: Final[float] = 46
+REGISTER_COLUMNS: Final[int] = 3
+REGISTER_ROW_MM: Final[float] = 4.8
+REGISTER_CHARS_PER_ROW: Final[int] = 16
+# The result paragraphs sit in two columns, and a column never splits a paragraph, so a column wastes some space.
+RESULT_COLUMNS: Final[int] = 2
+RESULT_COLUMN_FILL: Final[float] = 0.92
+RESULT_CHARS_PER_LINE: Final[int] = 46
+RESULT_LINE_MM: Final[float] = 4.7
+RESULT_FRAME_MM: Final[float] = 13
+NOTES_SUSPECT_ROW_MM: Final[float] = 12
+NOTES_PLACE_ROW_MM: Final[float] = 7.5
+NOTES_TABLE_HEAD_MM: Final[float] = 21
+NOTES_FREE_LINES_MM: Final[float] = 32
+NOTES_MIN_PLACES: Final[int] = 3
+ACCUSATION_RESERVED_MM: Final[float] = HEADER_MM + 26
+ACCUSATION_CHARS_PER_LINE: Final[int] = 80
+LABEL_ROW_MM: Final[float] = 60
 
 
 @dataclass(frozen=True)
@@ -75,6 +99,10 @@ class ResultsPage:
 class AccusationContent:
     questions: list[AccusationQuestion]
     total_points: int
+    # The number of the first question on this page, and whether this page opens or closes the form.
+    start: int = 1
+    first: bool = True
+    last: bool = True
 
 
 @dataclass(frozen=True)
@@ -92,8 +120,12 @@ class EnvelopeLabelsContent:
 
 @dataclass(frozen=True)
 class DetectiveNotesContent:
+    """One notes page. The places are the rows of the "who was where" grid, and the suspects are its columns."""
+
     suspects: list[str]
     locations: list[str]
+    first: bool = True
+    last: bool = True
 
 
 def puzzle_codes(game: Game) -> dict[str, str]:
@@ -178,28 +210,66 @@ def stage_sheets(game: Game, stage: Stage) -> list[Sheet]:
     return sheets
 
 
-def result_lines(paragraph: ResultParagraph) -> int:
-    characters: int = len(paragraph.message) + len(paragraph.action) + len(paragraph.reveals)
-    return 3 + characters // RESULT_CHARACTERS_PER_LINE
+def result_height(paragraph: ResultParagraph) -> float:
+    parts: list[str] = [part for part in (paragraph.message, paragraph.reveals, paragraph.action) if part]
+    return RESULT_FRAME_MM + sum(text_height(part, RESULT_CHARS_PER_LINE, RESULT_LINE_MM) for part in parts)
 
 
-def register_sheets(game: Game) -> list[Sheet]:
+def split_result(paragraph: ResultParagraph, column_mm: float) -> list[ResultParagraph]:
+    """Split a paragraph taller than one column: its `reveals` text goes on in parts with the same number."""
+    if result_height(paragraph) <= column_mm:
+        return [paragraph]
+    lines: int = max(1, int((column_mm - RESULT_FRAME_MM) / RESULT_LINE_MM) - 4)
+    pieces: list[str] = split_text(paragraph.reveals, lines * RESULT_CHARS_PER_LINE) or [""]
+    return [
+        replace(
+            paragraph,
+            message=paragraph.message if index == 0 else "",
+            reveals=piece,
+            action=paragraph.action if index == len(pieces) - 1 else "",
+            continued=index > 0,
+        )
+        for index, piece in enumerate(pieces)
+    ]
+
+
+def register_sheets(game: Game, levels: Tightness) -> list[Sheet]:
     register: AnswerRegister = build_answer_register(game)
-    entry_pages = paginate(register.entries, lambda _: 1, REGISTER_ENTRIES_PER_SHEET)
-    result_pages = paginate(register.paragraphs, result_lines, RESULT_LINES_PER_SHEET)
+    paper = game.config.equipment.paper
+    rows: float = page_budget(paper, HEADER_MM, tightness(levels, REGISTER_GROUP)) / REGISTER_ROW_MM
+    entry_pages = paginate(
+        register.entries,
+        lambda entry: math.ceil(len(entry.text) / REGISTER_CHARS_PER_ROW),
+        int(rows) * REGISTER_COLUMNS,
+    )
+    column_mm: float = page_budget(paper, HEADER_MM, tightness(levels, RESULTS_GROUP)) * RESULT_COLUMN_FILL
+    parts: list[ResultParagraph] = [
+        part for paragraph in register.paragraphs for part in split_result(paragraph, column_mm)
+    ]
+    result_pages = paginate(parts, result_height, column_mm * RESULT_COLUMNS)
     return [
         *(
-            Sheet(role="register", template="register.html.j2", content=RegisterPage(entries, first=index == 0))
+            Sheet(
+                role="register",
+                template="register.html.j2",
+                content=RegisterPage(entries, first=index == 0),
+                group=REGISTER_GROUP,
+            )
             for index, entries in enumerate(entry_pages)
         ),
         *(
-            Sheet(role="register-results", template="results.html.j2", content=ResultsPage(items, first=index == 0))
+            Sheet(
+                role="register-results",
+                template="results.html.j2",
+                content=ResultsPage(items, first=index == 0),
+                group=RESULTS_GROUP,
+            )
             for index, items in enumerate(result_pages)
         ),
     ]
 
 
-def envelope_labels_sheet(game: Game) -> Sheet:
+def envelope_labels_sheets(game: Game, levels: Tightness) -> list[Sheet]:
     labels: list[EnvelopeLabel] = [
         EnvelopeLabel(
             stage=stage.id,
@@ -208,46 +278,100 @@ def envelope_labels_sheet(game: Game) -> Sheet:
         )
         for stage in game.flow.stages
     ]
-    return Sheet(
-        role="envelope-labels",
-        template="envelope_labels.html.j2",
-        content=EnvelopeLabelsContent(title=game.story.title, labels=labels),
-    )
-
-
-def detective_notes_sheet(game: Game) -> Sheet:
-    characters = game.story.characters
-    suspects: list[str] = [character.name for character in characters if character.is_suspect] or [
-        character.name for character in characters
+    budget: float = page_budget(game.config.equipment.paper, HEADER_MM, tightness(levels, LABELS_GROUP))
+    per_sheet: int = 2 * max(1, int(budget / LABEL_ROW_MM))
+    return [
+        Sheet(
+            role="envelope-labels",
+            template="envelope_labels.html.j2",
+            content=EnvelopeLabelsContent(title=game.story.title, labels=labels[start : start + per_sheet]),
+            group=LABELS_GROUP,
+        )
+        for start in range(0, len(labels), per_sheet)
     ]
-    # A location whose name holds an answer ("the boathouse" for BOATHOUSE) stays off the grid: the notes page is
-    # in the players' hands from the start. Every suspect stays, because a missing suspect would point at the culprit.
+
+
+def notes_places(game: Game) -> list[str]:
+    # A place whose name holds an answer ("the boathouse" for BOATHOUSE) stays off the grid: the notes page is in the
+    # players' hands from the start. Every suspect stays, because a missing suspect would point at the culprit.
     answers: set[str] = {answer for puzzle in game.puzzles for answer in puzzle.accepted_normalized if answer}
-    locations: list[str] = [
+    return [
         location.name
         for location in game.story.locations
         if not any(answer in normalize_answer(location.name, game.config.language) for answer in answers)
     ]
-    content = DetectiveNotesContent(suspects=suspects, locations=locations)
-    return Sheet(role="detective-notes", template="detective_notes.html.j2", content=content)
 
 
-def accusation_sheet(game: Game, questions: list[AccusationQuestion], stage: str) -> Sheet:
-    content = AccusationContent(questions=questions, total_points=sum(question.points for question in questions))
-    return Sheet(role="accusation", template="accusation.html.j2", content=content, stage=stage)
+def detective_notes_sheets(game: Game, levels: Tightness) -> list[Sheet]:
+    """The suspect table and the free notes, plus the "who was where" grid on as many pages as it needs."""
+    characters = game.story.characters
+    suspects: list[str] = [character.name for character in characters if character.is_suspect] or [
+        character.name for character in characters
+    ]
+    places: list[str] = notes_places(game)
+    budget: float = page_budget(game.config.equipment.paper, HEADER_MM, tightness(levels, NOTES_GROUP))
+    free_mm: float = budget - NOTES_TABLE_HEAD_MM - NOTES_FREE_LINES_MM
+    first_rows: int = int((free_mm - NOTES_TABLE_HEAD_MM - NOTES_SUSPECT_ROW_MM * len(suspects)) / NOTES_PLACE_ROW_MM)
+    first_rows = first_rows if first_rows >= NOTES_MIN_PLACES else 0
+    later_rows: int = max(NOTES_MIN_PLACES, int(free_mm / NOTES_PLACE_ROW_MM))
+    chunks: list[list[str]] = [places[:first_rows]]
+    chunks.extend(places[start : start + later_rows] for start in range(first_rows, len(places), later_rows))
+    return [
+        Sheet(
+            role="detective-notes",
+            template="detective_notes.html.j2",
+            content=DetectiveNotesContent(
+                suspects=suspects, locations=chunk, first=index == 0, last=index == len(chunks) - 1
+            ),
+            group=NOTES_GROUP,
+        )
+        for index, chunk in enumerate(chunks)
+    ]
 
 
-def materials_sheets(game: Game) -> list[Sheet]:
+def question_height(question: AccusationQuestion) -> float:
+    option_rows: int = math.ceil(sum(len(option.text) + 10 for option in question.options) / ACCUSATION_CHARS_PER_LINE)
+    return 26 + text_height(question.prompt, ACCUSATION_CHARS_PER_LINE, 5.5) + option_rows * 7
+
+
+def accusation_sheets(game: Game, questions: list[AccusationQuestion], stage: str, levels: Tightness) -> list[Sheet]:
+    budget: float = page_budget(
+        game.config.equipment.paper, ACCUSATION_RESERVED_MM, tightness(levels, ACCUSATION_GROUP)
+    )
+    pages = paginate(questions, question_height, budget)
+    total: int = sum(question.points for question in questions)
+    starts: list[int] = [1 + sum(len(page) for page in pages[:index]) for index in range(len(pages))]
+    return [
+        Sheet(
+            role="accusation",
+            template="accusation.html.j2",
+            content=AccusationContent(
+                questions=page,
+                total_points=total,
+                start=starts[index],
+                first=index == 0,
+                last=index == len(pages) - 1,
+            ),
+            stage=stage,
+            group=ACCUSATION_GROUP,
+        )
+        for index, page in enumerate(pages)
+    ]
+
+
+def materials_sheets(game: Game, levels: Tightness | None = None) -> list[Sheet]:
+    """Plan the materials. `levels` holds the tightness level of each flow group (see `layout.py`)."""
+    tight: Tightness = levels or {}
     config = game.config
     sheets: list[Sheet] = [cover_sheet(game)]
     if config.equipment.envelopes:
-        sheets.append(envelope_labels_sheet(game))
+        sheets.extend(envelope_labels_sheets(game, tight))
     if config.assistance.paper_answer_check:
-        sheets.extend(register_sheets(game))
+        sheets.extend(register_sheets(game, tight))
     if config.format in ("case_file", "both"):
-        sheets.append(detective_notes_sheet(game))
+        sheets.extend(detective_notes_sheets(game, tight))
     for stage in game.flow.stages:
         sheets.extend(stage_sheets(game, stage))
     if game.story.deduction is not None:
-        sheets.append(accusation_sheet(game, game.story.deduction.questions, game.flow.stages[-1].id))
+        sheets.extend(accusation_sheets(game, game.story.deduction.questions, game.flow.stages[-1].id, tight))
     return sheets

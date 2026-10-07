@@ -1,0 +1,85 @@
+format_version: 1
+id: P3
+title: Pen Marks on the Leader Tape
+stage: A
+mechanic: morse-code
+difficulty: medium
+depends_on: []
+in_world_reason: >-
+  Fenna learned Morse code at radio school and marks the white leader of her reels with short and long pen
+  strokes, which Rudy cannot read. She locked her last papers in her tape case with a word lock, and on the leader
+  of Tape Seven she wrote, in Morse, what she saw at the tower on 22 December. That word opens the case.
+reveals: >-
+  Fenna saw that the "ghost" of the tower is a living bird. This opens envelope B, where Hubert's log tells what he
+  found behind the dial.
+answer: FEATHERS
+accepted:
+  - THE GHOST HAS FEATHERS
+near_misses:
+  - answer: FEATHER
+    message: Very close. Count the letters again. The lock takes eight.
+  - answer: GHOST
+    message: That word is in the message, but the lock takes eight letters. Read the message to its end.
+  - answer: THEGHOSTHAS
+    message: Keep reading. The message has four words, and the last word opens the lock.
+decoys:
+  - JACKDAWS
+  - CHIMNEYS
+  - WINDINGS
+answer_format:
+  kind: word
+  label: The eight-letter word of the lock on Fenna's tape case
+  length: 8
+params:
+  plaintext: THE GHOST HAS FEATHERS
+  include_reference_chart: true
+clues:
+  - id: lock-label
+    document: D15
+    quote: Word lock, eight letters. The word is on the leader of Tape Seven.
+  - id: pen-strokes
+    document: D15
+    quote: R. reads every label in the van, but he cannot read my short and long strokes.
+  - id: radio-school
+    document: D15
+    quote: Radio school was good for something.
+  - id: four-words
+    document: D15
+    quote: On 22 December I climbed the tower with Hubert. I saw what lives up there, and I put it on this leader in four words.
+  - id: gaps
+    document: D15
+    quote: A small gap ends each letter. A wide gap ends each word.
+  - id: wings-on-tape
+    document: D2
+    quote: "20 December, 03:09, mic 3 under the clock room: tapping, a flutter of wings, and a sharp 'chak, chak'."
+  - id: jackdaw-column-p3
+    document: D5
+    quote: The jackdaw, a small crow with a grey neck, nests in towers and chimneys and carries off anything that shines.
+solution:
+  - text: >-
+      The label on the tape case says that the eight-letter word of its lock is on the leader of Tape Seven. Find
+      the leader on the same page.
+    uses: [lock-label]
+  - text: >-
+      The leader carries short and long pen strokes. Fenna went to radio school, so the strokes are Morse code:
+      short strokes are dots and long strokes are dashes. The chart from the lid of the case gives every letter.
+    uses: [pen-strokes, radio-school]
+  - text: >-
+      A small gap ends each letter and a wide gap ends each word. Read each group of strokes as one letter with
+      the chart. The four words read THE GHOST HAS, then an eight-letter word.
+    uses: [gaps, four-words]
+  - text: >-
+      The last word is the lock word. It fits the tape log (a flutter of wings and a 'chak, chak' under the clock
+      room) and the Gazette's nature column about the jackdaw, which nests in towers. The ghost is a bird.
+    uses: [wings-on-tape, jackdaw-column-p3, lock-label]
+hints:
+  - level: 1
+    text: Look at the label on Fenna's tape case and at the leader of Tape Seven, on the same page. The chart that you need is on that page too.
+    points_to: [lock-label]
+  - level: 2
+    text: Fenna went to radio school. Short and long strokes are like a signal. The small gaps split the letters, and the wide gaps split the words.
+    points_to: [lock-label, radio-school, gaps]
+  - level: 3
+    text: It is Morse code. A short stroke is a dot and a long stroke is a dash. Read each group as one letter with the chart. The lock word is the last of the four words.
+    points_to: [lock-label, radio-school, pen-strokes, gaps, four-words]
+canary: canary-p3-qzvlmk

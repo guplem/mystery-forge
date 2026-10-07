@@ -1,0 +1,25 @@
+{% from "macros.html.j2" import ornament %}
+<div class="safe section-page">
+  <header class="sheet-header">
+    <p class="sheet-kicker">{{ t("solutions_title") }}</p>
+    <h1>{{ t(content.title_key) }}{% if not content.first %} <span class="heading-continued">({{ t("continued") }})</span>{% endif %}</h1>
+  </header>
+  {% for step in content.items %}
+  {% if step.kind == "subtitle" %}
+  <h2 class="section-title">{{ t(step.heading) }}</h2>
+  {% elif step.kind == "truth" %}
+  <p class="truth-text">{{ step.text }}</p>
+  {% elif step.kind == "epilogue" %}
+  <div class="epilogue">
+    {% if step.heading %}
+    <p class="epilogue-threshold">{{ t("epilogue_threshold", percent=step.points) }}</p>
+    <h2 class="epilogue-title">{{ step.heading }}</h2>
+    {% endif %}
+    <p class="epilogue-text">{{ step.text }}</p>
+  </div>
+  {% else %}
+  <div class="explained-block">{% include "sheets/explained.html.j2" %}</div>
+  {% endif %}
+  {% endfor %}
+  {% if content.last and content.title_key == "epilogues_title" %}<footer class="manual-credit">{{ ornament() }}<p class="cover-credit">{{ t("made_with") }}</p></footer>{% endif %}
+</div>

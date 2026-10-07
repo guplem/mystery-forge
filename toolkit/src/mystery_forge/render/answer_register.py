@@ -32,6 +32,8 @@ class ResultParagraph:
     message: str
     action: str
     reveals: str
+    # A paragraph too long for one column goes on in a second part with the same number.
+    continued: bool = False
 
 
 @dataclass(frozen=True)

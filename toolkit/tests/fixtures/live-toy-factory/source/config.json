@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "audience": "family",
+  "format": "both",
+  "players": {
+    "count": 3,
+    "names": []
+  },
+  "host": "self_running",
+  "duration_minutes": 45,
+  "difficulty": "easy",
+  "language": "en",
+  "theme": {
+    "idea": "",
+    "tone": "surprise",
+    "era": "any"
+  },
+  "content": {
+    "death_allowed": true,
+    "scary_level": "mild",
+    "reading_load": "medium"
+  },
+  "personalization": {
+    "host_name": "",
+    "place": "",
+    "inside_jokes": [],
+    "dedication": ""
+  },
+  "puzzle_preferences": {
+    "words": "neutral",
+    "numbers": "neutral",
+    "logic": "neutral",
+    "visual": "neutral",
+    "crafts": "neutral",
+    "deduction": "neutral"
+  },
+  "equipment": {
+    "printer": "color",
+    "ink_saving": false,
+    "paper": "A4",
+    "scissors": true,
+    "tape_or_glue": false,
+    "envelopes": true
+  },
+  "assistance": {
+    "hints": true,
+    "paper_answer_check": true,
+    "companion_page": true
+  },
+  "visuals": {
+    "style": "auto",
+    "images": "svg",
+    "readable_font": false
+  },
+  "generation": {
+    "quality": "fast",
+    "pick_concept": "agent",
+    "seed": 2026
+  },
+  "output": {
+    "folder": ""
+  }
+}

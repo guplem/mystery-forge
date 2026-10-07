@@ -13,6 +13,7 @@ LANGUAGES: Final[tuple[str, ...]] = ("en", "es", "ca", "fr", "de", "it", "pt")
 STRINGS: Final[dict[str, dict[str, str]]] = {
     "en": {
         "envelope_label": "Envelope {stage}",
+        "continued": "continued",
         "materials_title": "Game materials",
         "made_with": "Made with Mystery Forge",
         "page_label": "Page {number} of {count}",
@@ -216,6 +217,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
     },
     "es": {
         "envelope_label": "Sobre {stage}",
+        "continued": "continuación",
         "materials_title": "Material del juego",
         "made_with": "Hecho con Mystery Forge",
         "page_label": "Página {number} de {count}",
@@ -421,6 +423,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
     },
     "ca": {
         "envelope_label": "Sobre {stage}",
+        "continued": "continuació",
         "materials_title": "Material del joc",
         "made_with": "Fet amb Mystery Forge",
         "page_label": "Pàgina {number} de {count}",
@@ -624,6 +627,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
     },
     "fr": {
         "envelope_label": "Enveloppe {stage}",
+        "continued": "suite",
         "materials_title": "Matériel de jeu",
         "made_with": "Créé avec Mystery Forge",
         "page_label": "Page {number} sur {count}",
@@ -831,6 +835,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
     },
     "de": {
         "envelope_label": "Umschlag {stage}",
+        "continued": "Fortsetzung",
         "materials_title": "Spielmaterial",
         "made_with": "Erstellt mit Mystery Forge",
         "page_label": "Seite {number} von {count}",
@@ -1036,6 +1041,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
     },
     "it": {
         "envelope_label": "Busta {stage}",
+        "continued": "continua",
         "materials_title": "Materiale di gioco",
         "made_with": "Creato con Mystery Forge",
         "page_label": "Pagina {number} di {count}",
@@ -1240,6 +1246,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
     },
     "pt": {
         "envelope_label": "Envelope {stage}",
+        "continued": "continuação",
         "materials_title": "Material do jogo",
         "made_with": "Feito com Mystery Forge",
         "page_label": "Página {number} de {count}",

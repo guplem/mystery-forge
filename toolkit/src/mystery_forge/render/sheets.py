@@ -54,6 +54,8 @@ class Sheet:
     stage: str | None = None
     # The small code printed in a corner, such as "B · 3/7". The output plan fills it in.
     corner: str = ""
+    # The flow group of a sheet that the toolkit fills from a list. When it overflows, the group gets more sheets.
+    group: str | None = None
 
 
 @dataclass(frozen=True)
@@ -66,16 +68,29 @@ class OutputPlan:
         return OUTPUT_FILES[self.id]
 
 
-def paginate[Item](items: Sequence[Item], cost: Callable[[Item], int], budget: int) -> list[list[Item]]:
-    """Group items into pages whose total cost stays within the budget. An item bigger than the budget gets a page."""
+def paginate[Item](
+    items: Sequence[Item],
+    cost: Callable[[Item], float],
+    budget: float,
+    keep_with_next: Callable[[Item], bool] = lambda _: False,
+) -> list[list[Item]]:
+    """Group items into pages whose total cost stays within the budget. An item bigger than the budget gets a page.
+
+    An item that must stay with the next one (a heading) never ends a page: it moves to the next page with it.
+    """
     pages: list[list[Item]] = []
     current: list[Item] = []
-    used: int = 0
+    used: float = 0
     for item in items:
-        item_cost: int = cost(item)
+        item_cost: float = cost(item)
         if current and used + item_cost > budget:
-            pages.append(current)
-            current, used = [], 0
+            carried: list[Item] = []
+            while current and keep_with_next(current[-1]):
+                carried.insert(0, current.pop())
+            if current:
+                pages.append(current)
+            current = carried
+            used = sum(cost(kept) for kept in carried)
         current.append(item)
         used += item_cost
     if current:

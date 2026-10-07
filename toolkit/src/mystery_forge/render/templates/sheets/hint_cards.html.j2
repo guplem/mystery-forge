@@ -1,5 +1,5 @@
 <div class="safe hint-page">
-  <div class="hint-grid">
+  <div class="hint-grid hint-grid-{{ content.columns }}x{{ content.rows }}" style="grid-template-columns: repeat({{ content.columns }}, 1fr); grid-template-rows: repeat({{ content.rows }}, 1fr)">
     {% for card in content.cards %}
     <div class="hint-card{% if card.is_answer %} hint-answer{% endif %}">
       <div class="hint-outside fit">

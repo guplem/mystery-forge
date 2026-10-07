@@ -2,41 +2,64 @@ from test_render_support import configured, golden_game, with_story
 
 from mystery_forge.game import Game
 from mystery_forge.mechanics.base import Artifact
-from mystery_forge.render.manual import COMPANION_FILE, ManualPage, ManualSection, manual_page_count, manual_sheets
+from mystery_forge.render.manual import (
+    COMPANION_FILE,
+    MANUAL_GROUP,
+    ManualBlock,
+    ManualPage,
+    ManualSection,
+    TableData,
+    block_height,
+    manual_sections,
+    manual_sheets,
+    section_blocks,
+    table_blocks,
+    text_blocks,
+)
 from mystery_forge.render.sheets import OutputId
 from mystery_forge.spec.models import PrintOptions
 
 COUNTS: dict[OutputId, int] = {"materials": 13, "hints": 3, "solutions": 7}
 
 
-def pages(game: Game, counts: dict[OutputId, int] | None = None) -> list[ManualPage]:
-    sheets = manual_sheets(game, COUNTS if counts is None else counts)
+def pages(
+    game: Game, counts: dict[OutputId, int] | None = None, levels: dict[str, int] | None = None
+) -> list[ManualPage]:
+    sheets = manual_sheets(game, COUNTS if counts is None else counts, levels)
+    assert {sheet.group for sheet in sheets} == {MANUAL_GROUP}
     contents = [sheet.content for sheet in sheets]
     assert all(isinstance(content, ManualPage) for content in contents)
     return contents  # type: ignore[return-value]
 
 
 def section(game: Game, heading: str) -> ManualSection:
-    return next(item for page in pages(game) for item in page.sections if item.heading == heading)
+    return next(item for item in manual_sections(game, {"manual": 3, **COUNTS}) if item.heading == heading)
 
 
 def all_text(game: Game) -> str:
     parts: list[str] = []
-    for page in pages(game):
-        for item in page.sections:
-            parts.extend([item.heading, *item.paragraphs, *item.steps, *item.checklist, item.read_aloud])
-            if item.table:
-                parts.extend(cell for row in item.table.rows for cell in row)
+    for item in manual_sections(game, {"manual": 3, **COUNTS}):
+        parts.extend([item.heading, *item.paragraphs, *item.steps, *item.checklist, item.read_aloud])
+        if item.table:
+            parts.extend(cell for row in item.table.rows for cell in row)
     return "\n".join(parts)
+
+
+def blocks(game: Game, levels: dict[str, int] | None = None) -> list[ManualBlock]:
+    return [block for page in pages(game, levels=levels) for block in page.blocks]
 
 
 def test_the_first_page_is_the_printing_checklist_with_exact_page_counts() -> None:
     manual = pages(golden_game())
-    assert len(manual) == manual_page_count(golden_game()) == 3
     assert manual[0].first and manual[-1].last and not manual[0].last
-    checklist = manual[0].sections[0]
-    assert checklist.heading == "Printing checklist"
+    assert [block.kind for block in manual[0].blocks[:3]] == ["hero", "heading", "paragraph"]
+    assert manual[0].blocks[1].text == "Printing checklist"
+    assert manual[-1].blocks[-1].kind == "credit"
+    checklist = section(golden_game(), "Printing checklist")
     assert checklist.table is not None
+    page_count: str = str(len(manual))
+    table = next(block.table for block in manual[0].blocks if block.kind == "table")
+    assert table is not None and table.rows[0] == ["1 - START HERE (manual).pdf", page_count, "Yes"]
     assert checklist.table.rows == [
         ["1 - START HERE (manual).pdf", "3", "Yes"],
         ["2 - PRINT THIS (game materials).pdf", "13", "Yes"],
@@ -100,7 +123,7 @@ def test_play_steps_follow_the_answer_checks_and_include_the_intro() -> None:
 
 def test_the_checklist_without_a_companion_page_prints_everything() -> None:
     game = configured(golden_game(), equipment={"printer": "black_and_white"}, assistance={"companion_page": False})
-    checklist = pages(game)[0].sections[0]
+    checklist = section(game, "Printing checklist")
     assert checklist.table is not None
     assert [row[2] for row in checklist.table.rows] == ["Yes", "Yes", "Yes", "Yes"]
     assert checklist.paragraphs[1] == "This game is made for a black-and-white printer."
@@ -136,17 +159,56 @@ def test_personal_details_appear_only_when_given() -> None:
     assert section(game, "For this game").paragraphs == ["Your host: Clara", "Detectives: Ana, Ben", "For Ben."]
 
 
-def test_a_game_master_gets_a_timing_page() -> None:
+def test_a_game_master_gets_a_timing_section() -> None:
     game = configured(golden_game(), {"host": "game_master"})
-    manual = pages(game)
-    assert len(manual) == manual_page_count(game) == 4
-    host = manual[3].sections[0]
-    assert host.heading == "Game master guide"
+    host = section(game, "Game master guide")
     assert host.table is not None
     assert host.table.rows == [["Envelope A", "2", "12", "12"], ["Envelope B", "1", "6", "18"]]
     assert host.checklist[0] == "If a group is stuck for 10 minutes, give them the next hint."
+    assert "Game master guide" in [block.text for block in blocks(game) if block.kind == "heading"]
 
 
 def test_the_manual_speaks_the_game_language() -> None:
     game = configured(golden_game(), {"language": "es"})
-    assert pages(game)[0].sections[0].heading == "Lista de impresión"
+    assert pages(game)[0].blocks[1].text == "Lista de impresión"
+
+
+def test_every_section_flows_in_order_and_a_heading_never_ends_a_page() -> None:
+    game = configured(golden_game(), {"host": "game_master"})
+    manual = pages(game)
+    headings: list[str] = [block.text for page in manual for block in page.blocks if block.kind == "heading"]
+    assert headings == [item.heading for item in manual_sections(game, {"manual": 3, **COUNTS})]
+    assert all(page.blocks[-1].kind != "heading" for page in manual)
+    steps = [block.number for block in blocks(golden_game()) if block.kind == "step"]
+    assert steps[:4] == [1, 2, 3, 4]
+
+
+def test_a_long_intro_is_split_and_a_tighter_level_uses_more_pages() -> None:
+    game = with_story(golden_game(), intro="The lighthouse stood dark all night. " * 260)
+    parts = [block for block in blocks(game) if block.kind == "read_aloud"]
+    assert len(parts) > 1
+    assert " ".join(part.text for part in parts) == game.story.intro.strip()
+    assert len(pages(golden_game(), levels={"manual": 4})) > len(pages(golden_game()))
+
+
+def test_a_long_step_keeps_its_number_on_the_first_part_only() -> None:
+    parts = text_blocks("step", "Open the envelope now. " * 200, 100, 3)
+    assert [part.number for part in parts] == [3] + [0] * (len(parts) - 1)
+    assert all(block_height(part) <= 100 for part in parts)
+
+
+def test_a_table_too_long_for_a_page_repeats_its_header() -> None:
+    table = TableData(headers=["A", "B"], rows=[[str(number), "x"] for number in range(80)])
+    parts = table_blocks(table, 120)
+    assert len(parts) > 1
+    assert all(part.table is not None and part.table.headers == ["A", "B"] for part in parts)
+    assert sum(len(part.table.rows) for part in parts if part.table) == 80
+
+
+def test_a_long_checklist_is_cut_into_blocks() -> None:
+    game = configured(golden_game(), equipment={"tape_or_glue": True})
+    needs = section(game, "What you need")
+    many = ManualSection(heading="x", checklist=[f"item {number}" for number in range(23)])
+    lists = [block for block in section_blocks(many, 200) if block.kind == "checklist"]
+    assert [len(block.items) for block in lists] == [10, 10, 3]
+    assert "Tape or glue" in needs.checklist

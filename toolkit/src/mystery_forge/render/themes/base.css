@@ -2027,6 +2027,11 @@ body.mode-low-ink .mf-artifact .mf-mask td.mf-mask-hole {
   margin: 0;
   font-weight: 700;
 }
+.result-continued {
+  font-size: 8pt;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
 .result-reveals {
   margin: 1mm 0 0;
   font-style: italic;
@@ -2184,16 +2189,30 @@ body.mode-low-ink .label-seal {
   color: var(--accent);
 }
 .notes-table tbody tr {
-  height: 16mm;
+  height: 12mm;
 }
-.notes-table tbody th {
-  width: 38mm;
+.notes-table tbody th,
+.notes-grid tbody th {
+  width: 42mm;
+}
+.notes-grid {
+  table-layout: fixed;
+}
+.notes-grid thead th:first-child {
+  width: 42mm;
+}
+.notes-grid thead th {
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  font-size: 7pt;
+  letter-spacing: 0.06em;
 }
 .notes-grid tbody tr {
-  height: 8mm;
+  height: 7.5mm;
 }
 .notes-grid tbody th {
-  width: 38mm;
+  font-size: 8.5pt;
+  overflow-wrap: anywhere;
 }
 .notes-subtitle {
   font-size: 12pt;
@@ -2350,6 +2369,15 @@ body.mode-low-ink .hint-code {
 .explained-list li {
   margin-bottom: 4mm;
 }
+.explained-list li.explained-continued {
+  list-style: none;
+}
+.heading-continued {
+  font-size: 0.5em;
+  font-weight: 400;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
 .explained-list li::marker {
   font-weight: 700;
   color: var(--accent);
@@ -2440,9 +2468,6 @@ body.mode-low-ink .hint-code {
   padding-bottom: 2mm;
   border-bottom: var(--line-weight) solid var(--rule);
 }
-.manual-section > p {
-  margin: 0 0 2mm;
-}
 .manual-table {
   width: 100%;
   border-collapse: collapse;
@@ -2462,20 +2487,18 @@ body.mode-low-ink .hint-code {
   text-transform: uppercase;
   color: var(--accent);
 }
-.manual-steps {
-  list-style: none;
-  counter-reset: step;
-  padding: 0;
-  margin: 2mm 0;
+.manual-paragraph {
+  margin: 0 0 2mm;
 }
-.manual-steps li {
-  counter-increment: step;
+.manual-step {
   position: relative;
   padding-left: 10mm;
   margin-bottom: 2.4mm;
 }
-.manual-steps li::before {
-  content: counter(step);
+.manual-step p {
+  margin: 0;
+}
+.step-number {
   position: absolute;
   left: 0;
   top: -0.3mm;
@@ -2487,7 +2510,7 @@ body.mode-low-ink .hint-code {
   font: 700 9pt/6.2mm var(--font-heading);
   text-align: center;
 }
-body.mode-low-ink .manual-steps li::before {
+body.mode-low-ink .step-number {
   background: none;
   color: var(--accent);
   border: 0.3mm solid var(--accent);
