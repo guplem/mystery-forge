@@ -51,6 +51,7 @@ def test_every_check_family_has_a_prefix() -> None:
         "budget",
         "references",
         "documents",
+        "images",
     )
 
 

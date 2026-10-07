@@ -76,7 +76,8 @@ def group_name(file: str | None, owners: dict[str, str]) -> str | None:
         return STORY_GROUP
     if file in ("flow.yaml", "plan.yaml"):
         return PLAN_GROUP
-    if file in SETUP_FILES:
+    # Setup files and the toolkit's own pages (materials.html, solutions.html) are not game sources that a writer owns.
+    if file in SETUP_FILES or file.endswith(".html"):
         return None
     if file.startswith("images/"):
         return DOCUMENTS_GROUP

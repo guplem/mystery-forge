@@ -86,3 +86,7 @@ def test_write_fix_groups_writes_one_findings_file_per_group(game_dir: Path) -> 
     first = json.loads(Path(entries[0]["findings_file"]).read_text(encoding="utf-8"))
     assert first["findings"][0]["file"] == "puzzles/P1.yaml"
     assert entries[0]["files"] == ["puzzles/P1.yaml", "documents/D2.md"]
+
+
+def test_findings_on_toolkit_pages_make_no_group(game_dir: Path) -> None:
+    assert group_findings([finding("materials.html"), finding("solutions.html")], game_dir) == []
