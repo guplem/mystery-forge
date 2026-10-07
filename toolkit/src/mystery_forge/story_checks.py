@@ -142,7 +142,9 @@ def clue_reference_findings(story: Story) -> list[Finding]:
 
 
 def audience_findings(story: Story, config: GameConfig) -> list[Finding]:
-    if config.audience != "kids" and config.content.death_allowed:
+    # The word lists cover the languages with checked tables. In another language, the story reviewer alone checks
+    # the audience rule.
+    if (config.audience != "kids" and config.content.death_allowed) or config.language not in DEATH_WORDS:
         return []
     texts: list[str] = [story.truth, story.intro, story.premise, *(epilogue.text for epilogue in story.epilogues)]
     texts += [event.description for event in story.timeline]

@@ -40,7 +40,10 @@
           "description": "The names of the players, for character cards and personal touches. It can stay empty.",
           "type": "array",
           "maxItems": 12,
-          "items": { "type": "string", "maxLength": 40 },
+          "items": {
+            "type": "string",
+            "maxLength": 40
+          },
           "default": []
         }
       }
@@ -65,9 +68,60 @@
       "default": "medium"
     },
     "language": {
-      "description": "The language of every printed text, as a two-letter code.",
+      "description": "The language of every printed text, as a two-letter code. The first seven have checked tables of the fixed texts; for the others, the generator translates those tables once per game.",
       "type": "string",
-      "enum": ["en", "es", "ca", "fr", "de", "it", "pt"],
+      "enum": [
+        "en",
+        "es",
+        "ca",
+        "fr",
+        "de",
+        "it",
+        "pt",
+        "af",
+        "ar",
+        "bg",
+        "bn",
+        "cs",
+        "cy",
+        "da",
+        "el",
+        "et",
+        "eu",
+        "fa",
+        "fi",
+        "ga",
+        "gl",
+        "he",
+        "hi",
+        "hr",
+        "hu",
+        "id",
+        "is",
+        "ja",
+        "ko",
+        "lt",
+        "lv",
+        "ms",
+        "nb",
+        "nl",
+        "pl",
+        "ro",
+        "ru",
+        "sk",
+        "sl",
+        "sr",
+        "sv",
+        "sw",
+        "ta",
+        "th",
+        "tl",
+        "tr",
+        "uk",
+        "ur",
+        "vi",
+        "zh"
+      ],
       "default": "en"
     },
     "theme": {
@@ -143,7 +197,10 @@
           "description": "Short jokes or references that the players know. The story may use them.",
           "type": "array",
           "maxItems": 5,
-          "items": { "type": "string", "maxLength": 200 },
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
           "default": []
         },
         "dedication": {

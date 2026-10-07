@@ -131,3 +131,10 @@ def test_load_config_file_reports_text_that_is_not_json(tmp_path: Path) -> None:
     assert finding.path == ""
     assert finding.rule == "config.json"
     assert "line 1" in finding.message
+
+
+def test_a_game_can_use_a_language_without_a_checked_table_but_not_an_unknown_code() -> None:
+    assert normalize_config({"schema_version": 1, "language": "ja"}).findings == []
+    assert [finding.path for finding in normalize_config({"schema_version": 1, "language": "xx"}).findings] == [
+        "language"
+    ]
