@@ -525,3 +525,16 @@ def test_assemble_and_render_accept_only_and_no_write(game_dir: Path) -> None:
     assert broken["ok"] is False
     assert broken["findings"] == []
     assert not (game_dir / "reports").exists()
+
+
+@pytest.mark.parametrize(
+    "verb", ["assemble", "check", "writer-tasks", "packets", "judge", "status", "render", "export"]
+)
+def test_a_game_verb_refuses_a_folder_without_source_and_writes_nothing(tmp_path: Path, verb: str) -> None:
+    mistyped = tmp_path / "games2026-10-07-game-3"
+    output = io.StringIO()
+    assert cli.main([verb, "--game", str(mistyped)], output) == 2
+    result = json.loads(output.getvalue())
+    assert result["ok"] is False
+    assert "has no source folder" in result["message"]
+    assert not mistyped.exists()
