@@ -37,6 +37,7 @@ from mystery_forge.spec.loader import SOURCE_FOLDER, GameSource, SourceDocument,
 from mystery_forge.spec.models import Puzzle
 
 IMAGE_MARK_PATTERN: re.Pattern[str] = re.compile(r"⟦image:([^|⟧]+)\|([^⟧]*)⟧")
+SVG_TITLE_PATTERN: re.Pattern[str] = re.compile(r"<title[^>]*>(.*?)</title>", re.DOTALL)
 
 
 @dataclass(frozen=True)
@@ -140,14 +141,14 @@ def assemble_documents(
     documents: list[AssembledDocument] = []
     source_texts: dict[str, str] = {}
     for document in source.documents:
-        assembled: AssembledDocument = assemble_document(document, context, findings)
+        assembled: AssembledDocument = assemble_document(document, context, findings, source.images)
         documents.append(assembled)
         source_texts[document.meta.id] = assembled.text
     return documents, source_texts
 
 
 def assemble_document(
-    document: SourceDocument, context: ReferenceContext, findings: list[Finding]
+    document: SourceDocument, context: ReferenceContext, findings: list[Finding], images: Mapping[str, str]
 ) -> AssembledDocument:
     resolved, reference_findings = resolve_references(
         document.body, document.meta.puzzle, context, document.file, document.body_line
@@ -155,7 +156,9 @@ def assemble_document(
     findings.extend(reference_findings)
     rendered = render_markdown(resolved, document.file, document.body_line)
     findings.extend(rendered.findings)
-    text: str = IMAGE_MARK_PATTERN.sub(lambda match: image_caption(match.group(2)), rendered.text)
+    text: str = IMAGE_MARK_PATTERN.sub(
+        lambda match: image_text(match.group(2), images.get(match.group(1), "")), rendered.text
+    )
     fields: dict[str, str] = {}
     for key, value in document.meta.fields.items():
         # Header fields print too (a sender, a signature), so they take the same references as the body.
@@ -166,8 +169,12 @@ def assemble_document(
     return AssembledDocument(meta=meta, file=document.file, body_html=rendered.html, text=text)
 
 
-def image_caption(caption: str) -> str:
-    return f"[Image: {caption}]" if caption else "[Image]"
+def image_text(caption: str, svg: str) -> str:
+    """How a text-only solver perceives an image: its printed caption, and what its SVG title says it shows."""
+    title_match: re.Match[str] | None = SVG_TITLE_PATTERN.search(svg)
+    title: str = " ".join(title_match.group(1).split()) if title_match else ""
+    label: str = f"Image: {caption}" if caption else "Image"
+    return f"[{label}. It shows: {title}]" if title else f"[{label}]"
 
 
 def assemble_puzzles(

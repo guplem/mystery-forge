@@ -5,6 +5,7 @@ Read first: `source/config.json` (the visual style, the printer, and ink saving)
 1. **Pick the documents that a picture makes better**, about one image per two documents, at least 3 and at most 10. Good candidates: a photo (draw the scene that the caption describes), a map (the real places of the registry, with their exact names), an ID card or a wanted poster (a portrait), a newspaper (a news picture), a letter or a receipt (a letterhead logo or a stamp), a ticket, a floor plan, an object that the story talks about.
 2. **Draw each image** as `source/images/<id>.svg` (id in kebab case). Rules:
    - One `<svg>` with a `viewBox`, plain shapes, paths, and short text. No scripts, no event attributes, no links, no raster images, no fonts that the page may not have (use `font-family="serif"` or `"sans-serif"`). At most 30 KB.
+   - Start each SVG with `<title>` that says in plain words what the picture shows ("a red bed"). The solver panel reads only this title, so the checks require it in puzzle material. Never put the answer or the method in it.
    - Draw like an illustrator, not a clip-art generator: a clear composition, a few well-chosen details, lines in `currentColor`. Use at most two flat fills that stay readable in grayscale; never let a color carry meaning.
    - Show nothing that solves a puzzle or names the culprit, unless the plan puts that clue in this image on purpose.
    - A map uses the registry names exactly as `story.yaml` writes them.
