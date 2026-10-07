@@ -14,7 +14,11 @@ from pydantic import BaseModel, ConfigDict
 from mystery_forge.config import Audience, Difficulty, GameConfig, GameFormat, Language, Quality, ReadingLoad
 
 BASE_MINUTES_PER_PUZZLE: dict[Difficulty, int] = {"easy": 6, "medium": 9, "hard": 13, "expert": 18}
-READING_WORDS_PER_MINUTE: dict[ReadingLoad, int] = {"light": 60, "medium": 100, "heavy": 150}
+# The share of the play time that goes to reading. Each parallel team reads its own papers, so the words grow with
+# the teams. `checks/budget.py` divides the words by the same reading speed and the same teams.
+READING_SHARE_PERCENT: dict[ReadingLoad, int] = {"light": 15, "medium": 25, "heavy": 35}
+# Slow on purpose: players read for clues, not for the story.
+READING_WORDS_PER_MINUTE: int = 120
 
 
 class EstimateInput(BaseModel):
@@ -72,7 +76,11 @@ def estimate_game_size(given: EstimateInput) -> Estimate:
         stage_count=stage_count,
         parallel_width=width,
         solver_count=5 if best else 3,
-        reading_words=given.duration_minutes * READING_WORDS_PER_MINUTE[given.reading_load],
+        reading_words=given.duration_minutes
+        * READING_SHARE_PERCENT[given.reading_load]
+        * READING_WORDS_PER_MINUTE
+        * width
+        // 100,
         printed_pages=4 + stage_count + puzzle_count + ceil_div(puzzle_count, 2),
         generation_minutes=20 + puzzle_count * (6 if best else 3) + stage_count * (8 if best else 4),
         minutes_per_puzzle=(minutes_per_puzzle_hundredths + 50) // 100,

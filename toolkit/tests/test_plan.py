@@ -246,8 +246,8 @@ def test_the_plan_budget_counts_the_reading_budget_of_the_brief(game_dir: Path) 
     brief_path.write_text(json.dumps(brief), encoding="utf-8")
     findings = [finding for finding in check(game_dir) if finding.rule == "plan.budget"]
     assert [finding.severity for finding in findings] == ["error"]
-    # 5 + 5 + 10 catalog minutes, 20000 words read at 120 a minute by 2 players, 2 envelopes of 5 minutes.
-    assert "about 113 minutes" in findings[0].message
+    # 5 + 5 + 10 catalog minutes, 20000 words read at 120 a minute by 1 team, 2 envelopes of 5 minutes.
+    assert "about 197 minutes" in findings[0].message
 
 
 def test_two_puzzles_with_the_same_mechanic_are_fine(game_dir: Path) -> None:

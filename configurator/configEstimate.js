@@ -8,7 +8,8 @@
   /** @type {Record<MysteryForgeDifficulty, number>} */
   const BASE_MINUTES_PER_PUZZLE = { easy: 6, medium: 9, hard: 13, expert: 18 };
   /** @type {Record<MysteryForgeReadingLoad, number>} */
-  const READING_WORDS_PER_MINUTE = { light: 60, medium: 100, heavy: 150 };
+  const READING_SHARE_PERCENT = { light: 15, medium: 25, heavy: 35 };
+  const READING_WORDS_PER_MINUTE = 120;
 
   /**
    * Integer division that rounds down. Both operands are small integers, so the float division is exact enough.
@@ -44,7 +45,10 @@
       stage_count: stageCount,
       parallel_width: width,
       solver_count: best ? 5 : 3,
-      reading_words: input.duration_minutes * READING_WORDS_PER_MINUTE[input.reading_load],
+      reading_words: floorDiv(
+        input.duration_minutes * READING_SHARE_PERCENT[input.reading_load] * READING_WORDS_PER_MINUTE * width,
+        100,
+      ),
       printed_pages: 4 + stageCount + puzzleCount + Math.ceil(puzzleCount / 2),
       generation_minutes: 20 + puzzleCount * (best ? 6 : 3) + stageCount * (best ? 8 : 4),
       minutes_per_puzzle: floorDiv(minutesPerPuzzleHundredths + 50, 100),

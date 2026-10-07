@@ -17,7 +17,7 @@
         "stage_count": 4,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 25,
         "generation_minutes": 118,
         "minutes_per_puzzle": 9
@@ -39,7 +39,7 @@
         "stage_count": 6,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 36,
         "generation_minutes": 170,
         "minutes_per_puzzle": 6
@@ -61,7 +61,7 @@
         "stage_count": 3,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 19,
         "generation_minutes": 92,
         "minutes_per_puzzle": 13
@@ -83,7 +83,7 @@
         "stage_count": 2,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 14,
         "generation_minutes": 66,
         "minutes_per_puzzle": 18
@@ -105,7 +105,7 @@
         "stage_count": 5,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 29,
         "generation_minutes": 138,
         "minutes_per_puzzle": 9
@@ -127,7 +127,7 @@
         "stage_count": 4,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 25,
         "generation_minutes": 118,
         "minutes_per_puzzle": 9
@@ -149,7 +149,7 @@
         "stage_count": 4,
         "parallel_width": 2,
         "solver_count": 3,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 25,
         "generation_minutes": 69,
         "minutes_per_puzzle": 9
@@ -171,7 +171,7 @@
         "stage_count": 4,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 5400,
+        "reading_words": 3240,
         "printed_pages": 25,
         "generation_minutes": 118,
         "minutes_per_puzzle": 9
@@ -193,7 +193,7 @@
         "stage_count": 4,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 13500,
+        "reading_words": 7560,
         "printed_pages": 25,
         "generation_minutes": 118,
         "minutes_per_puzzle": 9
@@ -215,7 +215,7 @@
         "stage_count": 3,
         "parallel_width": 1,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 2700,
         "printed_pages": 15,
         "generation_minutes": 74,
         "minutes_per_puzzle": 11
@@ -237,7 +237,7 @@
         "stage_count": 4,
         "parallel_width": 1,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 2700,
         "printed_pages": 19,
         "generation_minutes": 94,
         "minutes_per_puzzle": 9
@@ -259,7 +259,7 @@
         "stage_count": 4,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 25,
         "generation_minutes": 118,
         "minutes_per_puzzle": 9
@@ -281,7 +281,7 @@
         "stage_count": 4,
         "parallel_width": 4,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 10800,
         "printed_pages": 38,
         "generation_minutes": 172,
         "minutes_per_puzzle": 9
@@ -303,7 +303,7 @@
         "stage_count": 4,
         "parallel_width": 4,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 10800,
         "printed_pages": 38,
         "generation_minutes": 172,
         "minutes_per_puzzle": 9
@@ -325,7 +325,7 @@
         "stage_count": 3,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 19,
         "generation_minutes": 92,
         "minutes_per_puzzle": 13
@@ -347,7 +347,7 @@
         "stage_count": 3,
         "parallel_width": 1,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 2700,
         "printed_pages": 16,
         "generation_minutes": 80,
         "minutes_per_puzzle": 11
@@ -369,7 +369,7 @@
         "stage_count": 4,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 25,
         "generation_minutes": 118,
         "minutes_per_puzzle": 9
@@ -391,7 +391,7 @@
         "stage_count": 4,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 25,
         "generation_minutes": 118,
         "minutes_per_puzzle": 9
@@ -413,7 +413,7 @@
         "stage_count": 2,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 9000,
+        "reading_words": 5400,
         "printed_pages": 14,
         "generation_minutes": 66,
         "minutes_per_puzzle": 18
@@ -435,7 +435,7 @@
         "stage_count": 2,
         "parallel_width": 1,
         "solver_count": 5,
-        "reading_words": 3000,
+        "reading_words": 900,
         "printed_pages": 11,
         "generation_minutes": 54,
         "minutes_per_puzzle": 32
@@ -457,7 +457,7 @@
         "stage_count": 5,
         "parallel_width": 4,
         "solver_count": 5,
-        "reading_words": 24000,
+        "reading_words": 28800,
         "printed_pages": 45,
         "generation_minutes": 204,
         "minutes_per_puzzle": 6
@@ -479,7 +479,7 @@
         "stage_count": 2,
         "parallel_width": 4,
         "solver_count": 5,
-        "reading_words": 3000,
+        "reading_words": 3600,
         "printed_pages": 11,
         "generation_minutes": 54,
         "minutes_per_puzzle": 18
@@ -501,7 +501,7 @@
         "stage_count": 6,
         "parallel_width": 1,
         "solver_count": 5,
-        "reading_words": 24000,
+        "reading_words": 7200,
         "printed_pages": 46,
         "generation_minutes": 212,
         "minutes_per_puzzle": 6
@@ -523,7 +523,7 @@
         "stage_count": 2,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 2000,
+        "reading_words": 1200,
         "printed_pages": 11,
         "generation_minutes": 54,
         "minutes_per_puzzle": 6
@@ -545,7 +545,7 @@
         "stage_count": 2,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 3000,
+        "reading_words": 1800,
         "printed_pages": 11,
         "generation_minutes": 54,
         "minutes_per_puzzle": 9
@@ -567,7 +567,7 @@
         "stage_count": 6,
         "parallel_width": 2,
         "solver_count": 5,
-        "reading_words": 24000,
+        "reading_words": 14400,
         "printed_pages": 46,
         "generation_minutes": 212,
         "minutes_per_puzzle": 9
@@ -589,7 +589,7 @@
         "stage_count": 6,
         "parallel_width": 3,
         "solver_count": 3,
-        "reading_words": 27000,
+        "reading_words": 22680,
         "printed_pages": 46,
         "generation_minutes": 116,
         "minutes_per_puzzle": 13
@@ -611,7 +611,7 @@
         "stage_count": 3,
         "parallel_width": 3,
         "solver_count": 5,
-        "reading_words": 3600,
+        "reading_words": 3240,
         "printed_pages": 25,
         "generation_minutes": 116,
         "minutes_per_puzzle": 8
@@ -633,7 +633,7 @@
         "stage_count": 2,
         "parallel_width": 1,
         "solver_count": 3,
-        "reading_words": 12000,
+        "reading_words": 3600,
         "printed_pages": 12,
         "generation_minutes": 40,
         "minutes_per_puzzle": 23
@@ -655,7 +655,7 @@
         "stage_count": 4,
         "parallel_width": 4,
         "solver_count": 5,
-        "reading_words": 7500,
+        "reading_words": 9000,
         "printed_pages": 37,
         "generation_minutes": 166,
         "minutes_per_puzzle": 9
