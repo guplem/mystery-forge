@@ -16,13 +16,13 @@ A finished sample game to print: see the latest GitHub release.
 
 A folder on your Desktop (`Mystery Forge/<game title>`) with:
 
-| File                                     | What it is                                                                                                                                           |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `1 - START HERE (manual).pdf`            | The printing checklist, how to set up the envelopes, and how to play. Read it first.                                                                 |
-| `2 - PRINT THIS (game materials).pdf`    | The game: letters, reports, maps, codes, and puzzles, split into envelopes by "STOP" cover sheets, plus the answer register and the accusation form. |
-| `Game companion.html`                    | One page for a phone or a computer: it checks answers, gives one hint at a time, keeps the time, and scores the accusation. It works offline.        |
-| `HOST ONLY - spoilers/3 - Hints.pdf`     | Fold-over hint cards, for groups with no device.                                                                                                     |
-| `HOST ONLY - spoilers/4 - Solutions.pdf` | Every answer and the full truth, behind a warning page.                                                                                              |
+| File                                     | What it is                                                                                                                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `1 - START HERE (manual).pdf`            | The printing checklist, how to set up the envelopes, and how to play. Read it first.                                                                                                             |
+| `2 - PRINT THIS (game materials).pdf`    | The game: letters, reports, maps, codes, and puzzles, split into envelopes by "STOP" cover sheets, plus the answer register and the accusation form.                                             |
+| `Game companion.html`                    | One page for a phone or a computer: it checks answers, shows a short story reveal for each solved puzzle, gives one hint at a time, keeps the time, and scores the accusation. It works offline. |
+| `HOST ONLY - spoilers/3 - Hints.pdf`     | Fold-over hint cards, for groups with no device.                                                                                                                                                 |
+| `HOST ONLY - spoilers/4 - Solutions.pdf` | Every answer and the full truth, behind a warning page.                                                                                                                                          |
 
 The file and folder names follow the game language. A Spanish game, for example, starts with `1 - EMPIEZA AQUÍ (manual).pdf`.
 
