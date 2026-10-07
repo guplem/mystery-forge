@@ -144,7 +144,10 @@ def render_game(
         pass_number += 1
         plans: list[OutputPlan] = output_plans(game, levels)
         pages: dict[OutputId, str] = {
-            plan.id: render_output_html(plan, settings, game.story.title, game.config.language) for plan in plans
+            plan.id: render_output_html(
+                plan, settings, game.story.title, game.config.language, solo=game.config.players.count == 1
+            )
+            for plan in plans
         }
         if browser is None:
             break

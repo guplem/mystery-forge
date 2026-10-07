@@ -138,7 +138,7 @@ def play_section(game: Game) -> ManualSection:
         steps.append(text(language, "manual_play_check_companion"))
     steps.append(text(language, "manual_play_next"))
     if game.story.deduction is not None:
-        steps.append(text(language, "manual_play_accusation"))
+        steps.append(text(language, "manual_play_accusation", solo=game.config.players.count == 1))
     return ManualSection(
         heading=text(language, "manual_play_title"),
         paragraphs=[text(language, "manual_play_open_first")],

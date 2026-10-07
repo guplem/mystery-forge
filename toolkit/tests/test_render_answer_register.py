@@ -12,7 +12,7 @@ from mystery_forge.render.answer_register import (
     register_sort_key,
     same_shape,
 )
-from mystery_forge.spec.models import AnswerFormat, Stage
+from mystery_forge.spec.models import AnswerFormat, NearMiss, Stage
 
 CORRECT_FORMS: set[str] = {"BOATHOUSE", "0726", "LOWTIDE", "THELOWTIDE", "ATLOWTIDE"}
 
@@ -188,3 +188,16 @@ def test_a_spanish_answer_with_an_article_is_listed_with_and_without_it() -> Non
 
 def test_register_sort_key_puts_numbers_first_and_ignores_accents() -> None:
     assert sorted(["ÉCOLE", "ZOO", "10", "9", "ABC"], key=register_sort_key) == ["9", "10", "ABC", "ÉCOLE", "ZOO"]
+
+
+def test_a_near_miss_that_looks_like_a_real_answer_stays_off_the_paper_register() -> None:
+    """Live game 5 printed EILSER ("Close.") right next to the answer EISLER, which gave the answer away."""
+    near_misses = [
+        NearMiss(answer="boathuose", message="Close."),
+        NearMiss(answer="botahouse", message="Close."),
+        NearMiss(answer="yxlxqeorpb", message="Count back."),
+    ]
+    texts = entry_texts(build_answer_register(with_puzzle(golden_game(), 0, near_misses=near_misses)))
+    assert "BOATHUOSE" not in texts
+    assert "BOTAHOUSE" not in texts
+    assert "YXLXQEORPB" in texts

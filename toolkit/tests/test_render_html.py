@@ -21,7 +21,9 @@ COLOR_MODES: dict[str, dict[str, object]] = {
 def render_all(game: Game, theme: str | None = None) -> dict[str, str]:
     settings = style_settings(game, theme)  # type: ignore[arg-type]
     return {
-        plan.id: render_output_html(plan, settings, game.story.title, game.config.language)
+        plan.id: render_output_html(
+            plan, settings, game.story.title, game.config.language, solo=game.config.players.count == 1
+        )
         for plan in output_plans(game)
     }
 
@@ -89,3 +91,10 @@ def test_a_spanish_game_prints_spanish_labels() -> None:
     assert "ALTO" in html["materials"]
     assert "Registro de respuestas" in html["materials"]
     assert "Aviso de spoilers" in html["hints"]
+
+
+def test_a_solo_game_prints_one_player_and_no_group_wording() -> None:
+    assert Translator("en", solo=True)("cover_players", count=1) == "1 player"
+    html = render_all(configured(golden_game(), players={"count": 1}))
+    assert "Answer every question. Tick" in html["materials"]
+    assert "together" not in html["materials"]

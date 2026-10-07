@@ -21,7 +21,6 @@ from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument, Game
 from mystery_forge.spec.models import AccusationQuestion, Character, Deduction, Story
 
-MIN_PUZZLE_PROVEN_QUESTIONS: Final[int] = 2
 MIN_HIDDEN_CLUES: Final[int] = 2
 
 
@@ -181,23 +180,22 @@ def who_question_findings(game: Game, deduction: Deduction) -> list[Finding]:
 
 
 def puzzle_proof_findings(game: Game, deduction: Deduction) -> list[Finding]:
-    """Report a deduction that players can prove without the puzzles: too few questions cite a revealed clue."""
+    """Report each accusation question whose proof cites no clue that a puzzle reveals: players can answer it without
+    solving anything, so its points reward reading, not puzzles."""
     revealed: set[str] = revealed_clue_ids(game)
-    needed: int = min(MIN_PUZZLE_PROVEN_QUESTIONS, len(deduction.questions))
-    proven: int = sum(1 for question in deduction.questions if revealed.intersection(question.proven_by))
-    if proven >= needed:
-        return []
     return [
         Finding(
             severity="error",
             rule="deduction.puzzles_not_needed",
-            message=f"Only {proven} of {len(deduction.questions)} accusation questions cite a hidden clue that a "
-            f"puzzle reveals; at least {needed} must, or players can accuse without solving the puzzles.",
+            message=f"The accusation question '{question.id}' cites no hidden clue that a puzzle reveals, so players "
+            "can answer it without solving the puzzles.",
             file=STORY_FILE,
-            path="deduction.questions",
+            path=f"deduction.questions.{index}.proven_by",
             fix_hint="Add a hidden clue (hidden: true, revealed_by: <puzzle id>) whose quote states the fact that "
             "the puzzle reveals, and cite it in proven_by of the question.",
         )
+        for index, question in enumerate(deduction.questions)
+        if not revealed.intersection(question.proven_by)
     ]
 
 

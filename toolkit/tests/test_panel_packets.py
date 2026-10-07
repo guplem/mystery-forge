@@ -10,6 +10,7 @@ from mystery_forge.game import AssembledDocument, Game
 from mystery_forge.panel.packets import (
     STORY_ONLY_INSTRUCTIONS,
     STORY_ONLY_STAGE,
+    UNSOLVED_MATERIAL,
     available_documents,
     build_guesser_packet,
     build_panel_packets,
@@ -167,23 +168,25 @@ def test_a_document_shows_its_printed_header_fields(golden_game: Game) -> None:
     assert "date: 15 March 1931" in letter
 
 
-def test_the_story_only_packet_holds_the_plain_documents_and_the_accusation_only(golden_game: Game) -> None:
+def test_the_story_only_packet_holds_every_document_without_the_built_material(golden_game: Game) -> None:
     packet = build_story_only_packet(golden_game)
     assert packet is not None
     assert (packet.stage, packet.codes, packet.questions) == (STORY_ONLY_STAGE, [], ["who", "why"])
     assert packet.sha256 == hashlib.sha256(packet.text.encode()).hexdigest()
     assert packet.text.startswith(f"# The Lens of Gull Rock\n\n{STORY_ONLY_INSTRUCTIONS}")
     assert "## A letter from the harbour master (Letter)" in packet.text
-    assert "## Two papers from the box (Generic document)" in packet.text
-    assert "## The keeper's logbook" not in packet.text
-    assert "## Notes from the boathouse box" not in packet.text
+    # A puzzle document stays, because its plain sentences are evidence too; only the built material goes.
+    assert "## The keeper's logbook (Notebook page)" in packet.text
+    assert "## Notes from the boathouse box (Police report)" in packet.text
+    assert "CIPHER<P1>" not in packet.text
+    assert UNSOLVED_MATERIAL in packet.text
     assert "Inside the boathouse box you find the boatman's papers." in packet.text
     assert "# Answers you already found" not in packet.text
     assert "# Puzzles to solve now" not in packet.text
     assert "- who: Who took the great lens?" in packet.text
 
 
-def test_the_story_only_packet_asks_only_the_questions_that_a_puzzle_proves(golden_game: Game) -> None:
+def test_the_story_only_packet_asks_every_question(golden_game: Game) -> None:
     assert golden_game.story.deduction is not None
     who, why = golden_game.story.deduction.questions
     plain_why = why.model_copy(update={"proven_by": ["felix-debt"]})
@@ -191,19 +194,18 @@ def test_the_story_only_packet_asks_only_the_questions_that_a_puzzle_proves(gold
     game = golden_game.model_copy(update={"story": golden_game.story.model_copy(update={"deduction": deduction})})
     packet = build_story_only_packet(game)
     assert packet is not None
-    assert packet.questions == ["who"]
-    assert "- why:" not in packet.text
-    plain_who = who.model_copy(update={"proven_by": ["felix-debt"]})
-    no_proof = deduction.model_copy(update={"questions": [plain_who, plain_why]})
-    assert (
-        build_story_only_packet(
-            game.model_copy(update={"story": game.story.model_copy(update={"deduction": no_proof})})
-        )
-        is None
-    )
+    assert packet.questions == ["who", "why"]
     assert build_story_only_packet(without_deduction(golden_game)) is None
 
 
 def test_the_panel_packets_add_the_story_only_packet_after_the_stages(golden_game: Game) -> None:
     assert [packet.stage for packet in build_panel_packets(golden_game)] == ["A", "B", STORY_ONLY_STAGE]
     assert [packet.stage for packet in build_panel_packets(without_deduction(golden_game))] == ["A", "B"]
+
+
+def test_the_story_only_packet_keeps_a_puzzle_without_built_material(golden_game: Game) -> None:
+    no_material = golden_game.puzzles[0].model_copy(update={"artifact": None})
+    game = golden_game.model_copy(update={"puzzles": [no_material, *golden_game.puzzles[1:]]})
+    packet = build_story_only_packet(game)
+    assert packet is not None
+    assert "## The keeper's logbook (Notebook page)" in packet.text

@@ -49,3 +49,9 @@ def test_weekday_name_uses_the_language() -> None:
     assert weekday_name(saturday, "en") == "Saturday"
     assert weekday_name(saturday, "es") == "sábado"
     assert weekday_name(saturday, "xx") == "Saturday"
+
+
+def test_a_solo_game_gets_the_solo_text_when_one_exists() -> None:
+    assert text("es", "cover_players", solo=True, count="1") == "1 jugador"
+    assert text("es", "cover_players", count="1") == "1 jugadores"
+    assert text("en", "accusation_title", solo=True) == "Accusation form"
