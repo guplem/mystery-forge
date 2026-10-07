@@ -1,4 +1,4 @@
-name: the panel fails a puzzle, a fixer repairs it, and the panel passes
+name: the config asks for no images, so nobody illustrates
 inputs:
   config: c.json
 scripts:
@@ -9,7 +9,7 @@ scripts:
   - exit_code: 0
     stdout: '{"ok": true, "game_dir": "games/g", "config_file": "c.json", "summary": {"players": 4, "duration_minutes": 90,
       "difficulty": "medium", "language": "en", "audience": "family", "format": "both", "idea": "", "quality": "best", "pick_concept":
-      "ask", "host": "self_running", "images": "svg"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20,
+      "ask", "host": "self_running", "images": "none"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20,
       "generation_minutes": 90}, "draw_file": "games/g/source/draw.json"}'
   writer_tasks:
   - exit_code: 0
@@ -40,21 +40,7 @@ calls:
   - *id001
   game_check:
   - *id001
-  - *id001
   panel:
-  - status: succeeded
-    outputs:
-      ok: false
-      failing:
-      - 'A1: ambiguous: two answers'
-      report: p.json
-      failing_items:
-      - name: A1 ambiguous
-        code: A1
-        verdict: ambiguous
-        files:
-        - puzzles/P1.yaml
-        findings_file: f.json
   - status: succeeded
     outputs:
       ok: true
@@ -100,17 +86,8 @@ answers:
     - puzzles/P2.yaml
     - documents/D3.md
     summary: A maze.
-  illustrate:
-  - images:
-    - images/ferry-map.svg
-    summary: A map and two stamps.
   visual_review:
   - findings: []
-  panel_fix:
-  - status: fixed
-    changed_files:
-    - puzzles/P1.yaml
-    summary: Sharper clue.
 expect:
   path:
   - doctor
@@ -126,10 +103,6 @@ expect:
   - write_story_documents
   - writer_tasks
   - write_puzzles
-  - illustrate
-  - game_check
-  - panel
-  - panel_fix
   - game_check
   - panel
   - render

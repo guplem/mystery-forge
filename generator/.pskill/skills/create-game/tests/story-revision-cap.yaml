@@ -1,4 +1,4 @@
-name: two story revisions at most, then the plan starts
+name: three story revisions at most, then the plan starts
 inputs:
   config: c.json
 scripts:
@@ -9,8 +9,8 @@ scripts:
   - exit_code: 0
     stdout: '{"ok": true, "game_dir": "games/g", "config_file": "c.json", "summary": {"players": 4, "duration_minutes": 90,
       "difficulty": "medium", "language": "en", "audience": "family", "format": "both", "idea": "", "quality": "best", "pick_concept":
-      "ask", "host": "self_running"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20, "generation_minutes":
-      90}, "draw_file": "games/g/source/draw.json"}'
+      "ask", "host": "self_running", "images": "svg"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20,
+      "generation_minutes": 90}, "draw_file": "games/g/source/draw.json"}'
   writer_tasks:
   - exit_code: 0
     stdout: '{"ok": true, "tasks": [{"name": "P1 caesar-cipher", "id": "P1", "stage": "A", "mechanic": "caesar-cipher", "documents":
@@ -36,6 +36,7 @@ calls:
       warnings: 1
       rounds: 0
       report: r.json
+  - *id001
   - *id001
   - *id001
   plan_check:
@@ -77,6 +78,7 @@ answers:
       fix: Add a clue.
   - *id002
   - *id002
+  - *id002
   plan:
   - summary: Eight puzzles, six actions.
   write_story_documents:
@@ -94,11 +96,16 @@ answers:
     - puzzles/P2.yaml
     - documents/D3.md
     summary: A maze.
+  illustrate:
+  - images:
+    - images/ferry-map.svg
+    summary: A map and two stamps.
   visual_review:
   - findings: []
   revise_story:
   - summary: Added a clue.
-  - summary: Added another clue.
+  - summary: Another.
+  - summary: Third.
 expect:
   path:
   - doctor
@@ -115,11 +122,15 @@ expect:
   - revise_story
   - story_check
   - review_story
+  - revise_story
+  - story_check
+  - review_story
   - plan
   - plan_check
   - write_story_documents
   - writer_tasks
   - write_puzzles
+  - illustrate
   - game_check
   - panel
   - render
