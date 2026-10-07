@@ -27,8 +27,10 @@ def test_the_golden_game_leaks_no_answer() -> None:
 def test_an_answer_spelled_with_separators_in_an_earlier_document_is_an_error() -> None:
     findings = check_leaks(with_text(golden_game(), "D1", "The dial shows 0-7-2 6."))
     assert rules(findings) == ["leaks.answer_in_text"]
-    assert (findings[0].file, findings[0].severity) == ("documents/D1.md", "error")
+    # The finding goes to the puzzle file: its owner can change the answer or allow the passage there.
+    assert (findings[0].file, findings[0].severity) == ("puzzles/P2.yaml", "error")
     assert "P2" in findings[0].message
+    assert "documents/D1.md" in findings[0].message
     assert findings[0].fix_hint
 
 
@@ -63,7 +65,7 @@ def test_the_puzzle_s_own_artifact_text_does_not_count_but_another_artifact_does
         golden_game(), "P2", artifact=Artifact(html="<p>x</p>", solver_text="BOATHOUSE")
     )
     findings = check_leaks(with_text(other, "D3", "BOATHOUSE"))
-    assert [finding.file for finding in findings] == ["documents/D3.md"]
+    assert [finding.file for finding in findings] == ["puzzles/P1.yaml"]
 
 
 def test_name_and_choice_answers_are_not_leak_checked() -> None:

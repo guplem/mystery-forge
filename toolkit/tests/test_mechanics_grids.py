@@ -349,7 +349,7 @@ def test_overlay_mask_holes_show_the_answer_in_reading_order() -> None:
         grid[row][column] for row in range(5) for column in range(5) if mask[row][column] == ' class="mf-mask-hole"'
     )
     assert letters == "FARO"
-    assert artifact.print_notes == ("Cut out the black squares of the mask card.",)
+    assert artifact.print_notes == ("Cut out the pale squares (the windows) of the dark mask card.",)
     assert "Mask" in artifact.solver_text
 
 

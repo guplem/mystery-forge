@@ -490,7 +490,7 @@ def build_overlay_mask(params: OverlayMaskParams, context: MechanicContext) -> A
         html=f'<div class="mf-overlay-mask">\n{grid_table_html(grid, "mf-overlay-grid")}\n'
         f"{mask_table_html(params.size, holes)}\n</div>",
         solver_text=f"Grid:\n{grid_text(grid)}\n\nMask (# is a hole):\n" + "\n".join(mask_rows),
-        print_notes=("Cut out the black squares of the mask card.",),
+        print_notes=("Cut out the pale squares (the windows) of the dark mask card.",),
     )
 
 

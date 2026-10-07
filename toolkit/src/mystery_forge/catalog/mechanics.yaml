@@ -1450,7 +1450,9 @@ mechanics:
     summary: Order events from several sources, then find the gap or the impossible event.
     how_it_works: >-
       Events with partial times come from several sources. Players put them in order and find the gap or the event
-      that cannot fit. Code checks that the planned order is the only one consistent with the stated times.
+      that cannot fit. The printed cards carry no times: the documents give the times, in different forms (a clock
+      in a photo, "after the 9 o'clock train"), and players must connect them. The first letters of the cards, in
+      time order, spell the answer.
     material: Event cards to cut and sort (optional) and a blank timeline sheet.
     answer_kinds: [name, choice, digits]
     needs: { scissors: false, tape: false, fold: false, color: false }

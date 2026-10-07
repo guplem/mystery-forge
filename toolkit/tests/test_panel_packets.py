@@ -153,3 +153,11 @@ def test_an_unknown_stage_sorts_after_every_flow_stage(golden_game: Game) -> Non
     )
     game = golden_game.model_copy(update={"puzzles": [stray, *golden_game.puzzles[1:]]})
     assert build_stage_packets(game)[0].codes == ["A2"]
+
+
+def test_a_document_shows_its_printed_header_fields(golden_game: Game) -> None:
+    first, _ = build_stage_packets(golden_game)
+    letter_start = first.text.index("(Letter)")
+    letter = first.text[letter_start : first.text.index("##", letter_start)]
+    assert "sender: Harbour Master E. Lowe" in letter
+    assert "date: 15 March 1931" in letter
