@@ -47,13 +47,33 @@ def test_an_unreadable_plan_or_document_is_ignored(game_dir: Path) -> None:
     assert "documents/D8.md" not in owners
 
 
+def test_a_malformed_plan_or_front_matter_never_crashes_the_owners(game_dir: Path) -> None:
+    (game_dir / "source" / "documents" / "D6.md").write_text("---\nid: D6\nkind: [letter\n---\nText\n", "utf-8")
+    (game_dir / "source" / "documents" / "D9.md").write_bytes(b"---\nid: D9\ntitle: Caf\xe9\n---\n")
+    plan = "puzzles:\n  - stage: A\n  - P4\n  - id: [P5]\n  - id: P6\n    documents:\n"
+    plan += "  - id: P7\n    documents: [D7, [x]]\n"
+    (game_dir / "source" / "plan.yaml").write_text(plan + "story_documents:\n  - D8\n  - id: D10\n", "utf-8")
+    owners = file_owners(game_dir)
+    assert "documents/D6.md" not in owners
+    assert "documents/D9.md" not in owners
+    assert owners["puzzles/P6.yaml"] == "P6"
+    assert owners["documents/D7.md"] == "P7"
+    assert owners["documents/D10.md"] == "documents"
+    assert owners["documents/D2.md"] == "P1"
+
+
+@pytest.mark.parametrize("plan", ["puzzles:\nstory_documents:\n", "- a list\n", "", "title: a\x07\n"])
+def test_an_empty_or_odd_plan_adds_no_owner(game_dir: Path, plan: str) -> None:
+    (game_dir / "source" / "plan.yaml").write_text(plan, encoding="utf-8")
+    assert file_owners(game_dir)["puzzles/P1.yaml"] == "P1"
+
+
 def test_findings_are_grouped_by_the_writer_that_owns_their_file(game_dir: Path) -> None:
     findings = [
         finding("puzzles/P1.yaml"),
         finding("documents/D2.md"),
         finding("documents/D1.md"),
         finding("story.yaml"),
-        finding(None),
         finding("flow.yaml"),
         finding("images/lamp.svg"),
         finding("config.json"),
@@ -64,8 +84,22 @@ def test_findings_are_grouped_by_the_writer_that_owns_their_file(game_dir: Path)
     assert groups["P1"].files == ["puzzles/P1.yaml", "documents/D2.md"]
     assert "documents/D1.md" in groups["documents"].files
     assert "images/" in groups["documents"].files
-    assert len(groups["story"].findings) == 2
+    assert len(groups["story"].findings) == 1
     assert groups["plan"].files == ["plan.yaml", "flow.yaml"]
+
+
+def test_a_finding_without_a_file_makes_a_game_group_that_runs_alone(game_dir: Path) -> None:
+    findings = [finding(None, "budget.duration"), finding("puzzles/P1.yaml"), finding("story.yaml")]
+    groups = group_findings(findings, game_dir)
+    assert [group.name for group in groups] == ["game"]
+    assert groups[0].files == ["plan.yaml", "flow.yaml", "puzzles/P1.yaml", "puzzles/P2.yaml", "puzzles/P3.yaml"]
+    assert len(groups[0].findings) == 1
+
+
+def test_a_game_group_with_warnings_only_lets_the_other_groups_run(game_dir: Path) -> None:
+    warning = Finding(severity="warning", rule="variety.repeat", message="m", file=None)
+    groups = group_findings([warning, finding("story.yaml")], game_dir)
+    assert [group.name for group in groups] == ["story"]
 
 
 def test_warnings_alone_make_no_group(game_dir: Path) -> None:

@@ -1,3 +1,4 @@
+import contextlib
 import io
 import json
 import shutil
@@ -33,11 +34,14 @@ def golden_plan() -> dict[str, Any]:
         "motif": "The tide table returns.",
         "puzzles": [
             {"id": "P1", "stage": "A", "title": "Coded line", "mechanic": "caesar-cipher", "difficulty": "easy",
-             "answer": "boathouse", "in_world_reason": "Hidden notes.", "reveals": "Keys.", "documents": ["D2"]},
+             "answer": "boathouse", "in_world_reason": "Hidden notes.",
+             "hidden_from": "the crew", "reveals": "Keys.", "documents": ["D2"]},
             {"id": "P2", "stage": "A", "title": "The lock", "mechanic": "arithmetic-lock", "difficulty": "easy",
-             "answer": "0726", "in_world_reason": "A lock.", "reveals": "Rope.", "documents": ["D3"]},
+             "answer": "0726", "in_world_reason": "A lock.",
+             "hidden_from": "the crew", "reveals": "Rope.", "documents": ["D3"]},
             {"id": "P3", "stage": "B", "title": "The tide", "mechanic": "deduction", "difficulty": "medium",
-             "depends_on": ["P1"], "answer": "low tide", "in_world_reason": "A causeway.", "reveals": "Low tide.",
+             "depends_on": ["P1"], "answer": "low tide", "in_world_reason": "A causeway.",
+             "hidden_from": "visitors", "reveals": "Low tide.",
              "documents": ["D4"]},
         ],
         "story_documents": [
@@ -166,7 +170,12 @@ def test_judge_reports_failing_items_with_their_files(game_dir: Path, monkeypatc
     assert judged["ok"] is False
     by_code = {item["code"]: item for item in judged["failing_items"]}
     assert by_code["A1"]["files"] == ["puzzles/P1.yaml", "documents/D2.md"]
-    assert by_code["who"]["files"][0] == "story.yaml"
+    assert by_code["deduction"]["name"] == "deduction"
+    assert by_code["deduction"]["files"] == ["story.yaml", "documents/D1.md", "documents/D5.md", "images/"]
+    assert "who" not in by_code
+    assert "why" not in by_code
+    deduction_notes = json.loads(Path(by_code["deduction"]["findings_file"]).read_text(encoding="utf-8"))
+    assert [question["verdict"]["code"] for question in deduction_notes["questions"]] == ["who", "why"]
     notes = json.loads(Path(by_code["A1"]["findings_file"]).read_text(encoding="utf-8"))
     assert notes["verdict"]["verdict"] == "too_hard"
     assert len(notes["solver_answers"]) == 5
@@ -188,7 +197,7 @@ def test_verbs_on_a_broken_game_report_findings(game_dir: Path) -> None:
 def test_export_without_a_render_is_reported(game_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     folders = SystemFolders(desktop=tmp_path / "Desktop", downloads=tmp_path / "Downloads")
     monkeypatch.setattr(cli, "find_system_folders", lambda: folders)
-    result = run(["export", "--game", str(game_dir)])
+    result = run(["export", "--game", str(game_dir), "--force"])
     assert result["ok"] is False
     assert "forge render" in result["message"]
 
@@ -222,12 +231,233 @@ def test_kids_games_get_a_kids_solver_persona(game_dir: Path) -> None:
 
 def test_judge_on_a_broken_game_reports_findings(game_dir: Path) -> None:
     (game_dir / "source" / "flow.yaml").unlink()
-    result = run(["judge", "--game", str(game_dir), "--input", "{}"])
+    payload = '{"solver_tasks": [], "solver_results": []}'
+    result = run(["judge", "--game", str(game_dir), "--input", payload])
     assert result["ok"] is False
+    assert result["errors"] >= 1
 
 
 def test_render_without_a_companion_page(game_dir: Path) -> None:
+    run(["render", "--game", str(game_dir), "--html-only"])
+    assert (game_dir / "render" / "Game companion.html").is_file()
     set_config(game_dir, assistance__companion_page=False)
     result = run(["render", "--game", str(game_dir), "--html-only"])
     assert result["ok"] is True
     assert not (game_dir / "render" / "Game companion.html").exists()
+
+
+def test_full_check_records_a_pass_for_every_code_in_the_ledger(game_dir: Path) -> None:
+    assert run(["check", "--game", str(game_dir)])["ok"] is True
+    ledger = json.loads((game_dir / "reports" / "verification.json").read_text(encoding="utf-8"))
+    entries: dict[str, Any] = ledger["entries"]
+    assert sorted(entries) == ["A1", "A2", "B1", "deduction"]
+    for entry in entries.values():
+        assert entry["checks_hash"] is not None
+        assert entry["checks_pass_hash"] == entry["checks_hash"]
+        assert entry["panel_pass_hash"] is None
+
+
+def test_a_full_check_with_errors_records_nothing_in_the_ledger(game_dir: Path) -> None:
+    path = game_dir / "source" / "puzzles" / "P1.yaml"
+    path.write_text(path.read_text(encoding="utf-8").replace("my code goes back three steps", "no such words"), "utf-8")
+    assert run(["check", "--game", str(game_dir)])["ok"] is False
+    assert not (game_dir / "reports" / "verification.json").exists()
+
+
+def test_broken_front_matter_and_plan_entries_are_findings_not_crashes(game_dir: Path) -> None:
+    (game_dir / "source" / "documents" / "D6.md").write_text("---\nid: D6\nkind: [letter\n---\nText\n", "utf-8")
+    plan = "format_version: 1\npuzzles:\n  - stage: A\nstory_documents:\n"
+    (game_dir / "source" / "plan.yaml").write_text(plan, encoding="utf-8")
+    for scope in ("story", "plan", "full"):
+        result = run(["check", "--game", str(game_dir), "--scope", scope])
+        assert result["ok"] is (scope == "story"), result
+    full = run(["check", "--game", str(game_dir)])
+    assert "yaml.syntax" in [finding["rule"] for finding in full["findings"]]
+
+
+def test_an_empty_plan_puzzle_list_is_a_finding(game_dir: Path) -> None:
+    (game_dir / "source" / "plan.yaml").write_text("format_version: 1\npuzzles:\n", encoding="utf-8")
+    result = run(["check", "--game", str(game_dir), "--scope", "plan"])
+    assert result["ok"] is False
+    assert result["errors"] >= 1
+
+
+def move_puzzle_to_stage(game_dir: Path, stage: str) -> None:
+    path = game_dir / "source" / "puzzles" / "P2.yaml"
+    path.write_text(path.read_text(encoding="utf-8").replace("stage: A", f"stage: {stage}"), "utf-8")
+
+
+def test_a_puzzle_in_a_stage_that_the_flow_lacks_is_a_finding(game_dir: Path) -> None:
+    move_puzzle_to_stage(game_dir, "Z")
+    result = run(["check", "--game", str(game_dir)])
+    assert result["ok"] is False
+    assert result["errors"] >= 1
+    assert not (game_dir / "reports" / "verification.json").exists()
+    assert "ok" in run(["packets", "--game", str(game_dir)])
+
+
+def test_a_crash_inside_a_verb_prints_one_json_line_and_exits_2(
+    game_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def explode(game_dir: Path) -> list[Any]:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr("mystery_forge.cli_game.check_story_folder", explode)
+    output = io.StringIO()
+    assert cli.main(["check", "--game", str(game_dir), "--scope", "story"], output) == 2
+    assert json.loads(output.getvalue()) == {"ok": False, "message": "RuntimeError: boom"}
+
+
+def packets_and_payload(game_dir: Path) -> dict[str, Any]:
+    tasks = run(["packets", "--game", str(game_dir)])["solver_tasks"]
+    results = [
+        {"status": "done", "answers": solver_answers(task["stage"]), "accusation": accusation(task["stage"])}
+        for task in tasks
+    ]
+    return {"solver_tasks": tasks, "solver_results": results, "guesser_result": {"guesses": []}}
+
+
+@pytest.mark.parametrize(
+    "stdin",
+    [
+        "not json",
+        "[1, 2]",
+        json.dumps({"solver_tasks": 3}),
+        json.dumps({"solver_tasks": [{"name": "A solver 1", "stage": "A"}], "solver_results": []}),
+        json.dumps({"solver_tasks": [{"name": "x", "stage": "A"}], "solver_results": [{"answers": [{"x": 1}]}]}),
+    ],
+)
+def test_judge_reports_bad_input_as_a_finding(game_dir: Path, monkeypatch: pytest.MonkeyPatch, stdin: str) -> None:
+    judged = run(["judge", "--game", str(game_dir)], stdin, monkeypatch)
+    assert judged["ok"] is False
+    assert judged["findings"][0]["rule"] == "judge.input"
+    assert judged["failing_items"] == []
+
+
+def test_judge_without_packets_asks_for_them(game_dir: Path) -> None:
+    payload: dict[str, Any] = {"solver_tasks": [], "solver_results": [], "guesser_result": None}
+    judged = run(["judge", "--game", str(game_dir), "--input", json.dumps(payload)])
+    assert judged["ok"] is False
+    assert "run forge packets first" in judged["message"]
+    panel = game_dir / "reports" / "panel"
+    panel.mkdir(parents=True)
+    for broken in ("{not json", '{"stage": "A"}', "7"):
+        (panel / "packets.json").write_text(broken, encoding="utf-8")
+        judged = run(["judge", "--game", str(game_dir), "--input", json.dumps(payload)])
+        assert "run forge packets first" in judged["message"]
+
+
+def test_judge_refuses_stale_packets(game_dir: Path) -> None:
+    payload = packets_and_payload(game_dir)
+    path = game_dir / "source" / "documents" / "D3.md"
+    path.write_text(path.read_text(encoding="utf-8") + "\nOne more line.\n", encoding="utf-8")
+    judged = run(["judge", "--game", str(game_dir), "--input", json.dumps(payload)])
+    assert judged["ok"] is False
+    assert "packets are stale, run the panel again" in judged["message"]
+    assert not (game_dir / "reports" / "panel" / "panel.json").exists()
+
+
+def test_render_without_a_browser_reports_the_doctor_fix(game_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from mystery_forge.render.pdf import BrowserNotFoundError
+
+    def no_browser() -> Any:
+        raise BrowserNotFoundError("No browser.")
+
+    monkeypatch.setattr("mystery_forge.cli_game.open_sheet_browser", no_browser)
+    result = run(["render", "--game", str(game_dir)])
+    assert result["ok"] is False
+    assert "No browser." in result["message"]
+    assert "playwright install chromium" in result["fix"]
+    assert result["fix_groups"] == []
+
+
+def test_render_reports_a_browser_error_during_the_render(game_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from playwright.sync_api import Error as PlaywrightError
+
+    def failing_render(*arguments: Any) -> Any:
+        raise PlaywrightError("Target closed")
+
+    monkeypatch.setattr("mystery_forge.cli_game.open_sheet_browser", lambda: contextlib.nullcontext(None))
+    monkeypatch.setattr("mystery_forge.cli_game.render_game", failing_render)
+    result = run(["render", "--game", str(game_dir)])
+    assert result["ok"] is False
+    assert "Target closed" in result["message"]
+
+
+def test_export_refuses_a_game_that_verification_blocks(game_dir: Path, tmp_path: Path) -> None:
+    make_fake_pdfs(game_dir)
+    assert run(["check", "--game", str(game_dir)])["ok"] is True
+    blocked = run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out")])
+    assert blocked["ok"] is False
+    assert {finding["rule"] for finding in blocked["findings"]} == {"verification.stale"}
+    assert not (tmp_path / "out").exists()
+    without_panel = run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out"), "--panel", "False"])
+    assert without_panel["ok"] is True
+    path = game_dir / "source" / "documents" / "D3.md"
+    path.write_text(path.read_text(encoding="utf-8") + "\nOne more line.\n", encoding="utf-8")
+    assert run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out"), "--panel", "false"])["ok"] is False
+    forced = run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out"), "--force"])
+    assert forced["ok"] is True
+
+
+def make_fake_pdfs(game_dir: Path) -> None:
+    (game_dir / "render").mkdir(exist_ok=True)
+    for name in (
+        "1 - START HERE (manual).pdf",
+        "2 - PRINT THIS (game materials).pdf",
+        "3 - Hints.pdf",
+        "4 - Solutions.pdf",
+    ):
+        (game_dir / "render" / name).write_bytes(b"%PDF")
+
+
+def test_status_lists_stale_checks_and_stale_panel_codes_apart(game_dir: Path) -> None:
+    status = run(["status", "--game", str(game_dir)])
+    assert status["checks_stale"] == ["A1", "A2", "B1", "deduction"]
+    assert status["panel_stale"] == ["A1", "A2", "B1", "deduction"]
+    run(["check", "--game", str(game_dir)])
+    status = run(["status", "--game", str(game_dir), "--panel", "True"])
+    assert status["checks_stale"] == []
+    assert status["panel_stale"] == ["A1", "A2", "B1", "deduction"]
+    status = run(["status", "--game", str(game_dir), "--panel", "0"])
+    assert status["ok"] is True
+    assert status["panel_stale"] == []
+
+
+def break_story_and_puzzle(game_dir: Path) -> None:
+    move_puzzle_to_stage(game_dir, "Z")
+    path = game_dir / "source" / "puzzles" / "P1.yaml"
+    path.write_text(path.read_text(encoding="utf-8").replace("my code goes back three steps", "no such words"), "utf-8")
+
+
+def test_check_only_reports_the_listed_files_and_no_write_writes_nothing(game_dir: Path) -> None:
+    break_story_and_puzzle(game_dir)
+    everything = run(["check", "--game", str(game_dir), "--no-write"])
+    assert len({finding.get("file") for finding in everything["findings"]}) > 1
+    assert not (game_dir / "reports").exists()
+    assert not (game_dir / "game.json").exists()
+    assert everything["report"] is None
+    assert all("findings_file" not in group for group in everything["fix_groups"])
+    only = run(["check", "--game", str(game_dir), "--only", "puzzles/P1.yaml,documents/D2.md", "--no-write"])
+    assert {finding.get("file") for finding in only["findings"]} <= {"puzzles/P1.yaml", "documents/D2.md"}
+    assert only["findings"]
+    assert [group["name"] for group in only["fix_groups"]] == ["P1"]
+    assert not (game_dir / "reports").exists()
+
+
+def test_assemble_and_render_accept_only_and_no_write(game_dir: Path) -> None:
+    assembled = run(["assemble", "--game", str(game_dir), "--no-write", "--only", "story.yaml"])
+    assert assembled["ok"] is True
+    assert assembled["report"] is None
+    assert not (game_dir / "game.json").exists()
+    rendered = run(["render", "--game", str(game_dir), "--html-only", "--no-write"])
+    assert rendered["ok"] is True
+    assert rendered["previews_dir"] is None
+    assert not (game_dir / "render").exists()
+    assert not (game_dir / "reports").exists()
+    path = game_dir / "source" / "puzzles" / "P2.yaml"
+    path.write_text(path.read_text(encoding="utf-8").replace("difficulty: easy", "difficulty: trivial"), "utf-8")
+    broken = run(["render", "--game", str(game_dir), "--html-only", "--no-write", "--only", "story.yaml"])
+    assert broken["ok"] is False
+    assert broken["findings"] == []
+    assert not (game_dir / "reports").exists()

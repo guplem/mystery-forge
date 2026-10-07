@@ -64,7 +64,9 @@ def test_parse_xdg_user_dirs_ignores_noise_and_expands_home(tmp_path: Path) -> N
     ("title", "expected"),
     [
         ("The Lens of Gull Rock", "The Lens of Gull Rock"),
-        ('Who stole "the" lens? A/B: test*', "Who stole the lens AB test"),
+        ('Who stole "the" lens? A/B: test*', "Who stole the lens AB - test"),
+        ("Tape Seven: The Clock", "Tape Seven - The Clock"),
+        ("Case 12:30", "Case 12-30"),
         ("El Faro de Señora García", "El Faro de Señora García"),
         ("Ends with dots...  ", "Ends with dots"),
         ("CON", "CON game"),
@@ -109,3 +111,13 @@ def test_newest_config_file_picks_the_latest_mystery_config(tmp_path: Path) -> N
         path.write_text("{}", encoding="utf-8")
         os.utime(path, (1_000_000 + index, 1_000_000 + index))
     assert newest_config_file(tmp_path) == new
+
+
+@pytest.mark.parametrize("name", ["party.mystery-config (1).json", "party.mystery-config(2).json"])
+def test_newest_config_file_matches_a_downloaded_copy(tmp_path: Path, name: str) -> None:
+    old = tmp_path / "party.mystery-config.json"
+    copy = tmp_path / name
+    for index, path in enumerate((old, copy, tmp_path / "party.mystery-config (x).json")):
+        path.write_text("{}", encoding="utf-8")
+        os.utime(path, (1_000_000 + index, 1_000_000 + index))
+    assert newest_config_file(tmp_path) == copy

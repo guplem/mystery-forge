@@ -12,6 +12,7 @@ from typing import Final
 from mystery_forge.assemble import load_config
 from mystery_forge.brief import Brief
 from mystery_forge.catalog.loader import load_ingredients
+from mystery_forge.checks.deduction import hidden_clue_count_findings
 from mystery_forge.checks.runner import run_checks
 from mystery_forge.config import GameConfig
 from mystery_forge.findings import Finding
@@ -31,12 +32,25 @@ STORY_RULES: Final[tuple[str, ...]] = (
     "deduction.no_who_question",
 )
 INTRO_WORDS: Final[tuple[int, int]] = (60, 200)
-# Word stems that a story with no death may not use, in every game language.
-DEATH_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"\b(murder|kill|dead\b|death|corpse|blood|asesin|muert|matar|sangre|cad[aá]ver|assassin|mort\b|sang\b|meurtre|"
-    r"tuer|cadavre|mord|t[oö]te|leiche|blut|omicid|uccid|uccis|morto|sangue|assassin|morte)",
-    re.IGNORECASE,
-)
+# The words that a story with no death may not use, by game language. A word that ends with "*" is a stem: it also
+# matches longer words ("murder*" matches "murderer"). Any other word matches only as a whole word, so the French
+# "sang" does not flag the English "sang", and "tote" does not flag "totem".
+DEATH_WORDS: Final[dict[str, tuple[str, ...]]] = {
+    "en": ("murder*", "kill*", "dead", "death*", "corpse*", "blood*", "assassin*"),
+    "es": ("asesin*", "muert*", "matar*", "sangre*", "cadáver*", "cadaver*"),
+    "ca": ("assassin*", "mort", "morta", "morts", "mortes", "matar*", "sang", "cadàver*"),
+    "fr": ("meurtr*", "tuer", "tué", "tuée", "tueur*", "mort", "morte", "morts", "sang", "cadavre*", "assassin*"),
+    "de": ("mord", "mordes", "mörder*", "ermord*", "tot", "tote", "toten", "töt*", "leiche*", "blut*"),
+    "it": ("omicid*", "uccid*", "uccis*", "morto", "morta", "morti", "morte", "sangue*", "cadavere*", "assassin*"),
+    "pt": ("assassin*", "morto", "morta", "mortos", "morte", "matar*", "sangue*", "cadáver*"),
+}
+
+
+def death_pattern(language: str) -> re.Pattern[str]:
+    alternatives: list[str] = [
+        re.escape(word[:-1]) if word.endswith("*") else rf"{re.escape(word)}\b" for word in DEATH_WORDS[language]
+    ]
+    return re.compile(rf"\b(?:{'|'.join(alternatives)})", re.IGNORECASE)
 
 
 def check_story_folder(game_dir: Path) -> list[Finding]:
@@ -50,6 +64,9 @@ def check_story_folder(game_dir: Path) -> list[Finding]:
     findings.extend(clue_reference_findings(story))
     findings.extend(audience_findings(story, config))
     findings.extend(cliche_findings(story))
+    findings.extend(
+        finding.model_copy(update={"file": STORY_FILE}) for finding in hidden_clue_count_findings(story, config)
+    )
     return findings
 
 
@@ -89,8 +106,9 @@ def structure_findings(story: Story, config: GameConfig) -> list[Finding]:
         findings.append(
             story_finding(
                 "story.intro_length",
-                f"The intro has {words} words; a read-aloud intro works best with 80 to 160.",
-                "Rewrite the intro to set the scene, the goal, and the stakes in 80 to 160 words.",
+                f"The intro has {words} words; a read-aloud intro needs {INTRO_WORDS[0]} to {INTRO_WORDS[1]}.",
+                f"Rewrite the intro to set the scene, the goal, and the stakes in {INTRO_WORDS[0]} to "
+                f"{INTRO_WORDS[1]} words.",
                 severity="warning",
             )
         )
@@ -127,7 +145,8 @@ def audience_findings(story: Story, config: GameConfig) -> list[Finding]:
         return []
     texts: list[str] = [story.truth, story.intro, story.premise, *(epilogue.text for epilogue in story.epilogues)]
     texts += [event.description for event in story.timeline]
-    match: re.Match[str] | None = next(filter(None, (DEATH_PATTERN.search(text) for text in texts)), None)
+    pattern: re.Pattern[str] = death_pattern(config.language)
+    match: re.Match[str] | None = next(filter(None, (pattern.search(text) for text in texts)), None)
     if match is None:
         return []
     return [

@@ -1,8 +1,9 @@
 """The `forge` command line. Agents and pskill script blocks call it from `generator/`.
 
 Every verb prints ONE JSON object and exits 0 when it ran, also when it found problems (`"ok": false`), and 2 on a
-usage or environment error. pskill pauses a run on a non-zero exit and cuts stdout at 64 KiB, so the output stays
-small: at most `MAX_FINDINGS_IN_OUTPUT` findings, and the full report goes to a file under `<game>/reports/`.
+usage or environment error. A crash inside a verb also prints one JSON object and exits 2. pskill pauses a run
+on a non-zero exit and cuts stdout at 64 KiB, so the output stays small: at most `MAX_FINDINGS_IN_OUTPUT` findings,
+and the full report goes to a file under `<game>/reports/`.
 """
 
 import argparse
@@ -10,6 +11,7 @@ import json
 import os
 import secrets
 import sys
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
 from typing import Any, TextIO
@@ -17,13 +19,15 @@ from typing import Any, TextIO
 from pydantic import BaseModel
 
 from mystery_forge import cli_game
-from mystery_forge.assemble import assemble_game
+from mystery_forge.assemble import AssemblyResult, assemble_game
 from mystery_forge.brief import Brief, derive_brief
 from mystery_forge.catalog.loader import design_rules_text, load_mechanics, mechanic_by_id
-from mystery_forge.cli_output import capped_findings, emit, write_report
+from mystery_forge.catalog.models import Mechanic
+from mystery_forge.cli_output import BROWSER_FIX, OutputOptions, capped_findings, emit, optional_report, parse_file_list
 from mystery_forge.config import ConfigLoadResult, GameConfig, load_config_file, normalize_config
 from mystery_forge.draw import Draw, draw_ingredients
-from mystery_forge.findings import count_errors, findings_to_json
+from mystery_forge.findings import Finding, count_errors
+from mystery_forge.mechanics.base import MechanicImplementation
 from mystery_forge.mechanics.registry import all_implementations
 from mystery_forge.paths import (
     KnownFolderReader,
@@ -33,10 +37,14 @@ from mystery_forge.paths import (
     slugify,
     system_folders,
 )
+from mystery_forge.render.pdf import BrowserNotFoundError, launch_first_available
 from mystery_forge.spec.documents import ALL_DIRECTIVES
 from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
 
+type VerbHandler = Callable[[argparse.Namespace, TextIO], int]
+
 RECENT_GAMES_TO_AVOID: int = 5
+PANEL_FLAG_HELP: str = "false (or False, 0) when the run skipped the solver panel."
 MAX_SEED: int = 2_147_483_647
 SCHEMAS: dict[str, type[BaseModel]] = {"story": Story, "flow": Flow, "puzzle": Puzzle, "document": DocumentMeta}
 REFERENCE_FORMS: dict[str, str] = {
@@ -62,17 +70,17 @@ def random_seed() -> int:
 
 def probe_browser() -> str | None:  # pragma: no cover - launches a real browser; the browser tests cover rendering
     """Return the name of the first browser that Playwright can start, or None."""
-    from playwright.sync_api import Error, sync_playwright
+    from playwright.sync_api import sync_playwright
 
     with sync_playwright() as playwright:
-        for channel in ("chrome", "msedge", None):
-            try:
-                browser = playwright.chromium.launch(channel=channel) if channel else playwright.chromium.launch()
-            except Error:
-                continue
-            browser.close()
-            return channel or "chromium"
-    return None
+        try:
+            browser, channel = launch_first_available(
+                lambda channel: (playwright.chromium.launch(channel=channel), channel)
+            )
+        except BrowserNotFoundError:
+            return None
+        browser.close()
+        return channel or "chromium"
 
 
 def write_json(path: Path, model: BaseModel) -> None:
@@ -155,7 +163,10 @@ def recent_settings(games_dir: Path) -> frozenset[str]:
     draws: list[Path] = sorted(games_dir.glob("*/source/draw.json"), key=lambda path: path.stat().st_mtime)
     settings: set[str] = set()
     for path in draws[-RECENT_GAMES_TO_AVOID:]:
-        settings.update(item["id"] for item in json.loads(path.read_text(encoding="utf-8"))["settings"])
+        try:
+            settings.update(str(item["id"]) for item in json.loads(path.read_text(encoding="utf-8"))["settings"])
+        except (ValueError, KeyError, TypeError):
+            continue  # A setup that crashed can leave a broken draw. It holds no setting to avoid.
     return frozenset(settings)
 
 
@@ -172,17 +183,20 @@ def new_game_folder(games_dir: Path, config: GameConfig) -> Path:
 
 def command_assemble(arguments: argparse.Namespace, output: TextIO) -> int:
     game_dir: Path = Path(arguments.game)
-    result = assemble_game(game_dir)
-    if result.game is not None:
+    options: OutputOptions = cli_game.output_options(arguments)
+    result: AssemblyResult = assemble_game(game_dir)
+    written: bool = False
+    if result.game is not None and options.write:
         (game_dir / "game.json").write_text(result.game.model_dump_json(indent=2), encoding="utf-8")
-    report: Path = write_report(game_dir, "assemble", {"findings": findings_to_json(result.findings)})
+        written = True
+    findings: list[Finding] = options.selected(result.findings)
     emit(
         output,
         {
-            "ok": result.game is not None and count_errors(result.findings) == 0,
-            "game_written": result.game is not None,
-            "report": str(report),
-            **capped_findings(result.findings),
+            "ok": result.game is not None and count_errors(findings) == 0,
+            "game_written": written,
+            "report": optional_report(game_dir, "assemble", findings, options),
+            **capped_findings(findings),
         },
     )
     return 0
@@ -210,11 +224,11 @@ def command_catalog(arguments: argparse.Namespace, output: TextIO) -> int:
         emit(output, {"ok": True, "mechanics": mechanics})
         return 0
     try:
-        mechanic = mechanic_by_id(arguments.mechanic_id)
+        mechanic: Mechanic = mechanic_by_id(arguments.mechanic_id)
     except KeyError as error:
         emit(output, {"ok": False, "message": str(error.args[0])})
         return 2
-    implementation = all_implementations().get(mechanic.id)
+    implementation: MechanicImplementation[Any] | None = all_implementations().get(mechanic.id)
     emit(
         output,
         {
@@ -246,7 +260,7 @@ def command_doctor(arguments: argparse.Namespace, output: TextIO) -> int:
         "downloads": str(folders.downloads),
     }
     if browser is None:
-        payload["fix"] = "Install Google Chrome or Microsoft Edge, or run: uv run playwright install chromium"
+        payload["fix"] = BROWSER_FIX
     emit(output, payload)
     return 0
 
@@ -255,9 +269,23 @@ def command_export(arguments: argparse.Namespace, output: TextIO) -> int:
     return cli_game.command_export(arguments, output, find_system_folders())
 
 
+def add_output_flags(parser: argparse.ArgumentParser) -> None:
+    """Add the flags that let parallel fixers run a verb without overwriting the shared reports."""
+    parser.add_argument(
+        "--only",
+        type=parse_file_list,
+        help="Report only the findings of these source files, separated by commas, relative to source/.",
+    )
+    parser.add_argument(
+        "--no-write", action="store_true", help="Print only: write no report, game.json, ledger, or fix file."
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="forge", description="Build, check, and render Mystery Forge games.")
-    verbs = parser.add_subparsers(dest="verb", required=True)
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(
+        prog="forge", description="Build, check, and render Mystery Forge games."
+    )
+    verbs: argparse._SubParsersAction[argparse.ArgumentParser] = parser.add_subparsers(dest="verb", required=True)
     setup = verbs.add_parser("setup", help="Create a game folder from a config file.")
     setup.add_argument("--config", help="The config file. Default: the newest *.mystery-config.json in Downloads.")
     setup.add_argument("--defaults", action="store_true", help="Use the default config, with no file.")
@@ -265,6 +293,7 @@ def build_parser() -> argparse.ArgumentParser:
     setup.set_defaults(handler=command_setup)
     assemble = verbs.add_parser("assemble", help="Load, build, and assemble a game into game.json.")
     assemble.add_argument("--game", required=True, help="The game folder (the parent of source/).")
+    add_output_flags(assemble)
     assemble.set_defaults(handler=command_assemble)
     catalog = verbs.add_parser("catalog", help="Read the mechanic catalog.")
     catalog_verbs = catalog.add_subparsers(dest="catalog_command", required=True)
@@ -282,6 +311,7 @@ def build_parser() -> argparse.ArgumentParser:
     check = verbs.add_parser("check", help="Check the story, the plan, or the full game, and group the findings.")
     check.add_argument("--game", required=True, help="The game folder (the parent of source/).")
     check.add_argument("--scope", choices=["story", "plan", "full"], default="full", help="What to check.")
+    add_output_flags(check)
     check.set_defaults(handler=cli_game.command_check)
     writer_tasks = verbs.add_parser("writer-tasks", help="List one writing task per planned puzzle.")
     writer_tasks.add_argument("--game", required=True, help="The game folder.")
@@ -295,15 +325,18 @@ def build_parser() -> argparse.ArgumentParser:
     judge.set_defaults(handler=cli_game.command_judge)
     status = verbs.add_parser("status", help="List the verifications that are older than the files they checked.")
     status.add_argument("--game", required=True, help="The game folder.")
-    status.add_argument("--panel", default="true", help="false when the run skipped the solver panel.")
+    status.add_argument("--panel", default="true", help=PANEL_FLAG_HELP)
     status.set_defaults(handler=cli_game.command_status)
     render = verbs.add_parser("render", help="Render the HTML pages, the PDFs, and the previews, and check them.")
     render.add_argument("--game", required=True, help="The game folder.")
     render.add_argument("--html-only", action="store_true", help="Write the HTML pages only, with no browser.")
+    add_output_flags(render)
     render.set_defaults(handler=cli_game.command_render)
     export = verbs.add_parser("export", help="Copy the rendered game to the output folder.")
     export.add_argument("--game", required=True, help="The game folder.")
     export.add_argument("--to", help="The folder that receives the game folder. Default: the config's, or Desktop.")
+    export.add_argument("--panel", default="true", help=PANEL_FLAG_HELP)
+    export.add_argument("--force", action="store_true", help="Export even when the verification blocks the game.")
     export.set_defaults(handler=command_export)
     return parser
 
@@ -312,7 +345,15 @@ def main(argv: list[str] | None = None, output: TextIO | None = None) -> int:
     stream: TextIO = output if output is not None else sys.stdout
     if stream is sys.stdout and hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    # The judge reads JSON on stdin, and the Windows default (cp1252) breaks accented text.
+    if hasattr(sys.stdin, "reconfigure"):
+        sys.stdin.reconfigure(encoding="utf-8")
     arguments: argparse.Namespace = build_parser().parse_args(argv)
-    handler = arguments.handler
-    exit_code: int = handler(arguments, stream)
+    handler: VerbHandler = arguments.handler
+    try:
+        exit_code: int = handler(arguments, stream)
+    except Exception as error:
+        # The boundary of every verb: a crash prints one JSON object, and the non-zero exit pauses the pskill run.
+        emit(stream, {"ok": False, "message": f"{type(error).__name__}: {error}"})
+        return 2
     return exit_code

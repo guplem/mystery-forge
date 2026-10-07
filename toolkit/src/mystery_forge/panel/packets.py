@@ -103,7 +103,9 @@ def canaries(game: Game) -> dict[str, str]:
 
 
 def stage_index(game: Game, stage: str) -> int:
-    return [flow_stage.id for flow_stage in game.flow.stages].index(stage)
+    """Return the flow position of a stage. A stage that the flow lacks comes last: the checks report it."""
+    ids: list[str] = [flow_stage.id for flow_stage in game.flow.stages]
+    return ids.index(stage) if stage in ids else len(ids)
 
 
 def ordered_puzzles(game: Game) -> list[AssembledPuzzle]:

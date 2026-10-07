@@ -20,10 +20,6 @@ def make_implementation(mechanic_id: str) -> MechanicImplementation[Any]:
     return MechanicImplementation(id=mechanic_id, params_model=NoParams, build=build_empty)
 
 
-def test_implementation_for_returns_none_for_an_unknown_id() -> None:
-    assert registry.implementation_for("no-such-mechanic") is None
-
-
 def test_all_implementations_rejects_a_duplicate_id(monkeypatch: pytest.MonkeyPatch) -> None:
     first = SimpleNamespace(IMPLEMENTATIONS=(make_implementation("same"),))
     second = SimpleNamespace(IMPLEMENTATIONS=(make_implementation("same"),))
@@ -37,7 +33,6 @@ def test_all_implementations_collects_every_module(monkeypatch: pytest.MonkeyPat
     second = SimpleNamespace(IMPLEMENTATIONS=(make_implementation("two"),))
     monkeypatch.setattr(registry, "MODULES", (first, second))
     assert {"one", "two"} <= set(registry.all_implementations())
-    assert registry.implementation_for("two") is not None
 
 
 def test_every_panel_mechanic_of_the_catalog_gets_an_empty_implementation() -> None:

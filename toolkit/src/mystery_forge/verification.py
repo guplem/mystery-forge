@@ -29,9 +29,8 @@ LEDGER_FORMAT_VERSION: Final[int] = 1
 class LedgerEntry(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    # The hash at the last check run that covered this code, and whether that run passed.
+    # The hash at the last check run that covered this code, and at the last run that passed.
     checks_hash: str | None = None
-    checks_passed: bool = False
     checks_pass_hash: str | None = None
     panel_hash: str | None = None
     panel_verdict: Verdict | None = None
@@ -120,7 +119,7 @@ def load_ledger(path: Path) -> VerificationLedger:
         return VerificationLedger()
     try:
         return VerificationLedger.model_validate_json(path.read_text(encoding="utf-8"))
-    except ValidationError:
+    except (ValidationError, UnicodeDecodeError):
         return VerificationLedger()
 
 
@@ -137,12 +136,10 @@ def record_checks(
     entries: dict[str, LedgerEntry] = dict(ledger.entries)
     for code, current in hashes.items():
         entry: LedgerEntry = entries.get(code, LedgerEntry())
-        passed: bool = code in passing
         entries[code] = entry.model_copy(
             update={
                 "checks_hash": current,
-                "checks_passed": passed,
-                "checks_pass_hash": current if passed else entry.checks_pass_hash,
+                "checks_pass_hash": current if code in passing else entry.checks_pass_hash,
             }
         )
     return ledger.model_copy(update={"entries": entries})
@@ -178,6 +175,20 @@ def stale_codes(ledger: VerificationLedger, hashes: dict[str, str], panel_requir
         if entry.checks_pass_hash != current or (panel_required and entry.panel_pass_hash != current):
             stale.append(code)
     return stale
+
+
+def stale_check_codes(ledger: VerificationLedger, hashes: dict[str, str]) -> list[str]:
+    """Return the codes whose deterministic checks have no pass on their current content."""
+    return [
+        code for code, current in hashes.items() if ledger.entries.get(code, LedgerEntry()).checks_pass_hash != current
+    ]
+
+
+def stale_panel_codes(ledger: VerificationLedger, hashes: dict[str, str]) -> list[str]:
+    """Return the codes whose solver panel has no pass on their current content."""
+    return [
+        code for code, current in hashes.items() if ledger.entries.get(code, LedgerEntry()).panel_pass_hash != current
+    ]
 
 
 def export_blockers(ledger: VerificationLedger, hashes: dict[str, str], panel_required: bool) -> list[Finding]:
