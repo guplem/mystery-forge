@@ -6,5 +6,6 @@ Report:
 3. **Leaks:** a puzzle answer, a hidden clue, or an accusation answer stated in a document that players have before they earn it: in clear text, in other words, or by two documents together (one says that the hiding place moved to "a drier corner", another says that only one corner is dry). Also a confession or a written plan of the culprit. Check each `leak_allowlist` entry of the puzzle files too: an allowed text that gives away a hidden clue or an accusation answer early is a leak.
 4. **Worksheets:** a puzzle document that explains the full method of its puzzle.
 5. **Designer words:** text that talks about "the players", "this puzzle", internal ids such as P3 or D12, or instructions that break the fiction where the fiction would do.
+6. **Print colors:** in a black-and-white game (`equipment.printer` in `config.json`), a clue that depends on a color, or a text that names a printed color.
 
 A finding is `required` for a contradiction, a leak, a confession, or designer words. Everything else is a `suggestion`. Name the document id, quote the problem, and give a concrete fix that keeps every clue quote word for word. Return an empty list when the documents are ready.

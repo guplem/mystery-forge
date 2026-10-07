@@ -131,7 +131,7 @@ def event_value(identifier: str, field: str, context: ReferenceContext) -> str |
 
 
 def build_markdown_parser() -> MarkdownIt:
-    parser: MarkdownIt = MarkdownIt("commonmark", {"html": False, "typographer": False})
+    parser: MarkdownIt = MarkdownIt("commonmark", {"html": False, "typographer": False}).enable("strikethrough")
     for name in STYLE_DIRECTIVES:
         parser.use(container_plugin, name=name, render=style_container_renderer(name))
     parser.use(container_plugin, name="pagebreak", render=render_pagebreak)

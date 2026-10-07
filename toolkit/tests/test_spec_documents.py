@@ -150,3 +150,9 @@ def test_an_artifact_part_reference_becomes_a_part_mark(context: ReferenceContex
     resolved, rules = resolve("{{artifact:P2.key1}} {{artifact:P9.key1}}", context, "P1")
     assert resolved == f"{ARTIFACT_MARK.format(puzzle='P2.key1')} {{{{artifact:P9.key1}}}}"
     assert rules == ["reference.unknown"]
+
+
+def test_render_markdown_strikes_through_crossed_out_text() -> None:
+    rendered = render_markdown("Paid ~~3 December~~ 5 December.", "documents/D1.md", 1)
+    assert "<s>3 December</s>" in rendered.html
+    assert "~~" not in rendered.text

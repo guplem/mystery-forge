@@ -39,16 +39,17 @@ def template_environment() -> Environment:
 class Translator:
     """The `t()` of the templates: a fixed text of the game language, with every value turned into text."""
 
-    def __init__(self, language: str) -> None:
+    def __init__(self, language: str, solo: bool = False) -> None:
         self.language: str = language
+        self.solo: bool = solo
 
     def __call__(self, key: str, **values: object) -> str:
-        return text(self.language, key, **{name: str(value) for name, value in values.items()})
+        return text(self.language, key, solo=self.solo, **{name: str(value) for name, value in values.items()})
 
 
-def render_output_html(plan: OutputPlan, settings: StyleSettings, title: str, language: str) -> str:
+def render_output_html(plan: OutputPlan, settings: StyleSettings, title: str, language: str, solo: bool = False) -> str:
     """Return the HTML of one output, with its fonts and its CSS inline."""
-    translate = Translator(language)
+    translate = Translator(language, solo)
     css: str = font_face_css(settings.font_families) + "\n" + theme_css(settings)
     return (
         template_environment()

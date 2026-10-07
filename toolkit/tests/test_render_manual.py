@@ -240,3 +240,8 @@ def test_a_long_checklist_is_cut_into_blocks() -> None:
     lists = [block for block in section_blocks(many, 200) if block.kind == "checklist"]
     assert [len(block.items) for block in lists] == [10, 10, 3]
     assert needs.checklist[-1].startswith("Tape or glue for the envelope labels")
+
+
+def test_a_solo_game_fills_in_the_accusation_alone() -> None:
+    play = section(configured(golden_game(), players={"count": 1}), "How to play")
+    assert play.steps[-1] == "At the end, fill in the accusation form."

@@ -121,19 +121,18 @@ def test_a_hidden_proof_clue_needs_no_document() -> None:
     assert rules(check_deduction(golden_game())) == []
 
 
-def test_at_least_two_questions_need_a_clue_that_a_puzzle_reveals() -> None:
+def test_every_question_needs_a_clue_that_a_puzzle_reveals() -> None:
     who, why = golden_deduction().questions
     plain_why = why.model_copy(update={"proven_by": ["felix-debt"]})
     findings = check_deduction(with_deduction(questions=[who, plain_why]))
     assert rules(findings) == ["deduction.puzzles_not_needed"]
     assert (findings[0].file, findings[0].path, findings[0].severity) == (
         "story.yaml",
-        "deduction.questions",
+        "deduction.questions.1.proven_by",
         "error",
     )
-    assert "1 of 2" in findings[0].message
+    assert "'why'" in findings[0].message
     assert check_deduction(with_deduction(questions=[who])) == []
-    assert "deduction.puzzles_not_needed" in rules(check_deduction(with_deduction(questions=[plain_why])))
 
 
 def test_a_hidden_clue_counts_only_when_an_existing_puzzle_reveals_it() -> None:
@@ -143,7 +142,7 @@ def test_a_hidden_clue_counts_only_when_an_existing_puzzle_reveals_it() -> None:
     unknown_proof: Game = with_deduction(
         questions=[question.model_copy(update={"proven_by": ["ghost"]}) for question in golden_deduction().questions]
     )
-    assert rules(check_deduction(unknown_proof)) == ["deduction.puzzles_not_needed"]
+    assert rules(check_deduction(unknown_proof)) == ["deduction.puzzles_not_needed"] * 2
 
 
 def test_a_case_file_story_with_fewer_than_two_hidden_clues_gets_a_warning() -> None:

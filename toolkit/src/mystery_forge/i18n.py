@@ -29,6 +29,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "print_fold": "Fold along the dash-dot line.",
         "cover_kicker": "A printable mystery",
         "cover_players": "{count} players",
+        "cover_players_solo": "1 player",
+        "accusation_intro_solo": (
+            "Answer every question. "
+            "Tick one box for each question and name the document that proves it. Then count your points."
+        ),
+        "manual_play_accusation_solo": "At the end, fill in the accusation form.",
         "cover_duration": "About {minutes} minutes",
         "cover_detectives": "Detectives: {names}",
         "cover_do_not_read": "Do not read ahead. Open each envelope only when the game tells you to.",
@@ -246,6 +252,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "print_fold": "Dobla por la línea de puntos y rayas.",
         "cover_kicker": "Un misterio para imprimir",
         "cover_players": "{count} jugadores",
+        "cover_players_solo": "1 jugador",
+        "accusation_intro_solo": (
+            "Responde a cada pregunta. "
+            "Marca una casilla en cada pregunta y anota el documento que lo demuestra. Después cuenta tus puntos."
+        ),
+        "manual_play_accusation_solo": "Al final, rellena el formulario de acusación.",
         "cover_duration": "Unos {minutes} minutos",
         "cover_detectives": "Detectives: {names}",
         "cover_do_not_read": "No leas por adelantado. Abre cada sobre solo cuando el juego te lo indique.",
@@ -466,6 +478,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "print_fold": "Doblega per la línia de punts i ratlles.",
         "cover_kicker": "Un misteri per imprimir",
         "cover_players": "{count} jugadors",
+        "cover_players_solo": "1 jugador",
+        "accusation_intro_solo": (
+            "Respon cada pregunta. "
+            "Marca una casella a cada pregunta i anota el document que ho demostra. Després compta els teus punts."
+        ),
+        "manual_play_accusation_solo": "Al final, omple el formulari d'acusació.",
         "cover_duration": "Uns {minutes} minuts",
         "cover_detectives": "Detectius: {names}",
         "cover_do_not_read": "No llegeixis per avançat. Obre cada sobre només quan el joc t'ho digui.",
@@ -685,6 +703,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "print_fold": "Pliez le long de la ligne en tirets et points.",
         "cover_kicker": "Un mystère à imprimer",
         "cover_players": "{count} joueurs",
+        "cover_players_solo": "1 joueur",
+        "accusation_intro_solo": (
+            "Réponds à chaque question. "
+            "Coche une case par question et note le document qui le prouve. Puis compte tes points."
+        ),
+        "manual_play_accusation_solo": "À la fin, remplis le formulaire d'accusation.",
         "cover_duration": "Environ {minutes} minutes",
         "cover_detectives": "Détectives : {names}",
         "cover_do_not_read": "Ne lisez pas à l'avance. Ouvrez chaque enveloppe seulement quand le jeu vous le dit.",
@@ -909,6 +933,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "print_fold": "Entlang der Strich-Punkt-Linie falten.",
         "cover_kicker": "Ein Krimi zum Ausdrucken",
         "cover_players": "{count} Spieler",
+        "cover_players_solo": "1 Spieler",
+        "accusation_intro_solo": (
+            "Beantworte jede Frage. "
+            "Kreuze bei jeder Frage ein Kästchen an und nenne das Dokument, das es beweist. Zähle dann deine Punkte."
+        ),
+        "manual_play_accusation_solo": "Fülle am Ende das Anklageformular aus.",
         "cover_duration": "Etwa {minutes} Minuten",
         "cover_detectives": "Detektive: {names}",
         "cover_do_not_read": "Nicht vorauslesen. Öffnet jeden Umschlag erst, wenn das Spiel es sagt.",
@@ -1132,6 +1162,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "print_fold": "Piega lungo la linea a tratto e punto.",
         "cover_kicker": "Un mistero da stampare",
         "cover_players": "{count} giocatori",
+        "cover_players_solo": "1 giocatore",
+        "accusation_intro_solo": (
+            "Rispondi a ogni domanda. "
+            "Segna una casella per ogni domanda e indica il documento che lo prova. Poi conta i tuoi punti."
+        ),
+        "manual_play_accusation_solo": "Alla fine, compila il modulo d'accusa.",
         "cover_duration": "Circa {minutes} minuti",
         "cover_detectives": "Detective: {names}",
         "cover_do_not_read": "Non leggere in anticipo. Apri ogni busta solo quando il gioco te lo dice.",
@@ -1352,6 +1388,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "print_fold": "Dobre pela linha de traço e ponto.",
         "cover_kicker": "Um mistério para imprimir",
         "cover_players": "{count} jogadores",
+        "cover_players_solo": "1 jogador",
+        "accusation_intro_solo": (
+            "Responde a cada pergunta. "
+            "Marca uma caixa em cada pergunta e indica o documento que o prova. Depois conta os teus pontos."
+        ),
+        "manual_play_accusation_solo": "No fim, preenche o formulário de acusação.",
         "cover_duration": "Cerca de {minutes} minutos",
         "cover_detectives": "Detetives: {names}",
         "cover_do_not_read": "Não leia antes do tempo. Abra cada envelope só quando o jogo mandar.",
@@ -2129,12 +2171,16 @@ def known_language(language: str) -> str:
     return language if language in STRINGS else "en"
 
 
-def text(language: str, key: str, **values: str) -> str:
-    """Return the fixed text `key` in the language, with `{name}` fields filled from `values`."""
+def text(language: str, key: str, solo: bool = False, **values: str) -> str:
+    """Return the fixed text `key` in the language, with `{name}` fields filled from `values`.
+
+    A solo game takes the `<key>_solo` text when one exists, such as "1 player" instead of "1 players".
+    """
     strings: dict[str, str] = STRINGS[known_language(language)]
     if key not in strings:
         raise KeyError(f"No fixed text named '{key}'.")
-    return strings[key].format(**values)
+    chosen: str = f"{key}_solo" if solo and f"{key}_solo" in strings else key
+    return strings[chosen].format(**values)
 
 
 def format_date(moment: datetime, language: str) -> str:

@@ -23,6 +23,8 @@ PARAGRAPH_NUMBERS: Final[range] = range(100, 1000)
 SAME_SHAPE_NEIGHBORS: Final[int] = 4
 # A word decoy may have this many letters more or fewer than the real answer.
 LETTER_COUNT_SPREAD: Final[int] = 2
+# A near miss this close to a real answer would sit next to it in the register and point at it.
+LOOKALIKE_EDITS: Final[int] = 2
 
 
 @dataclass(frozen=True)
@@ -64,6 +66,27 @@ def same_shape(form: str, other: str) -> bool:
     if form.isdigit():
         return other.isdigit() and len(other) == len(form)
     return not other.isdigit() and abs(len(other) - len(form)) <= LETTER_COUNT_SPREAD
+
+
+def edit_distance(first: str, second: str) -> int:
+    previous: list[int] = list(range(len(second) + 1))
+    for row, first_character in enumerate(first, start=1):
+        current: list[int] = [row]
+        for column, second_character in enumerate(second, start=1):
+            current.append(
+                min(
+                    previous[column] + 1,
+                    current[column - 1] + 1,
+                    previous[column - 1] + (first_character != second_character),
+                )
+            )
+        previous = current
+    return previous[-1]
+
+
+def looks_like(form: str, real_form: str) -> bool:
+    """True when the entry has the same letters as a real answer, or differs from it by a typo or two."""
+    return sorted(form) == sorted(real_form) or edit_distance(form, real_form) <= LOOKALIKE_EDITS
 
 
 def register_sort_key(entry_text: str) -> tuple[int, int, str]:
@@ -169,9 +192,11 @@ def register_candidates(game: Game, rng: random.Random) -> list[Candidate]:
         message: str = correct_message(game, puzzle)
         for answer in (puzzle.source.answer, *puzzle.source.accepted):
             builder.add_correct(answer, message)
+    # The companion page still checks every near miss; only the paper register leaves the lookalikes out.
     for puzzle in game.puzzles:
         for miss in puzzle.source.near_misses:
-            builder.add_wrong(miss.answer, "near_miss", miss.message)
+            if not any(looks_like(register_form(miss.answer), form) for form in builder.correct_forms):
+                builder.add_wrong(miss.answer, "near_miss", miss.message)
     for puzzle in game.puzzles:
         for decoy in (*puzzle.source.decoys, *name_decoys(game, puzzle)):
             builder.add_wrong(decoy, "wrong", wrong_message)

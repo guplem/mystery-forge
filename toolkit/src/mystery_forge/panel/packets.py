@@ -5,16 +5,16 @@ answers of earlier stages, and the answer formats, and never the answers of its 
 names, difficulties, or canaries. The workflow pastes the packet text into the solver prompt, so the solver needs no
 file.
 
-The story-only packet tests the promise that the puzzles matter. It holds every plain document (no puzzle document,
-no answer) and the accusation questions whose proof cites a clue that a puzzle reveals. When solvers can still prove
-those answers, players can skip the puzzles.
+The story-only packet tests the promise that the puzzles matter. It holds every document of every envelope with the
+built puzzle material taken out, no answer, and every accusation question. A puzzle document stays, because its plain
+sentences are evidence too. When solvers can still prove the answers, by evidence or by elimination, players can skip
+the puzzles.
 """
 
 import hashlib
 
 from pydantic import BaseModel, ConfigDict
 
-from mystery_forge.checks.game_index import revealed_clue_ids
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
 from mystery_forge.i18n import text
 from mystery_forge.render.kinds import document_kind
@@ -36,15 +36,16 @@ the case summary below and the answer format of each puzzle. Give your best gues
 ACCUSATION_INSTRUCTIONS: str = "Answer each question with the id of one option, and quote the evidence."
 
 STORY_ONLY_STAGE: str = "story-only"
-STORY_ONLY_INSTRUCTIONS: str = """You are a player of a printed mystery game. You read the plain documents of every \
-envelope, but you solved no puzzle, so you know no puzzle answer. Everything you have is below. Do not open any file \
-and do not search anywhere else. Use only this text.
+STORY_ONLY_INSTRUCTIONS: str = """You are a player of a printed mystery game who skips every puzzle. You read all \
+the documents of every envelope, but you decode and solve nothing, so you know no puzzle answer. Everything you have \
+is below. Do not open any file and do not search anywhere else. Use only this text.
 
-Answer each question of the final accusation only when the documents below prove the answer:
-- Give the option id, and quote the exact words of the documents that prove it.
-- Ruling out every other option with quoted evidence counts as proof. A hunch, or the option that seems most likely, \
-does not.
-- If the documents do not prove one option, leave the option empty. Do not guess."""
+For each question of the final accusation, give your best answer from what the documents say in plain words:
+- Give the option id, and quote the exact words of the documents that support it.
+- Reasoning by elimination is fine: rule out the other options with quoted evidence.
+- Do not decode or solve any puzzle material, even when you see how.
+- Leave the option empty only when the plain text gives you no reason at all to prefer one option."""
+UNSOLVED_MATERIAL: str = "[puzzle material that you did not solve]"
 
 
 class StagePacket(BaseModel):
@@ -112,29 +113,37 @@ def build_story_only_packet(game: Game) -> StagePacket | None:
     deduction: Deduction | None = game.story.deduction
     if deduction is None:
         return None
-    revealed: set[str] = revealed_clue_ids(game)
-    questions = [question for question in deduction.questions if revealed.intersection(question.proven_by)]
-    if not questions:
-        return None
-    plain_documents: list[AssembledDocument] = [
-        document for document in available_documents(game, game.flow.stages[-1].id) if document.meta.puzzle is None
+    documents: list[AssembledDocument] = [
+        without_material(game, document) for document in available_documents(game, game.flow.stages[-1].id)
     ]
     sections: list[str] = [
         f"# {game.story.title}\n\n{STORY_ONLY_INSTRUCTIONS}",
         f"# The case\n\n{game.story.intro}",
         *opened_envelopes_section(game, game.flow.stages[-1].id),
         "# Documents",
-        *(document_section(document) for document in plain_documents),
-        accusation_section(deduction.model_copy(update={"questions": questions})),
+        *(document_section(document) for document in documents),
+        accusation_section(deduction),
     ]
     packet_text: str = "\n\n".join(sections) + "\n"
     return StagePacket(
         stage=STORY_ONLY_STAGE,
         codes=[],
-        questions=[question.id for question in questions],
+        questions=[question.id for question in deduction.questions],
         text=packet_text,
         sha256=sha256_text(packet_text),
     )
+
+
+def without_material(game: Game, document: AssembledDocument) -> AssembledDocument:
+    """Return the document with the solver text of every built material, and of each part, taken out."""
+    text: str = document.text
+    for puzzle in game.puzzles:
+        if puzzle.artifact is None:
+            continue
+        for solver_text in (puzzle.artifact.solver_text, *(part.solver_text for part in puzzle.artifact.parts)):
+            if solver_text:
+                text = text.replace(solver_text, UNSOLVED_MATERIAL)
+    return document.model_copy(update={"text": text})
 
 
 def build_guesser_packet(game: Game) -> GuesserPacket:
