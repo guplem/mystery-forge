@@ -111,6 +111,21 @@ def test_the_final_puzzle_must_exist_and_sit_in_the_last_stage() -> None:
     assert graph_findings(edit_flow(golden_game(), final_puzzle=None)) == []
 
 
+def test_a_puzzle_that_feeds_the_final_puzzle_accepts_only_the_same_letters() -> None:
+    same_letters = edit_puzzle(golden_game(), "P1", accepted=["The Boathouse", "boat-house"])
+    assert graph_findings(same_letters) == []
+    other_letters = edit_puzzle(golden_game(), "P1", accepted=["the boathouse", "boat shed", "the shed"])
+    findings = only_rule(graph_findings(other_letters), "graph.feeder_variant")
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("puzzles/P1.yaml", "accepted", "error")
+    ]
+    assert "'boat shed', 'the shed'" in findings[0].message
+    assert "P3" in findings[0].message
+    not_a_feeder = edit_puzzle(golden_game(), "P2", accepted=["726"])
+    assert only_rule(graph_findings(not_a_feeder), "graph.feeder_variant") == []
+    assert only_rule(graph_findings(edit_flow(other_letters, final_puzzle=None)), "graph.feeder_variant") == []
+
+
 def test_a_funnel_final_puzzle_must_depend_on_every_earlier_stage() -> None:
     funnel: Game = edit_flow(golden_game(), structure="funnel")
     assert graph_findings(funnel) == []
@@ -126,6 +141,8 @@ def test_a_funnel_counts_transitive_dependencies() -> None:
     stage_c = Stage(id="C", label="The tower", opens_with="P3")
     game: Game = edit_flow(golden_game(), structure="funnel", stages=[*stages, stage_c], final_puzzle="P2")
     game = edit_puzzle(game, "P2", stage="C", depends_on=["P3"])
+    # P3 feeds the final puzzle now, so it may not accept "at low tide".
+    game = edit_puzzle(game, "P3", accepted=[])
     game = edit_document(game, "D3", meta={"stage": "C"})
     assert structure_findings(game) == []
 

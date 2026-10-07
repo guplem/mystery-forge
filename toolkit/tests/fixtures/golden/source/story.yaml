@@ -130,8 +130,8 @@ deduction:
       clues: [kitchen-all-night]
       explanation: Tom heard Ana sing in the kitchen all night.
     - suspect: maud-price
-      clues: [maud-ticket]
-      explanation: Maud came on the first ferry the next morning.
+      clues: [maud-ticket, came-by-boat]
+      explanation: Maud came on the first ferry the next morning, but the thief crossed to the rock in the night.
 epilogues:
   - id: solved
     min_score_percent: 75

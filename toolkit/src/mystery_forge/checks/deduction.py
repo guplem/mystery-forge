@@ -13,7 +13,7 @@ from mystery_forge.checks.game_index import (
     ClueEntry,
     clues_by_id,
     documents_by_id,
-    puzzles_by_id,
+    revealed_clue_ids,
     stage_positions,
 )
 from mystery_forge.config import GameConfig
@@ -35,6 +35,9 @@ def check_deduction(game: Game) -> list[Finding]:
         *proof_findings(game, deduction),
         *who_question_findings(game, deduction),
         *puzzle_proof_findings(game, deduction),
+        *elimination_findings(
+            game.story, {clue_id for clue_id, entry in clues_by_id(game).items() if entry.clue.hidden}
+        ),
     ]
 
 
@@ -179,11 +182,7 @@ def who_question_findings(game: Game, deduction: Deduction) -> list[Finding]:
 
 def puzzle_proof_findings(game: Game, deduction: Deduction) -> list[Finding]:
     """Report a deduction that players can prove without the puzzles: too few questions cite a revealed clue."""
-    clues: dict[str, ClueEntry] = clues_by_id(game)
-    puzzle_ids: set[str] = set(puzzles_by_id(game))
-    revealed: set[str] = {
-        clue_id for clue_id, entry in clues.items() if entry.clue.hidden and entry.clue.revealed_by in puzzle_ids
-    }
+    revealed: set[str] = revealed_clue_ids(game)
     needed: int = min(MIN_PUZZLE_PROVEN_QUESTIONS, len(deduction.questions))
     proven: int = sum(1 for question in deduction.questions if revealed.intersection(question.proven_by))
     if proven >= needed:
@@ -198,6 +197,30 @@ def puzzle_proof_findings(game: Game, deduction: Deduction) -> list[Finding]:
             path="deduction.questions",
             fix_hint="Add a hidden clue (hidden: true, revealed_by: <puzzle id>) whose quote states the fact that "
             "the puzzle reveals, and cite it in proven_by of the question.",
+        )
+    ]
+
+
+def elimination_findings(story: Story, hidden_ids: set[str] | None = None) -> list[Finding]:
+    """Report a culprit that players can name without a puzzle: plain clues alone clear every innocent suspect.
+
+    `hidden_ids` holds the hidden clues of the whole game; without it, only the hidden clues of the story count.
+    """
+    if story.deduction is None or not story.deduction.exclusions:
+        return []
+    hidden: set[str] = hidden_ids if hidden_ids is not None else {clue.id for clue in story.clues if clue.hidden}
+    if any(hidden.intersection(exclusion.clues) for exclusion in story.deduction.exclusions):
+        return []
+    return [
+        Finding(
+            severity="error",
+            rule="deduction.culprit_by_elimination",
+            message="Plain clues alone clear every innocent suspect, so players can name the culprit by elimination "
+            "without solving a puzzle.",
+            file=STORY_FILE,
+            path="deduction.exclusions",
+            fix_hint="Clear at least one innocent suspect only with a hidden clue that a puzzle reveals: cite it in "
+            "that exclusion, and make sure that no plain document clears this suspect on its own.",
         )
     ]
 

@@ -79,7 +79,7 @@ AI models make mistakes, so the agent never checks its own puzzles by eye:
 
 - **Code builds the puzzles** that code can build (ciphers, grids, mazes, logic puzzles, locks), so they are correct by construction. The printed pages are read back and decoded again.
 - **Code checks the whole game**: every clue is quoted from a real document, no answer leaks early, no character is in two places at once, each innocent suspect can be cleared, and the game fits the time you asked for.
-- **A panel of AI players** gets only what real players have at each stage and tries to solve it. A puzzle that most of them cannot solve, or that has a second good answer, goes back for a fix.
+- **A panel of AI players** gets only what real players have at each stage and tries to solve it. A puzzle that most of them cannot solve, or that has a second good answer, goes back for a fix. A second group reads only the plain documents and tries to accuse without solving any puzzle: if they can, the case goes back for a fix, because the puzzles must matter.
 
 ## Troubleshooting
 

@@ -25,6 +25,7 @@ from mystery_forge.checks.graph import (
     final_puzzle_issue,
     stage_opener_issues,
 )
+from mystery_forge.checks.ledger import normalize_quote_text
 from mystery_forge.checks.variety import (
     MechanicUse,
     lookup_cipher_ids,
@@ -35,6 +36,7 @@ from mystery_forge.checks.variety import (
 from mystery_forge.config import GameConfig
 from mystery_forge.draw import mechanic_fits
 from mystery_forge.findings import Finding, Severity
+from mystery_forge.game import Game
 from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
 from mystery_forge.spec.models import (
     Difficulty,
@@ -69,6 +71,8 @@ class PlannedPuzzle(SourceModel):
     documents: list[DocumentId] = Field(min_length=1)
     # Story documents that this puzzle reads. Their writer runs first, so the puzzle writer can quote them.
     relies_on: list[DocumentId] = Field(default_factory=list)
+    # Exact sentences that this puzzle's documents must include, such as the marker that the final puzzle points to.
+    must_contain: list[Text] = Field(default_factory=list)
     notes: str = ""
 
 
@@ -113,6 +117,43 @@ def check_plan_folder(game_dir: Path, implemented_builders: frozenset[str]) -> l
     ]
     for run_check in checks:
         findings.extend(run_check())
+    return findings
+
+
+def planned_sentence_findings(game_dir: Path, game: Game) -> list[Finding]:
+    """Report each `must_contain` sentence of the plan that its written documents lost.
+
+    Writers and fixers change the documents after the plan. A lost sentence silently breaks the puzzle or the proof
+    that needs it, such as the marker that the final puzzle points to. A missing or broken plan, and a planned
+    document that nobody wrote, are the plan check's and the loader's findings, not these.
+    """
+    plan: Plan | None = load_required_model(game_dir / SOURCE_FOLDER, PLAN_FILE, Plan, [])
+    if plan is None:
+        return []
+    texts: dict[str, str] = {document.meta.id: normalize_quote_text(document.text) for document in game.documents}
+    owners: list[tuple[str, list[str], list[str]]] = [
+        (f"puzzle {puzzle.id}", puzzle.documents, puzzle.must_contain) for puzzle in plan.puzzles
+    ]
+    owners += [
+        (f"story document {document.id}", [document.id], document.must_contain) for document in plan.story_documents
+    ]
+    findings: list[Finding] = []
+    for owner, document_ids, sentences in owners:
+        written: list[str] = [document_id for document_id in document_ids if document_id in texts]
+        if not written:
+            continue
+        findings.extend(
+            Finding(
+                severity="error",
+                rule="plan.must_contain_missing",
+                message=f'The plan says that the documents of {owner} contain "{sentence}", but none does.',
+                file=f"documents/{written[0]}.md",
+                fix_hint="Put the sentence back word for word: another puzzle or the deduction needs it. If the fact "
+                "must change, change it in plan.yaml and in every document that uses it.",
+            )
+            for sentence in sentences
+            if not any(normalize_quote_text(sentence) in texts[document_id] for document_id in written)
+        )
     return findings
 
 

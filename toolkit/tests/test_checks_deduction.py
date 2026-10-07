@@ -2,7 +2,7 @@ from typing import Any
 
 from test_checks_support import edit_document, edit_flow, edit_story, golden_game, rules
 
-from mystery_forge.checks.deduction import check_deduction, hidden_clue_count_findings
+from mystery_forge.checks.deduction import check_deduction, elimination_findings, hidden_clue_count_findings
 from mystery_forge.game import Game
 from mystery_forge.spec.models import AccusationOption, Character, Clue, Deduction, Exclusion
 
@@ -42,9 +42,9 @@ def test_the_culprit_must_be_a_suspect() -> None:
 
 
 def test_every_innocent_suspect_needs_an_exclusion() -> None:
-    findings = check_deduction(with_deduction(exclusions=golden_deduction().exclusions[:1]))
+    findings = check_deduction(with_deduction(exclusions=golden_deduction().exclusions[1:]))
     assert rules(findings) == ["deduction.suspect_not_excluded"]
-    assert "Maud Price" in findings[0].message
+    assert "Ana Ruiz" in findings[0].message
     assert findings[0].severity == "error"
 
 
@@ -156,3 +156,24 @@ def test_a_case_file_story_with_fewer_than_two_hidden_clues_gets_a_warning() -> 
     assert (findings[0].file, findings[0].path, findings[0].severity) == ("story.yaml", "clues", "warning")
     assert hidden_clue_count_findings(one_hidden, config.model_copy(update={"format": "case_file"})) != []
     assert hidden_clue_count_findings(one_hidden, config.model_copy(update={"format": "envelopes"})) == []
+
+
+def test_plain_clues_that_clear_every_innocent_suspect_name_the_culprit_by_elimination() -> None:
+    plain_exclusions: list[Exclusion] = [
+        exclusion.model_copy(update={"clues": [clue for clue in exclusion.clues if clue != "came-by-boat"]})
+        for exclusion in golden_deduction().exclusions
+    ]
+    findings = check_deduction(with_deduction(exclusions=plain_exclusions))
+    assert rules(findings) == ["deduction.culprit_by_elimination"]
+    assert (findings[0].file, findings[0].path, findings[0].severity) == (
+        "story.yaml",
+        "deduction.exclusions",
+        "error",
+    )
+    story = golden_game().story
+    plain_story = story.model_copy(
+        update={"deduction": golden_deduction().model_copy(update={"exclusions": plain_exclusions})}
+    )
+    assert rules(elimination_findings(plain_story)) == ["deduction.culprit_by_elimination"]
+    assert elimination_findings(story) == []
+    assert elimination_findings(story.model_copy(update={"deduction": None})) == []

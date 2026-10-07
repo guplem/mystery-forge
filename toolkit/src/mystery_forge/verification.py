@@ -17,8 +17,8 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from mystery_forge.assemble import IMAGE_MARK_PATTERN
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
-from mystery_forge.panel.models import PanelReport, Verdict
-from mystery_forge.panel.packets import available_documents, ordered_puzzles, stage_index
+from mystery_forge.panel.models import ItemVerdict, PanelReport, Verdict
+from mystery_forge.panel.packets import STORY_ONLY_STAGE, available_documents, ordered_puzzles, stage_index
 from mystery_forge.spec.models import Story
 
 LEDGER_FILE: Final[Path] = Path("reports") / "verification.json"
@@ -146,10 +146,12 @@ def record_checks(
 
 
 def record_panel(ledger: VerificationLedger, hashes: dict[str, str], report: PanelReport) -> VerificationLedger:
-    """Return the ledger after a panel run. The accusation questions share one entry: "deduction"."""
+    """Return the ledger after a panel run. The accusation questions and their story-only verdicts share one entry:
+    "deduction"."""
     verdicts: dict[str, Verdict] = {item.code: item.verdict for item in report.puzzles}
     if report.questions:
-        failing: list[Verdict] = [item.verdict for item in report.questions if item.verdict != "pass"]
+        questions: list[ItemVerdict] = [*report.questions, *report.story_only]
+        failing: list[Verdict] = [item.verdict for item in questions if item.verdict != "pass"]
         verdicts[DEDUCTION_KEY] = failing[0] if failing else "pass"
     entries: dict[str, LedgerEntry] = dict(ledger.entries)
     for code, verdict in verdicts.items():
@@ -189,6 +191,20 @@ def stale_panel_codes(ledger: VerificationLedger, hashes: dict[str, str]) -> lis
     return [
         code for code, current in hashes.items() if ledger.entries.get(code, LedgerEntry()).panel_pass_hash != current
     ]
+
+
+def panel_stages_to_run(game: Game, ledger: VerificationLedger) -> set[str]:
+    """Return the packet stages that hold an item with no panel pass on its current content.
+
+    A puzzle's hash covers everything that its stage packet shows, so a stage whose puzzles all passed on their
+    current hashes would get the same packet again: running it costs solvers and proves nothing new. The accusation
+    lives in the last stage packet and in the story-only packet.
+    """
+    stale: set[str] = set(stale_panel_codes(ledger, game_hashes(game)))
+    stages: set[str] = {puzzle.source.stage for puzzle in game.puzzles if puzzle.code in stale}
+    if DEDUCTION_KEY in stale:
+        stages |= {game.flow.stages[-1].id, STORY_ONLY_STAGE}
+    return stages
 
 
 def export_blockers(ledger: VerificationLedger, hashes: dict[str, str], panel_required: bool) -> list[Finding]:

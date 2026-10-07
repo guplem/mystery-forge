@@ -209,3 +209,12 @@ def test_a_case_file_story_with_too_few_hidden_clues_gets_a_warning(game_dir: Pa
             question["proven_by"] = [data["clues"][0]["id"]]
     save_story(game_dir, data)
     assert "deduction.few_hidden_clues" in rules(check_story_folder(game_dir), "warning")
+
+
+def test_a_culprit_named_by_elimination_from_plain_clues_is_an_error(game_dir: Path) -> None:
+    data = story_data(game_dir)
+    hidden = {clue["id"] for clue in data["clues"] if clue.get("hidden")}
+    for exclusion in data["deduction"]["exclusions"]:
+        exclusion["clues"] = [clue for clue in exclusion["clues"] if clue not in hidden]
+    save_story(game_dir, data)
+    assert "deduction.culprit_by_elimination" in rules(check_story_folder(game_dir), "error")

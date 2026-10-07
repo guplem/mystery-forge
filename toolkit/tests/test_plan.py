@@ -5,9 +5,12 @@ from typing import Any
 
 import pytest
 import yaml
+from test_assemble import FAKE_IMPLEMENTATIONS
 
+from mystery_forge.assemble import assemble_game
 from mystery_forge.findings import Finding
-from mystery_forge.plan import check_plan_folder
+from mystery_forge.game import Game
+from mystery_forge.plan import check_plan_folder, planned_sentence_findings
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
 IMPLEMENTED: frozenset[str] = frozenset({"caesar-cipher", "arithmetic-lock", "deduction", "anagram", "maze"})
@@ -289,3 +292,38 @@ def test_the_same_action_rule_follows_the_code_order_not_the_file_order(game_dir
         plan["puzzles"] = [plan["puzzles"][0], plan["puzzles"][2], plan["puzzles"][1]]
 
     assert "plan.same_action_in_a_row" not in warnings(mutate(game_dir, decode_last_in_file))
+
+
+def assembled(game_dir: Path) -> Game:
+    game = assemble_game(game_dir, FAKE_IMPLEMENTATIONS).game
+    assert game is not None
+    return game
+
+
+def test_the_written_documents_keep_every_planned_sentence(game_dir: Path) -> None:
+    plan = golden_plan()
+    plan["puzzles"][1]["must_contain"] = ["Lamp  oil: 7 barrels", "A stamp with the witch train, 7 dots."]
+    plan["story_documents"][1]["must_contain"].append("A sentence that nobody wrote.")
+    write_plan(game_dir, plan)
+    findings = planned_sentence_findings(game_dir, assembled(game_dir))
+    assert [(finding.rule, finding.file, finding.severity) for finding in findings] == [
+        ("plan.must_contain_missing", "documents/D3.md", "error"),
+        ("plan.must_contain_missing", "documents/D5.md", "error"),
+    ]
+    assert "A stamp with the witch train, 7 dots." in findings[0].message
+    assert "P2" in findings[0].message
+
+
+def test_planned_sentences_are_checked_only_with_a_valid_plan_and_written_documents(game_dir: Path) -> None:
+    game = assembled(game_dir)
+    assert planned_sentence_findings(game_dir, game) == []
+    plan = golden_plan()
+    plan["puzzles"][1]["must_contain"] = ["Missing."]
+    plan["puzzles"][1]["documents"] = ["D9"]
+    plan["story_documents"][1]["id"] = "D8"
+    write_plan(game_dir, plan)
+    assert planned_sentence_findings(game_dir, game) == []
+    (game_dir / "source" / "plan.yaml").write_text("puzzles: 3\n", encoding="utf-8")
+    assert planned_sentence_findings(game_dir, game) == []
+    (game_dir / "source" / "plan.yaml").unlink()
+    assert planned_sentence_findings(game_dir, game) == []

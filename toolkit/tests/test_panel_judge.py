@@ -27,7 +27,7 @@ from mystery_forge.panel.models import (
     SolverAnswer,
     SolverResult,
 )
-from mystery_forge.panel.packets import StagePacket, build_stage_packets
+from mystery_forge.panel.packets import STORY_ONLY_STAGE, StagePacket, build_panel_packets, build_stage_packets
 from mystery_forge.spec.models import Difficulty
 
 GOOD_ANSWERS: dict[str, tuple[str, str]] = {
@@ -365,3 +365,62 @@ def test_trivial_comes_after_guessable_and_before_too_hard(golden_game: Game, pa
     assert verdict_of(report, "A2").verdict == "trivial"
     guessed = judge_panel(golden_game, packets, results, GuesserResult(guesses=[Guess(code="A2", answer="0726")]))
     assert verdict_of(guessed, "A2").verdict == "guessable"
+
+
+def story_only(name: str, *choices: AccusationChoice) -> SolverResult:
+    return SolverResult(solver=name, stage=STORY_ONLY_STAGE, accusation=list(choices))
+
+
+PROVEN_WHY = AccusationChoice(question="why", option="debt", evidence=evidence(DEBT_QUOTE))
+
+
+def test_story_only_solvers_who_prove_a_question_make_the_puzzles_not_needed(golden_game: Game) -> None:
+    panel_packets = build_panel_packets(golden_game)
+    unproven_who = AccusationChoice(question="who", option="felix", evidence=[])
+    results = full_panel() + [story_only(f"s{index}", unproven_who, PROVEN_WHY) for index in range(5)]
+    report = judge_panel(golden_game, panel_packets, results, None)
+    assert not report.ok
+    assert [(item.code, item.verdict, item.solvers) for item in report.questions] == [
+        ("who", "pass", 5),
+        ("why", "pass", 5),
+    ]
+    assert [(item.code, item.verdict) for item in report.story_only] == [("who", "pass"), ("why", "puzzles_not_needed")]
+    why = report.story_only[1]
+    assert (why.solvers, why.required, why.solves_verified) == (5, 3, 5)
+    assert report_summary(report)["failing"] == [
+        {"code": "why", "reason": "puzzles not needed: 5 of 5 solvers proved it without any puzzle answer"}
+    ]
+
+
+def test_story_only_proofs_below_the_threshold_keep_the_puzzles_needed(golden_game: Game) -> None:
+    results = full_panel() + [story_only(f"s{index}", PROVEN_WHY) for index in range(2)]
+    results += [story_only(f"s{index}") for index in (2, 3, 4)]
+    report = judge_panel(golden_game, build_panel_packets(golden_game), results, None)
+    assert report.ok
+    assert [item.verdict for item in report.story_only] == ["pass", "pass"]
+
+
+def test_too_few_story_only_solvers_give_no_verdict(golden_game: Game) -> None:
+    results = [*full_panel(), story_only("s0", PROVEN_WHY)]
+    report = judge_panel(golden_game, build_panel_packets(golden_game), results, None)
+    assert not report.ok
+    assert [item.verdict for item in report.story_only] == ["insufficient_solvers", "insufficient_solvers"]
+
+
+def test_without_the_story_only_packet_the_report_has_no_story_only_items(golden_game: Game) -> None:
+    report = judge_panel(golden_game, build_stage_packets(golden_game), full_panel(), None)
+    assert report.story_only == []
+
+
+def test_the_judge_judges_only_the_items_of_the_packets_that_it_gets(golden_game: Game) -> None:
+    stage_b_only = [packet for packet in build_panel_packets(golden_game) if packet.stage == "B"]
+    results = [stage_b(f"b{index}", good_answer("B1")) for index in range(5)]
+    report = judge_panel(golden_game, stage_b_only, results, None)
+    assert [item.code for item in report.puzzles] == ["B1"]
+    assert [item.code for item in report.questions] == ["who", "why"]
+    assert report.story_only == []
+    assert report.ok
+    stage_a_only = [packet for packet in build_panel_packets(golden_game) if packet.stage == "A"]
+    report = judge_panel(golden_game, stage_a_only, full_panel([]), None)
+    assert [item.code for item in report.puzzles] == ["A1", "A2"]
+    assert report.questions == []

@@ -4,6 +4,8 @@ The rules come from `adr/0004-verification-strategy.md`. A solve counts only whe
 that the solver got, so a solver that guesses right does not pass a puzzle. Same-model solvers make correlated
 mistakes, so a wrong answer that two solvers share is a real signal of a second answer, not noise. A puzzle whose
 material prints its own method is no puzzle: when half of the solvers that solved it say so, it is trivial.
+The story-only solvers get no puzzle and no answer. When as many of them prove an accusation answer as a pass needs,
+players can skip the puzzles: the verdict is puzzles_not_needed.
 """
 
 import json
@@ -27,7 +29,7 @@ from mystery_forge.panel.models import (
     SolverResult,
     Verdict,
 )
-from mystery_forge.panel.packets import StagePacket, canaries, ordered_puzzles
+from mystery_forge.panel.packets import STORY_ONLY_STAGE, StagePacket, canaries, ordered_puzzles
 from mystery_forge.spec.models import AccusationQuestion, Difficulty
 
 MIN_SOLVERS: Final[int] = 3
@@ -92,8 +94,12 @@ def judge_panel(
     guesses: dict[str, str] = {}
     if guesser_result is not None:
         guesses = {guess.code: normalize_answer(guess.answer, game.config.language) for guess in guesser_result.guesses}
+    # The panel may run only the stages that changed: an item of a stage with no packet here keeps its earlier verdict.
+    packet_codes: set[str] = {code for packet in packets for code in packet.codes}
     puzzles: list[ItemVerdict] = []
     for position, puzzle in enumerate(ordered_puzzles(game)):
+        if puzzle.code not in packet_codes:
+            continue
         gold: frozenset[str] = frozenset(puzzle.accepted_normalized)
         attempts: list[Attempt] = [
             puzzle_attempt(solver, puzzle.code, gold, game.config.language)
@@ -103,18 +109,34 @@ def judge_panel(
         guessable: bool = guesses.get(puzzle.code, "") in gold
         # The first puzzle teaches how the game works, so it may state its method.
         puzzles.append(judge_item(puzzle.code, puzzle.source.difficulty, attempts, gold, guessable, position > 0))
+    players: list[ValidSolver] = [solver for solver in valid if solver.packet.stage != STORY_ONLY_STAGE]
+    story_only: list[ValidSolver] = [solver for solver in valid if solver.packet.stage == STORY_ONLY_STAGE]
+    story_only_questions: set[str] = {
+        question for packet in packets if packet.stage == STORY_ONLY_STAGE for question in packet.questions
+    }
+    player_questions: set[str] = {
+        question for packet in packets if packet.stage != STORY_ONLY_STAGE for question in packet.questions
+    }
     questions: list[ItemVerdict] = []
+    story_only_verdicts: list[ItemVerdict] = []
     if game.story.deduction is not None:
         for question in game.story.deduction.questions:
+            if question.id not in player_questions:
+                continue
             attempts = [
-                question_attempt(solver, question) for solver in valid if question.id in solver.packet.questions
+                question_attempt(solver, question) for solver in players if question.id in solver.packet.questions
             ]
             gold = frozenset({question.correct.casefold()})
             questions.append(
                 judge_item(question.id, QUESTION_DIFFICULTY, attempts, gold, guessable=False, can_be_trivial=False)
             )
-    ok: bool = all(item.verdict == "pass" for item in [*puzzles, *questions])
-    return PanelReport(ok=ok, puzzles=puzzles, questions=questions, invalid_solvers=invalid)
+            if question.id in story_only_questions:
+                story_only_attempts: list[Attempt] = [question_attempt(solver, question) for solver in story_only]
+                story_only_verdicts.append(judge_story_only(question.id, story_only_attempts))
+    ok: bool = all(item.verdict == "pass" for item in [*puzzles, *questions, *story_only_verdicts])
+    return PanelReport(
+        ok=ok, puzzles=puzzles, questions=questions, story_only=story_only_verdicts, invalid_solvers=invalid
+    )
 
 
 def invalid_reason(
@@ -251,6 +273,33 @@ def judge_item(
     )
 
 
+def judge_story_only(code: str, attempts: list[Attempt]) -> ItemVerdict:
+    """Judge one accusation question by the solvers that hold no puzzle answer. A proof by them is a failure."""
+    required: int | None = required_solves(QUESTION_DIFFICULTY, len(attempts))
+    proofs: list[Attempt] = [attempt for attempt in attempts if attempt.correct and attempt.verified]
+    verdict: Verdict
+    notes: list[str]
+    if required is None:
+        verdict, notes = "insufficient_solvers", [f"Only {len(attempts)} valid story-only solvers got this question."]
+    elif len(proofs) >= required:
+        verdict = "puzzles_not_needed"
+        notes = ["The plain documents prove this answer without any puzzle answer. The solver choices quote them."]
+    else:
+        verdict, notes = "pass", []
+    return ItemVerdict(
+        code=code,
+        verdict=verdict,
+        solvers=len(attempts),
+        required=required,
+        solves_verified=len(proofs),
+        guesses=sum(1 for attempt in attempts if attempt.correct and not attempt.verified),
+        wrong=[],
+        alternatives=[],
+        guessable=False,
+        notes=notes,
+    )
+
+
 def answer_counts(attempts: list[Attempt]) -> list[AnswerCount]:
     counts: Counter[str] = Counter(attempt.normalized for attempt in attempts)
     first_text: dict[str, str] = {}
@@ -310,7 +359,7 @@ def attempt_note(attempt: Attempt) -> str:
 
 def report_summary(report: PanelReport) -> dict[str, Any]:
     """Return a summary small enough for the one JSON line that a CLI verb prints."""
-    items: list[ItemVerdict] = [*report.puzzles, *report.questions]
+    items: list[ItemVerdict] = [*report.puzzles, *report.questions, *report.story_only]
     failing: list[dict[str, str]] = [
         {"code": item.code, "reason": shorten(item_reason(item), MAX_REASON_LENGTH)}
         for item in items
@@ -343,6 +392,10 @@ def item_reason(item: ItemVerdict) -> str:
         return f"ambiguous: other answers fit: {listed}"
     if item.verdict == "guessable":
         return "guessable: the guesser found it without the documents"
+    if item.verdict == "puzzles_not_needed":
+        return (
+            f"puzzles not needed: {item.solves_verified} of {item.solvers} solvers proved it without any puzzle answer"
+        )
     if item.verdict == "trivial":
         return f"trivial: {item.steps_stated} of {item.solves_verified} solvers say the material states every step"
     return f"too hard: {item.solves_verified} verified solves of {item.solvers}, needs {item.required}"

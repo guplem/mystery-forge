@@ -3,7 +3,7 @@ Read every player document of the game in `{{ steps.setup.json.game_dir }}` agai
 Report:
 1. **Contradictions** between a document and `story.yaml`, or between two documents: a time, a date, a place, a name, a number, who knew what, who did what. Quote both sides.
 2. **Possession:** a document that the players hold with no story reason (a private letter of the culprit, a telegram addressed to someone else), unless the intro or another document explains how it reached them.
-3. **Leaks:** a puzzle answer, a hidden clue, or an accusation answer stated in clear text in a document that players have before they earn it; a confession or a written plan of the culprit.
+3. **Leaks:** a puzzle answer, a hidden clue, or an accusation answer stated in a document that players have before they earn it: in clear text, in other words, or by two documents together (one says that the hiding place moved to "a drier corner", another says that only one corner is dry). Also a confession or a written plan of the culprit. Check each `leak_allowlist` entry of the puzzle files too: an allowed text that gives away a hidden clue or an accusation answer early is a leak.
 4. **Worksheets:** a puzzle document that explains the full method of its puzzle.
 5. **Designer words:** text that talks about "the players", "this puzzle", internal ids such as P3 or D12, or instructions that break the fiction where the fiction would do.
 

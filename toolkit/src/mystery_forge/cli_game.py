@@ -46,9 +46,9 @@ from mystery_forge.panel.models import (
     SolverResult,
     SolverStatus,
 )
-from mystery_forge.panel.packets import StagePacket, build_guesser_packet, build_stage_packets
+from mystery_forge.panel.packets import STORY_ONLY_STAGE, StagePacket, build_guesser_packet, build_panel_packets
 from mystery_forge.paths import SystemFolders
-from mystery_forge.plan import PLAN_FILE, Plan, check_plan_folder
+from mystery_forge.plan import PLAN_FILE, Plan, check_plan_folder, planned_sentence_findings
 from mystery_forge.render.companion_data import build_companion_html
 from mystery_forge.render.game_renderer import PREVIEW_FOLDER, RenderReport, render_game
 from mystery_forge.render.pdf import BrowserNotFoundError, open_sheet_browser
@@ -63,6 +63,7 @@ from mystery_forge.verification import (
     game_hashes,
     ledger_path,
     load_ledger,
+    panel_stages_to_run,
     record_checks,
     record_panel,
     save_ledger,
@@ -183,6 +184,7 @@ def full_check(game_dir: Path, write: bool = True) -> list[Finding]:
     if write:
         (game_dir / "game.json").write_text(result.game.model_dump_json(indent=2), encoding="utf-8")
     findings.extend(run_checks(result.game))
+    findings.extend(planned_sentence_findings(game_dir, result.game))
     # A run with errors records nothing: the codes keep their last pass, which no longer matches, so they stay stale.
     if write and count_errors(findings) == 0:
         hashes: dict[str, str] = game_hashes(result.game)
@@ -206,6 +208,7 @@ def command_writer_tasks(arguments: argparse.Namespace, output: TextIO) -> int:
             "mechanic": puzzle.mechanic,
             "documents": puzzle.documents,
             "relies_on": puzzle.relies_on,
+            "must_contain": puzzle.must_contain,
         }
         for puzzle in plan.puzzles
     ]
@@ -220,15 +223,22 @@ def command_packets(arguments: argparse.Namespace, output: TextIO) -> int:
         return 0
     folder: Path = game_dir / "reports" / PANEL_FOLDER
     folder.mkdir(parents=True, exist_ok=True)
-    packets: list[StagePacket] = build_stage_packets(game)
+    packets: list[StagePacket] = build_panel_packets(game)
     (folder / PACKETS_FILE).write_text(
         json.dumps([packet.model_dump() for packet in packets], ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    to_run: set[str] = (
+        {packet.stage for packet in packets}
+        if arguments.all
+        else panel_stages_to_run(game, load_ledger(ledger_path(game_dir)))
     )
     personas: list[str] = list(SOLVER_PERSONAS)
     if game.config.audience == "kids":
         personas[-1] = KIDS_PERSONA
     tasks: list[dict[str, Any]] = []
     for packet in packets:
+        if packet.stage not in to_run:
+            continue
         packet_file: Path = folder / f"stage-{packet.stage}.md"
         packet_file.write_text(packet.text, encoding="utf-8")
         for number in range(1, game.brief.solver_count + 1):
@@ -240,11 +250,13 @@ def command_packets(arguments: argparse.Namespace, output: TextIO) -> int:
                     "persona": personas[(number - 1) % len(personas)],
                     "packet_file": str(packet_file),
                     "has_accusation": bool(packet.questions),
+                    "story_only": packet.stage == STORY_ONLY_STAGE,
                 }
             )
     guesser_file: Path = folder / "guesser.md"
     guesser_file.write_text(build_guesser_packet(game).text, encoding="utf-8")
-    emit(output, {"ok": True, "solver_tasks": tasks, "guesser_file": str(guesser_file)})
+    skipped: list[str] = [packet.stage for packet in packets if packet.stage not in to_run]
+    emit(output, {"ok": True, "solver_tasks": tasks, "skipped_stages": skipped, "guesser_file": str(guesser_file)})
     return 0
 
 
@@ -303,7 +315,7 @@ def command_judge(arguments: argparse.Namespace, output: TextIO) -> int:
                 "Run the solver panel from its first step.",
             ),
         )
-    packets: list[StagePacket] = build_stage_packets(game)
+    packets: list[StagePacket] = build_panel_packets(game)
     if [packet.sha256 for packet in packets] != saved_hashes:
         return emit_judge_problem(
             output,
@@ -323,7 +335,9 @@ def command_judge(arguments: argparse.Namespace, output: TextIO) -> int:
         )
         for task, result in zip(judge_input.solver_tasks, judge_input.solver_results, strict=True)
     ]
-    report: PanelReport = judge_panel(game, packets, results, judge_input.guesser_result)
+    solved_stages: set[str] = {task.stage for task in judge_input.solver_tasks}
+    solved_packets: list[StagePacket] = [packet for packet in packets if packet.stage in solved_stages]
+    report: PanelReport = judge_panel(game, solved_packets, results, judge_input.guesser_result)
     report_file: Path = folder / "panel.json"
     report_file.write_text(report.model_dump_json(indent=2), encoding="utf-8")
     path: Path = ledger_path(game_dir)
@@ -367,15 +381,21 @@ def failing_panel_items(
         if verdict.verdict != "pass"
     ]
     failing_questions: list[ItemVerdict] = [verdict for verdict in report.questions if verdict.verdict != "pass"]
-    if failing_questions:
+    failing_story_only: list[ItemVerdict] = [verdict for verdict in report.story_only if verdict.verdict != "pass"]
+    players: list[SolverResult] = [result for result in results if result.stage != STORY_ONLY_STAGE]
+    story_only: list[SolverResult] = [result for result in results if result.stage == STORY_ONLY_STAGE]
+    if failing_questions or failing_story_only:
         items.append(
             panel_item(
                 game_dir,
                 DEDUCTION_KEY,
                 DEDUCTION_KEY,
-                failing_questions[0],
+                [*failing_questions, *failing_story_only][0],
                 ["story.yaml", *group_files(DOCUMENTS_GROUP, owners)],
-                {"questions": [panel_item_notes(verdict, results) for verdict in failing_questions]},
+                {
+                    "questions": [panel_item_notes(verdict, players) for verdict in failing_questions],
+                    "puzzles_not_needed": [panel_item_notes(verdict, story_only) for verdict in failing_story_only],
+                },
             )
         )
     return items

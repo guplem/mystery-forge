@@ -12,7 +12,7 @@ from typing import Final
 from mystery_forge.assemble import load_config
 from mystery_forge.brief import Brief
 from mystery_forge.catalog.loader import load_ingredients
-from mystery_forge.checks.deduction import hidden_clue_count_findings
+from mystery_forge.checks.deduction import elimination_findings, hidden_clue_count_findings
 from mystery_forge.checks.runner import run_checks
 from mystery_forge.config import GameConfig
 from mystery_forge.findings import Finding
@@ -67,6 +67,7 @@ def check_story_folder(game_dir: Path) -> list[Finding]:
     findings.extend(
         finding.model_copy(update={"file": STORY_FILE}) for finding in hidden_clue_count_findings(story, config)
     )
+    findings.extend(elimination_findings(story))
     return findings
 
 

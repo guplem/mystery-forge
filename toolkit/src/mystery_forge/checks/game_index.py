@@ -90,3 +90,13 @@ def clues_by_id(game: Game) -> dict[str, ClueEntry]:
     for entry in clue_entries(game):
         index.setdefault(entry.clue.id, entry)
     return index
+
+
+def revealed_clue_ids(game: Game) -> set[str]:
+    """Return the ids of the hidden clues that a puzzle of the game reveals."""
+    puzzle_ids: set[str] = set(puzzles_by_id(game))
+    return {
+        clue_id
+        for clue_id, entry in clues_by_id(game).items()
+        if entry.clue.hidden and entry.clue.revealed_by in puzzle_ids
+    }

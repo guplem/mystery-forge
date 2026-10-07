@@ -39,7 +39,8 @@ def golden_plan() -> dict[str, Any]:
              "hidden_from": "the crew", "reveals": "Keys.", "documents": ["D2"]},
             {"id": "P2", "stage": "A", "title": "The lock", "mechanic": "arithmetic-lock", "difficulty": "easy",
              "answer": "0726", "in_world_reason": "A lock.",
-             "hidden_from": "the crew", "reveals": "Rope.", "documents": ["D3"]},
+             "hidden_from": "the crew", "reveals": "Rope.", "documents": ["D3"],
+             "must_contain": ["Lamp oil: 7 barrels"]},
             {"id": "P3", "stage": "B", "title": "The tide", "mechanic": "deduction", "difficulty": "medium",
              "depends_on": ["P1"], "answer": "low tide", "in_world_reason": "A causeway.",
              "hidden_from": "visitors", "reveals": "Low tide.",
@@ -92,6 +93,18 @@ def test_writer_tasks_list_the_planned_puzzles(game_dir: Path) -> None:
     result = run(["writer-tasks", "--game", str(game_dir)])
     assert [task["name"] for task in result["tasks"]] == ["P1 caesar-cipher", "P2 arithmetic-lock", "P3 deduction"]
     assert result["tasks"][2]["documents"] == ["D4"]
+    assert result["tasks"][1]["must_contain"] == ["Lamp oil: 7 barrels"]
+    assert result["tasks"][0]["must_contain"] == []
+
+
+def test_the_full_check_reports_a_planned_sentence_that_a_document_lost(game_dir: Path) -> None:
+    write_plan(game_dir)
+    path = game_dir / "source" / "documents" / "D3.md"
+    path.write_text(path.read_text(encoding="utf-8").replace("Lamp oil: 7 barrels", "Lamp oil: seven barrels"), "utf-8")
+    result = run(["check", "--game", str(game_dir)])
+    assert result["ok"] is False
+    assert "plan.must_contain_missing" in {finding["rule"] for finding in result["findings"]}
+    assert "P2" in [group["name"] for group in result["fix_groups"]]
 
 
 def solver_answers(stage: str) -> list[dict[str, Any]]:
@@ -126,8 +139,12 @@ def test_packets_judge_status_render_and_export(
     packets = run(["packets", "--game", str(game_dir)])
     assert packets["ok"] is True
     tasks = packets["solver_tasks"]
-    assert len(tasks) == 2 * 5
+    assert len(tasks) == 3 * 5
     assert Path(tasks[0]["packet_file"]).read_text(encoding="utf-8").strip()
+    assert [task["story_only"] for task in tasks] == [False] * 10 + [True] * 5
+    assert tasks[-1]["name"] == "story-only solver 5"
+    assert tasks[-1]["has_accusation"] is True
+    assert Path(tasks[-1]["packet_file"]).name == "stage-story-only.md"
     assert Path(packets["guesser_file"]).is_file()
     results = [
         {"status": "done", "answers": solver_answers(task["stage"]), "accusation": accusation(task["stage"])}
@@ -151,7 +168,7 @@ def test_judge_reports_failing_items_with_their_files(game_dir: Path, monkeypatc
     write_plan(game_dir)
     packets = run(["packets", "--game", str(game_dir)])
     tasks = packets["solver_tasks"]
-    codes = {"A": ("A1", "A2"), "B": ("B1",)}
+    codes = {"A": ("A1", "A2"), "B": ("B1",), "story-only": ()}
 
     def stuck(stage: str) -> list[dict[str, Any]]:
         return [
@@ -169,6 +186,7 @@ def test_judge_reports_failing_items_with_their_files(game_dir: Path, monkeypatc
     assert by_code["deduction"]["files"] == ["story.yaml", "documents/D1.md", "documents/D5.md", "images/"]
     assert "who" not in by_code
     assert "why" not in by_code
+    assert by_code["deduction"]["verdict"] == "too_hard"
     deduction_notes = json.loads(Path(by_code["deduction"]["findings_file"]).read_text(encoding="utf-8"))
     assert [question["verdict"]["code"] for question in deduction_notes["questions"]] == ["who", "why"]
     notes = json.loads(Path(by_code["A1"]["findings_file"]).read_text(encoding="utf-8"))
@@ -177,6 +195,45 @@ def test_judge_reports_failing_items_with_their_files(game_dir: Path, monkeypatc
     status = run(["status", "--game", str(game_dir), "--panel", "false"])
     assert status["ok"] is False
     assert status["stale"]
+
+
+def test_packets_skip_the_stages_that_passed_on_their_current_content(game_dir: Path) -> None:
+    write_plan(game_dir)
+    assert run(["check", "--game", str(game_dir)])["ok"] is True
+    assert run(["judge", "--game", str(game_dir), "--input", json.dumps(packets_and_payload(game_dir))])["ok"] is True
+    again = run(["packets", "--game", str(game_dir)])
+    assert again["solver_tasks"] == []
+    assert again["skipped_stages"] == ["A", "B", "story-only"]
+    path = game_dir / "source" / "documents" / "D4.md"
+    path.write_text(path.read_text(encoding="utf-8") + "\nThe gulls were loud that night.\n", encoding="utf-8")
+    assert run(["check", "--game", str(game_dir)])["ok"] is True
+    payload = packets_and_payload(game_dir)
+    assert {task["stage"] for task in payload["solver_tasks"]} == {"B", "story-only"}
+    judged = run(["judge", "--game", str(game_dir), "--input", json.dumps(payload)])
+    assert judged["ok"] is True
+    report = json.loads((game_dir / "reports" / "panel" / "panel.json").read_text(encoding="utf-8"))
+    assert [item["code"] for item in report["puzzles"]] == ["B1"]
+    assert run(["status", "--game", str(game_dir)])["ok"] is True
+    assert len(run(["packets", "--game", str(game_dir), "--all"])["solver_tasks"]) == 3 * 5
+
+
+def test_judge_sends_a_story_only_proof_to_the_deduction_fixer(game_dir: Path) -> None:
+    write_plan(game_dir)
+    payload = packets_and_payload(game_dir)
+    for task, result in zip(payload["solver_tasks"], payload["solver_results"], strict=True):
+        if task["story_only"]:
+            result["accusation"] = accusation("B")[1:]
+    judged = run(["judge", "--game", str(game_dir), "--input", json.dumps(payload)])
+    assert judged["ok"] is False
+    assert judged["failing"] == ["why: puzzles not needed: 5 of 5 solvers proved it without any puzzle answer"]
+    (deduction,) = judged["failing_items"]
+    assert (deduction["code"], deduction["verdict"]) == ("deduction", "puzzles_not_needed")
+    notes = json.loads(Path(deduction["findings_file"]).read_text(encoding="utf-8"))
+    assert notes["questions"] == []
+    (why,) = notes["puzzles_not_needed"]
+    assert why["verdict"]["code"] == "why"
+    assert [choice["solver"] for choice in why["solver_choices"]] == [f"story-only solver {n}" for n in range(1, 6)]
+    assert why["solver_answers"] == []
 
 
 def test_verbs_on_a_broken_game_report_findings(game_dir: Path) -> None:
