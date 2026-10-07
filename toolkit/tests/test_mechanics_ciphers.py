@@ -134,14 +134,14 @@ def test_caesar_shifts_each_letter_forward() -> None:
 def test_caesar_wraps_around_and_keeps_digits_spaces_and_punctuation() -> None:
     artifact: Artifact = build("caesar-cipher", {"shift": 1, "plaintext": "Zoo at 9, mill!"}, make_context())
     assert ciphertext_of(artifact) == "APP BU 9, NJMM!"
-    assert artifact.solver_text == "Ciphertext: APP BU 9, NJMM!"
+    assert artifact.solver_text == "APP BU 9, NJMM!"
 
 
 def test_caesar_coerces_text_params_and_shows_the_shift_key() -> None:
     artifact: Artifact = build("caesar-cipher", {"shift": "3", "show_shift": "true"}, make_context())
     assert ciphertext_of(artifact) == "PLOO"
     assert '<p class="mf-cipher-key">A = D</p>' in artifact.html
-    assert artifact.solver_text == "Ciphertext: PLOO\nKey: A = D"
+    assert artifact.solver_text == "PLOO\nA = D"
 
 
 def test_caesar_hides_the_key_by_default() -> None:
@@ -161,7 +161,7 @@ def test_caesar_rejects_a_shift_outside_1_to_25(shift: int) -> None:
 def test_atbash_mirrors_the_alphabet_and_keeps_other_signs() -> None:
     artifact: Artifact = build("atbash-cipher", {"plaintext": "Abc xyz, mill 7!"}, make_context())
     assert ciphertext_of(artifact) == "ZYX CBA, NROO 7!"
-    assert artifact.solver_text == "Ciphertext: ZYX CBA, NROO 7!"
+    assert artifact.solver_text == "ZYX CBA, NROO 7!"
 
 
 # a1z26-cipher
@@ -170,7 +170,7 @@ def test_atbash_mirrors_the_alphabet_and_keeps_other_signs() -> None:
 def test_a1z26_writes_letter_numbers_with_dashes_and_word_slashes() -> None:
     artifact: Artifact = build("a1z26-cipher", {"plaintext": "Abc, mill!"}, make_context())
     assert ciphertext_of(artifact) == "1-2-3 / 13-9-12-12"
-    assert artifact.solver_text == "Ciphertext: 1-2-3 / 13-9-12-12"
+    assert artifact.solver_text == "1-2-3 / 13-9-12-12"
 
 
 def test_a1z26_rejects_digits_in_the_plaintext() -> None:
@@ -192,7 +192,7 @@ def test_vigenere_matches_the_textbook_example_and_skips_non_letters_in_the_key(
         "vigenere-cipher", {"keyword": "lémon", "plaintext": "Attack at dawn"}, make_context("dawn")
     )
     assert ciphertext_of(artifact) == "LXFOPV EF RNHR"
-    assert artifact.solver_text == "Ciphertext: LXFOPV EF RNHR"
+    assert artifact.solver_text == "LXFOPV EF RNHR"
 
 
 @pytest.mark.parametrize("keyword", ["LEMON 2", "", "!"])
@@ -212,7 +212,7 @@ def test_vigenere_requires_a_keyword() -> None:
 def test_morse_separates_letters_with_spaces_and_words_with_slashes() -> None:
     artifact: Artifact = build("morse-code", {"plaintext": "SOS, mill 7"}, make_context())
     assert ciphertext_of(artifact) == "... --- ... / -- .. .-.. .-.. / --..."
-    assert artifact.solver_text == "Morse code: ... --- ... / -- .. .-.. .-.. / --..."
+    assert artifact.solver_text == "... --- ... / -- .. .-.. .-.. / --..."
     assert "mf-morse-chart" not in artifact.html
 
 
@@ -222,7 +222,7 @@ def test_morse_reference_chart_lists_every_letter_and_digit() -> None:
     assert "<tr><td>A</td><td>.-</td></tr>" in artifact.html
     assert "<tr><td>0</td><td>-----</td></tr>" in artifact.html
     assert artifact.solver_text.endswith(
-        "Reference chart: A .-, B -..., C -.-., D -.., E ., F ..-., G --., H ...., "
+        "\n\nA .-, B -..., C -.-., D -.., E ., F ..-., G --., H ...., "
         "I .., J .---, K -.-, L .-.., M --, N -., O ---, P .--., Q --.-, R .-., "
         "S ..., T -, U ..-, V ...-, W .--, X -..-, Y -.--, Z --.., 0 -----, "
         "1 .----, 2 ..---, 3 ...--, 4 ....-, 5 ....., 6 -...., 7 --..., 8 ---.., "
@@ -241,7 +241,7 @@ def test_morse_decodes_an_unknown_code_as_a_question_mark() -> None:
 def test_phone_keypad_multitap_repeats_the_key_once_per_letter_position() -> None:
     artifact: Artifact = build("phone-keypad", {"plaintext": "Hello, mill"}, make_context())
     assert ciphertext_of(artifact) == "44-33-555-555-666 / 6-444-555-555"
-    assert artifact.solver_text == "Phone keypad code: 44-33-555-555-666 / 6-444-555-555"
+    assert artifact.solver_text == "44-33-555-555-666 / 6-444-555-555"
 
 
 def test_phone_keypad_position_style_writes_the_key_and_a_superscript_position() -> None:
@@ -270,7 +270,7 @@ def nato_entries(artifact: Artifact) -> list[str]:
 def test_nato_spells_letters_and_digits_as_words() -> None:
     artifact: Artifact = build("nato-alphabet", {"plaintext": "Mill, 79"}, make_context())
     assert ciphertext_of(artifact) == "Mike India Lima Lima / Seven Nine"
-    assert artifact.solver_text == "NATO alphabet: Mike India Lima Lima / Seven Nine"
+    assert artifact.solver_text == "Mike India Lima Lima / Seven Nine"
 
 
 def test_nato_scramble_numbers_each_letter_and_moves_every_word() -> None:
@@ -280,7 +280,7 @@ def test_nato_scramble_numbers_each_letter_and_moves_every_word() -> None:
         "1. Oscar", "2. Lima", "3. Delta", "4. Mike", "5. India", "6. Lima", "7. Lima"
     ]  # fmt: skip
     assert all(not entry.startswith(f"{index}.") for index, entry in enumerate(entries, start=1))
-    assert artifact.solver_text == "NATO words with their positions: " + "; ".join(entries)
+    assert artifact.solver_text == "\n".join(entries)
 
 
 def test_nato_scramble_order_depends_on_the_seed() -> None:
@@ -305,7 +305,7 @@ def test_nato_decodes_unreadable_entries_as_question_marks() -> None:
 def test_mirror_writing_keeps_the_original_text_in_a_mirrored_element() -> None:
     artifact: Artifact = build("mirror-writing", {"plaintext": "Meet at the Old Mill, señor"}, make_context())
     assert '<p class="mf-mirror">Meet at the Old Mill, señor</p>' in artifact.html
-    assert artifact.solver_text == "Mirror-reversed text (it reads correctly in a mirror): roñes ,lliM dlO eht ta teeM"
+    assert artifact.solver_text == "roñes ,lliM dlO eht ta teeM\n(Each letter is drawn flipped from left to right.)"
 
 
 def test_mirror_writing_escapes_markup_as_text() -> None:
@@ -336,13 +336,13 @@ def test_cryptogram_prints_the_revealed_letters_as_a_key() -> None:
     ciphertext: str = ciphertext_of(artifact)
     key: str = f"{ciphertext[1]} = I, {ciphertext[0]} = M"
     assert f'<p class="mf-cipher-key">{key}</p>' in artifact.html
-    assert artifact.solver_text == f"Ciphertext: {ciphertext}\nKnown letters: {key}"
+    assert artifact.solver_text == f"{ciphertext}\n{key}"
 
 
 def test_cryptogram_without_revealed_letters_prints_no_key() -> None:
     artifact: Artifact = build("cryptogram", {"plaintext": "Mill mill"}, make_context())
     assert "mf-cipher-key" not in artifact.html
-    assert artifact.solver_text == f"Ciphertext: {ciphertext_of(artifact)}"
+    assert artifact.solver_text == ciphertext_of(artifact)
 
 
 def test_cryptogram_alphabet_depends_on_the_seed() -> None:

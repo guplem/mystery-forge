@@ -116,13 +116,13 @@ def test_anagram_shows_each_letter_as_a_tile() -> None:
         '<div class="mf-anagram"><span class="mf-tile">L</span><span class="mf-tile">L</span>'
         '<span class="mf-tile">I</span><span class="mf-tile">M</span></div>'
     )
-    assert artifact.solver_text == "Letter tiles: L L I M"
+    assert artifact.solver_text == "L L I M"
 
 
 def test_anagram_ignores_spaces_and_keeps_digits() -> None:
     context: MechanicContext = make_context({}, answer="Room 12")
     artifact: Artifact = build("anagram", {"letters": "2 moor 1"}, context)
-    assert artifact.solver_text == "Letter tiles: 2 M O O R 1"
+    assert artifact.solver_text == "2 M O O R 1"
 
 
 def test_anagram_round_trip_reads_the_tiles_back_as_the_answer() -> None:

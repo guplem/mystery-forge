@@ -358,7 +358,7 @@ def build_word_search(params: WordSearchParams, context: MechanicContext) -> Art
     return Artifact(
         html=f'<div class="mf-word-search-puzzle">\n{grid_table_html(grid, "mf-word-search")}\n'
         f'<ul class="mf-word-list">\n{word_list}\n</ul>\n</div>',
-        solver_text=f"{grid_text(grid)}\n\nWords: {', '.join(words)}",
+        solver_text=f"{grid_text(grid)}\n\n" + "\n".join(words),
     )
 
 
@@ -489,7 +489,7 @@ def build_overlay_mask(params: OverlayMaskParams, context: MechanicContext) -> A
     return Artifact(
         html=f'<div class="mf-overlay-mask">\n{grid_table_html(grid, "mf-overlay-grid")}\n'
         f"{mask_table_html(params.size, holes)}\n</div>",
-        solver_text=f"Grid:\n{grid_text(grid)}\n\nMask (# is a hole):\n" + "\n".join(mask_rows),
+        solver_text=f"{grid_text(grid)}\n\n" + "\n".join(mask_rows) + "\n(# = a window in the mask card)",
         print_notes=("Cut out the pale squares (the windows) of the dark mask card.",),
     )
 

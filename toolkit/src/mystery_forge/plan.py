@@ -4,7 +4,8 @@ The planner decides the puzzles before anyone writes them: the mechanic, the sta
 which documents each writer owns. Writers then work in parallel, so one document must have exactly one owner. The
 checks here run on the plan alone, before the expensive writing starts, and catch the structural mistakes early.
 The graph, variety, and budget rules call the same pure functions as the whole-game checks in `checks/`, so a plan
-that passes does not fail the same rule later.
+that passes does not fail the same rule later. Two checks run later, on the written game, because writers and fixers
+can drift from the plan: a `must_contain` sentence that the documents lost, and a puzzle named by its old plan title.
 """
 
 from collections.abc import Callable
@@ -150,8 +151,8 @@ def planned_sentence_findings(game_dir: Path, game: Game) -> list[Finding]:
                 rule="plan.must_contain_missing",
                 message=f'The plan says that the documents of {owner} contain "{sentence}", but none does.',
                 file=f"documents/{written[0]}.md",
-                fix_hint="Put the sentence back word for word: another puzzle or the deduction needs it. If the fact "
-                "must change, change it in plan.yaml and in every document that uses it.",
+                fix_hint="Put the sentence back word for word: another puzzle or the deduction needs it. Only a fix "
+                "that may change plan.yaml may change the sentence, and it changes it in both places.",
             )
             for sentence in sentences
             if not any(normalize_quote_text(sentence) in texts[document_id] for document_id in written)

@@ -3,7 +3,7 @@
 A check result is valid only for the content that it checked (`adr/0004-verification-strategy.md`). A puzzle's
 closure hash covers everything that a solver of its stage sees, plus the puzzle file itself. A fix to one document
 therefore makes stale only the puzzles whose players hold that document, and export refuses those until they pass
-again.
+again. The same ledger tells `forge packets` which stages the solver panel must run again.
 """
 
 import hashlib

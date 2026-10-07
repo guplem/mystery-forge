@@ -2,18 +2,19 @@ schema: pskill/v1
 id: solver-panel
 description: >-
   Test a game with fresh solver subagents: each solver gets only what players have at one stage and tries to solve
-  that stage's puzzles. A guesser gets only the premise. The toolkit then judges the answers against the official
-  ones, finds ambiguous, too hard, and guessable puzzles, and reports them.
+  that stage's puzzles. Only the stages with no pass on their current content run. A story-only group gets the plain
+  documents and tries to accuse without any puzzle. A guesser gets only the premise. The toolkit then judges the
+  answers against the official ones, finds the failing puzzles and accusation questions, and reports them.
 goal: A judged panel report for the current version of the game.
 invocation: internal
 inputs:
   game_dir: {type: string, description: "The game folder, the parent of source/."}
 outputs:
-  ok: {type: boolean, description: "true when every puzzle and accusation question passed."}
+  ok: {type: boolean, description: "true when every puzzle and accusation question that this round judged passed."}
   failing: {type: array, items: {type: string}, description: "Each failing puzzle as '<code>: <verdict>: <reason>'."}
   failing_items:
     type: array
-    description: "One fix task per failing puzzle or accusation question."
+    description: "One fix task per failing puzzle, and one for the deduction when an accusation question fails."
     items:
       type: object
       properties:
@@ -28,7 +29,7 @@ entry: packets
 blocks:
   packets:
     type: script
-    description: Write one player packet per stage, and the guesser packet
+    description: Write the player packets, the story-only packet, and the guesser packet, and list the solver tasks
     run: [uv, run, --project, ../toolkit, forge, packets, --game, "{{ inputs.game_dir }}"]
     parse: json
     timeout_s: 600

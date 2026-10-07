@@ -317,7 +317,9 @@ def build_parser() -> argparse.ArgumentParser:
     writer_tasks = verbs.add_parser("writer-tasks", help="List one writing task per planned puzzle.")
     writer_tasks.add_argument("--game", required=True, help="The game folder.")
     writer_tasks.set_defaults(handler=cli_game.command_writer_tasks)
-    packets = verbs.add_parser("packets", help="Write the solver packets of each stage and the guesser packet.")
+    packets = verbs.add_parser(
+        "packets", help="Write the solver packets of each stage, the story-only packet, and the guesser packet."
+    )
     packets.add_argument("--game", required=True, help="The game folder.")
     packets.add_argument(
         "--all", action="store_true", help="Write a solver task for every stage, also the stages that already passed."
