@@ -51,7 +51,7 @@ def test_every_theme_and_color_mode_renders_every_output(theme: str, mode: str) 
 def test_the_html_title_names_the_game_and_the_output() -> None:
     html = render_all(golden_game())
     assert "<title>The Lens of Gull Rock · Game materials</title>" in html["materials"]
-    assert '<html lang="en">' in html["manual"]
+    assert '<html lang="en" dir="ltr">' in html["manual"]
 
 
 def test_every_document_kind_draws_its_own_paper() -> None:
@@ -98,3 +98,8 @@ def test_a_solo_game_prints_one_player_and_no_group_wording() -> None:
     html = render_all(configured(golden_game(), players={"count": 1}))
     assert "Answer every question. Tick" in html["materials"]
     assert "together" not in html["materials"]
+
+
+def test_a_right_to_left_language_sets_the_page_direction() -> None:
+    assert '<html lang="ar" dir="rtl">' in render_all(configured(golden_game(), {"language": "ar"}))["materials"]
+    assert '<html lang="en" dir="ltr">' in render_all(golden_game())["materials"]

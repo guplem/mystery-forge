@@ -99,7 +99,33 @@ blocks:
       go: Start the generation with this config.
       change: Use another config file.
       stop: Stop the run.
-    next: {go: concepts, change: ask_config, stop: stopped}
+    next: {go: texts, change: ask_config, stop: stopped}
+
+  texts:
+    type: script
+    description: Check whether the game language needs translated fixed texts
+    run: [uv, run, --project, ../toolkit, forge, strings, --game, "{{ steps.setup.json.game_dir }}"]
+    parse: json
+    max_visits: 4
+    on_max_visits: failed
+    next:
+      - when: "{{ steps.texts.json.ok }}"
+        to: concepts
+      - when: "{{ (history.translate_texts | length) < 3 }}"
+        to: translate_texts
+      - to: failed
+
+  translate_texts:
+    type: parallel
+    description: Translate the fixed texts of the toolkit into the game language
+    for_each:
+      - {name: translate texts}
+    task_name: "{{ item.name }}"
+    agent: document-writer
+    instruction: instructions/translate_texts.md
+    output:
+      summary: {type: string, description: "One line."}
+    next: texts
 
   concepts:
     type: parallel

@@ -19,6 +19,7 @@ from mystery_forge.brief import Brief
 from mystery_forge.config import GameConfig, load_config_file
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
+from mystery_forge.i18n import LANGUAGES, LanguagePack, language_pack_problems, register_language
 from mystery_forge.mechanics.base import (
     Artifact,
     MechanicBuildError,
@@ -36,6 +37,8 @@ from mystery_forge.spec.documents import (
 from mystery_forge.spec.loader import SOURCE_FOLDER, GameSource, SourceDocument, load_game_source
 from mystery_forge.spec.models import Puzzle
 
+# A game in a language without a checked table brings its translated fixed texts in this file of source/.
+STRINGS_FILE: str = "strings.json"
 IMAGE_MARK_PATTERN: re.Pattern[str] = re.compile(r"⟦image:([^|⟧]+)\|([^⟧]*)⟧")
 SVG_TITLE_PATTERN: re.Pattern[str] = re.compile(r"<title[^>]*>(.*?)</title>", re.DOTALL)
 
@@ -92,7 +95,47 @@ def load_config(game_dir: Path, findings: list[Finding]) -> GameConfig | None:
                 fix_hint="Fix the config with the configurator page, then run the setup step again.",
             )
         )
+    if result.config is not None and result.config.language not in LANGUAGES:
+        load_language_pack(game_dir, result.config.language, findings)
     return result.config
+
+
+def load_language_pack(game_dir: Path, language: str, findings: list[Finding]) -> None:
+    """Check and serve the translated fixed texts of a language that has no checked table in `i18n.py`."""
+    path: Path = game_dir / SOURCE_FOLDER / STRINGS_FILE
+    if not path.is_file():
+        findings.append(
+            Finding(
+                severity="error",
+                rule="strings.missing",
+                message=f"The game language '{language}' has no checked table of fixed texts, and {STRINGS_FILE} "
+                "does not exist.",
+                file=STRINGS_FILE,
+                fix_hint="Run `forge strings --game <folder>` and translate the template that it writes into "
+                f"source/{STRINGS_FILE}.",
+            )
+        )
+        return
+    try:
+        pack: LanguagePack = LanguagePack.model_validate_json(path.read_text(encoding="utf-8"))
+    except ValidationError as error:
+        problem: str = str(error.errors()[0]["msg"])
+        findings.append(strings_finding(f"source/{STRINGS_FILE} is not a valid pack: {problem}."))
+        return
+    problems: list[str] = language_pack_problems(pack)
+    findings.extend(strings_finding(problem) for problem in problems)
+    if not problems:
+        register_language(language, pack)
+
+
+def strings_finding(message: str) -> Finding:
+    return Finding(
+        severity="error",
+        rule="strings.invalid",
+        message=message,
+        file=STRINGS_FILE,
+        fix_hint="Keep every key, every {field}, 12 months, and 7 weekdays of the template; translate only the words.",
+    )
 
 
 def load_brief(game_dir: Path, findings: list[Finding]) -> Brief | None:

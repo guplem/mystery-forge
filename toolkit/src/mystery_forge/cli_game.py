@@ -15,7 +15,7 @@ from typing import Any, Final, Self, TextIO
 from playwright.sync_api import Error as PlaywrightError
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, model_validator
 
-from mystery_forge.assemble import AssemblyResult, assemble_game
+from mystery_forge.assemble import STRINGS_FILE, AssemblyResult, assemble_game, load_config
 from mystery_forge.checks.runner import run_checks
 from mystery_forge.cli_output import (
     BROWSER_FIX,
@@ -25,6 +25,7 @@ from mystery_forge.cli_output import (
     input_problem,
     optional_report,
 )
+from mystery_forge.config import GameConfig
 from mystery_forge.export import ExportError, ExportResult, export_game, output_root
 from mystery_forge.findings import Finding, count_errors
 from mystery_forge.fix_groups import (
@@ -35,6 +36,7 @@ from mystery_forge.fix_groups import (
     write_fix_groups,
 )
 from mystery_forge.game import Game
+from mystery_forge.i18n import LANGUAGES, language_pack_template
 from mystery_forge.mechanics.registry import all_implementations
 from mystery_forge.panel.judge import judge_panel, report_summary
 from mystery_forge.panel.models import (
@@ -192,6 +194,35 @@ def full_check(game_dir: Path, write: bool = True) -> list[Finding]:
         path: Path = ledger_path(game_dir)
         save_ledger(path, record_checks(load_ledger(path), hashes, hashes))
     return findings
+
+
+def command_strings(arguments: argparse.Namespace, output: TextIO) -> int:
+    """Tell whether the game language needs translated fixed texts; if so, write the English template and check
+    the translation."""
+    game_dir: Path = Path(arguments.game)
+    findings: list[Finding] = []
+    config: GameConfig | None = load_config(game_dir, findings)
+    if config is None:
+        emit(output, {"ok": False, **capped_findings(findings)})
+        return 0
+    if config.language in LANGUAGES:
+        emit(output, {"ok": True, "needed": False})
+        return 0
+    template: Path = game_dir / "reports" / "strings-template.json"
+    template.parent.mkdir(parents=True, exist_ok=True)
+    template.write_text(language_pack_template().model_dump_json(indent=2), encoding="utf-8")
+    emit(
+        output,
+        {
+            "ok": count_errors(findings) == 0,
+            "needed": True,
+            "language": config.language,
+            "template": str(template),
+            "target": str(game_dir / SOURCE_FOLDER / STRINGS_FILE),
+            **capped_findings(findings),
+        },
+    )
+    return 0
 
 
 def command_writer_tasks(arguments: argparse.Namespace, output: TextIO) -> int:

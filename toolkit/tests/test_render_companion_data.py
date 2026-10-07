@@ -162,7 +162,7 @@ def test_script_safe_json_cannot_close_the_script_tag() -> None:
 def test_the_html_inlines_every_static_file_and_the_data(golden_game: Game) -> None:
     html = build_companion_html(golden_game)
     assert html.startswith("<!doctype html>")
-    assert '<html lang="en">' in html
+    assert '<html lang="en" dir="ltr">' in html
     assert "<title>The Lens of Gull Rock</title>" in html
     assert "globalThis.MysteryForgeAnswers" in html
     assert "globalThis.MysteryForgeCompanionLogic" in html

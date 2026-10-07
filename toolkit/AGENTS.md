@@ -13,7 +13,7 @@ The Python package `mystery_forge` and its CLI `forge`. It loads configs, builds
 | `paths.py`               | The real Desktop and Downloads folders (Windows known folders, XDG), safe folder names, the newest config file.        |
 | `findings.py`            | `Finding`: the one shape of every problem that the loader and the checks report.                                       |
 | `yaml_loading.py`        | YAML where every scalar stays text (so `0420` keeps its zero), with the line of every value.                           |
-| `i18n.py`                | The fixed output texts in every game language, plus long dates and weekday names.                                      |
+| `i18n.py`                | The fixed output texts, dates, and weekdays: 7 checked tables, plus a translated pack per game for other languages.    |
 | `catalog/`               | Package data: 91 mechanics, story ingredient decks, evidence types, the design rules for writers; typed loader.        |
 | `spec/models.py`         | Pydantic models of `story.yaml`, `flow.yaml`, `puzzles/*.yaml`, and the document front matter.                         |
 | `spec/loader.py`         | Read a game's `source/` folder into the models, with one finding per problem.                                          |
