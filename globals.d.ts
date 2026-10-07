@@ -253,6 +253,8 @@ interface MysteryForgeCompanionPuzzle {
   unlocks: string | null;
   hints: { level: number; text: string }[];
   solution: { steps: string[]; answer: string };
+  /** The story payoff that the page shows on a correct answer; empty when the puzzle has none. */
+  reveal_text: string;
 }
 
 interface MysteryForgeCompanionQuestion {
@@ -310,6 +312,7 @@ interface MysteryForgeAnswerCheck {
   result: 'correct' | 'near' | 'wrong';
   message?: string;
   unlocksStage?: string;
+  revealText?: string;
 }
 
 interface MysteryForgeAccusationScore {

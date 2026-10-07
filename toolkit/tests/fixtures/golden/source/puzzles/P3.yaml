@@ -6,6 +6,7 @@ mechanic: deduction
 difficulty: easy
 depends_on: [P1]
 in_world_reason: The causeway to Gull Rock is under water except at one time of the night.
+reveal_text: The tide table settles it. At 1:50 in the night the causeway lay dry, and anyone could walk out to the rock and back.
 reveals: The thief walked over at low tide and carried the lens back to a boat.
 answer: low tide
 accepted: [the low tide, at low tide]

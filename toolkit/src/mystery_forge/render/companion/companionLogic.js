@@ -52,7 +52,15 @@
     const answers = globalThis.MysteryForgeAnswers;
     const hash = answers.answerHash(answers.normalizeAnswer(input, data.language), data.salt);
     if (puzzle.answer_hashes.includes(hash)) {
-      return puzzle.unlocks === null ? { result: 'correct' } : { result: 'correct', unlocksStage: puzzle.unlocks };
+      /** @type {MysteryForgeAnswerCheck} */
+      const check = { result: 'correct' };
+      if (puzzle.unlocks !== null) {
+        check.unlocksStage = puzzle.unlocks;
+      }
+      if (puzzle.reveal_text) {
+        check.revealText = puzzle.reveal_text;
+      }
+      return check;
     }
     const nearMiss = puzzle.near_misses.find((candidate) => candidate.hash === hash);
     return nearMiss === undefined ? { result: 'wrong' } : { result: 'near', message: nearMiss.message };

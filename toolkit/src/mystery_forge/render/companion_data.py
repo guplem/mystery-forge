@@ -93,6 +93,7 @@ def puzzle_data(puzzle: AssembledPuzzle, unlocks: str | None, game: Game) -> dic
         "unlocks": unlocks,
         "hints": [{"level": hint.level, "text": hint.text} for hint in source.hints],
         "solution": {"steps": [step.text for step in source.solution], "answer": source.answer},
+        "reveal_text": source.reveal_text,
     }
 
 

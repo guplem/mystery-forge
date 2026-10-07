@@ -406,6 +406,7 @@
     const finished = logic.isGameFinished(data, solvedCodes());
     return el('div', { className: 'result result-correct', attrs: { id: 'answer-result', 'data-result': 'correct' } }, [
       el('p', { className: 'stamp stamp-ok', text: ui('result_correct') }),
+      check.revealText ? el('p', { className: 'result-reveal', text: check.revealText }) : null,
       stage
         ? el('div', { className: 'unlock', attrs: { id: 'unlock-call' } }, [
             el('span', { className: 'unlock-envelope', attrs: { 'aria-hidden': 'true' } }),

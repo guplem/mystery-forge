@@ -733,6 +733,15 @@ input {
   margin: 6px 0 0;
 }
 
+.result-reveal {
+  margin: 10px 0 0;
+  padding-left: 12px;
+  border-left: 3px solid currentColor;
+  font-family: var(--font-serif);
+  font-style: italic;
+  line-height: 1.5;
+}
+
 .result-wrong {
   border-color: rgba(255, 138, 115, 0.6);
   background: rgba(179, 58, 43, 0.16);
