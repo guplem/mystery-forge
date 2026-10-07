@@ -352,7 +352,7 @@ def test_overlay_mask_holes_show_the_answer_in_reading_order() -> None:
     )
     assert letters == "FARO"
     assert artifact.print_notes == ("Cut out the pale squares (the windows) of the dark mask card.",)
-    assert "Mask" in artifact.solver_text
+    assert "(# = a window in the mask card)" in artifact.solver_text
 
 
 def test_overlay_mask_is_deterministic() -> None:

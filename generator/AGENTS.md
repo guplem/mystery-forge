@@ -54,7 +54,7 @@ The skill's steps run the other verbs (doctor, setup, check, writer-tasks, packe
 ## Writing rules for every writer
 
 - **Write in the game language** (`config.json` → `language`). Ids stay in English kebab case.
-- **Use the fact registry.** Write `{{char:ana-ruiz}}`, `{{place:kitchen}}`, `{{event:theft.date}}` in document bodies instead of retyping names and dates. The toolkit fills them in, so every document agrees.
+- **Use the fact registry.** Write `{{char:ana-ruiz}}`, `{{place:kitchen}}`, `{{event:theft.date}}` in document bodies and header `fields` instead of retyping names and dates. The toolkit fills them in, so every document agrees.
 - **Quote, do not paraphrase.** A clue's `quote` is copied character for character from its document. The checks reject a quote that is not in the document.
 - **Every puzzle needs a reason to exist in the story.** A coded line in a logbook is a puzzle; "Puzzle 4: decode this" is a worksheet.
 - **Avoid the clichés** listed in `source/draw.json` (`cliches`): the overused names, phrases, and plots.

@@ -142,16 +142,16 @@ def test_pigpen_draws_the_grid_and_x_shapes_with_dots() -> None:
     assert bodies["S"].count("<polyline") == 1
     assert bodies["W"].count("<circle") == 1
     assert artifact.solver_text == (
-        "Pigpen symbols: [pigpen box: bottom right] [pigpen box: bottom right, dot] / [pigpen V: opening up] "
-        "[pigpen V: opening up, dot] / [pigpen box: top bottom right, dot] [pigpen box: top left] "
-        "[pigpen box: bottom left, dot] [pigpen box: bottom left, dot]"
+        "Symbols: [box: bottom right] [box: bottom right, dot] / [V: opening up] "
+        "[V: opening up, dot] / [box: top bottom right, dot] [box: top left] "
+        "[box: bottom left, dot] [box: bottom left, dot]"
     )
 
 
 def test_pigpen_key_lists_every_letter_in_the_solver_text() -> None:
     artifact: Artifact = build("pigpen-cipher", {"include_key": "true"}, make_context())
-    assert "\nKey: A = [pigpen box: bottom right], B = [pigpen box: bottom left right]," in artifact.solver_text
-    assert artifact.solver_text.endswith("Z = [pigpen V: opening down, dot]")
+    assert "\nKey: A = [box: bottom right], B = [box: bottom left right]," in artifact.solver_text
+    assert artifact.solver_text.endswith("Z = [V: opening down, dot]")
 
 
 # braille
@@ -164,15 +164,14 @@ def test_braille_fills_the_dots_of_each_letter_and_outlines_the_rest() -> None:
     assert bodies["A"].count("<circle") == 6
     assert bodies["Z"].count('fill="currentColor"') == 4
     assert artifact.solver_text == (
-        "Braille cells: [braille dots 1] [braille dots 1-3-5-6] / [braille dots 1-3-4] [braille dots 2-4] "
-        "[braille dots 1-2-3] [braille dots 1-2-3]"
+        "Symbols: [dots 1] [dots 1-3-5-6] / [dots 1-3-4] [dots 2-4] [dots 1-2-3] [dots 1-2-3]"
     )
 
 
 def test_braille_key_lists_every_letter_in_the_solver_text() -> None:
     artifact: Artifact = build("braille", {"include_key": True}, make_context())
-    assert "\nKey: A = [braille dots 1], B = [braille dots 1-2]," in artifact.solver_text
-    assert artifact.solver_text.endswith("Z = [braille dots 1-3-5-6]")
+    assert "\nKey: A = [dots 1], B = [dots 1-2]," in artifact.solver_text
+    assert artifact.solver_text.endswith("Z = [dots 1-3-5-6]")
 
 
 # symbol-substitution

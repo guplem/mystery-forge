@@ -183,7 +183,14 @@ def test_judge_reports_failing_items_with_their_files(game_dir: Path, monkeypatc
     by_code = {item["code"]: item for item in judged["failing_items"]}
     assert by_code["A1"]["files"] == ["puzzles/P1.yaml", "documents/D2.md"]
     assert by_code["deduction"]["name"] == "deduction"
-    assert by_code["deduction"]["files"] == ["story.yaml", "documents/D1.md", "documents/D5.md", "images/"]
+    # The plan's must_contain repeats the clue quotes, so the deduction fixer changes both together.
+    assert by_code["deduction"]["files"] == [
+        "story.yaml",
+        "plan.yaml",
+        "documents/D1.md",
+        "documents/D5.md",
+        "images/",
+    ]
     assert "who" not in by_code
     assert "why" not in by_code
     assert by_code["deduction"]["verdict"] == "too_hard"

@@ -66,10 +66,10 @@ def build_caesar(params: CaesarParams, context: MechanicContext) -> Artifact:
     ciphertext: str = shift_letters(plaintext_for(params.plaintext, context, keep_punctuation=True), params.shift)
     key: str = f"A = {ALPHABET[params.shift]}"
     if not params.show_shift:
-        return Artifact(html=cipher_html("caesar-cipher", ciphertext), solver_text=f"Ciphertext: {ciphertext}")
+        return Artifact(html=cipher_html("caesar-cipher", ciphertext), solver_text=ciphertext)
     return Artifact(
         html=cipher_html("caesar-cipher", ciphertext, f'<p class="mf-cipher-key">{key}</p>'),
-        solver_text=f"Ciphertext: {ciphertext}\nKey: {key}",
+        solver_text=f"{ciphertext}\n{key}",
     )
 
 
@@ -91,7 +91,7 @@ def atbash_letters(text: str) -> str:
 
 def build_atbash(params: PlaintextOnlyParams, context: MechanicContext) -> Artifact:
     ciphertext: str = atbash_letters(plaintext_for(params.plaintext, context, keep_punctuation=True))
-    return Artifact(html=cipher_html("atbash-cipher", ciphertext), solver_text=f"Ciphertext: {ciphertext}")
+    return Artifact(html=cipher_html("atbash-cipher", ciphertext), solver_text=ciphertext)
 
 
 def decode_atbash(rendered: RenderedArtifact, params: PlaintextOnlyParams, context: MechanicContext) -> str:
@@ -120,7 +120,7 @@ def build_a1z26(params: PlaintextOnlyParams, context: MechanicContext) -> Artifa
     plaintext: str = plaintext_for(params.plaintext, context, keep_punctuation=False)
     require_no_digits(plaintext, "A1Z26")
     ciphertext: str = encode_tokens(plaintext, A1Z26_NUMBERS, "-")
-    return Artifact(html=cipher_html("a1z26-cipher", ciphertext), solver_text=f"Ciphertext: {ciphertext}")
+    return Artifact(html=cipher_html("a1z26-cipher", ciphertext), solver_text=ciphertext)
 
 
 def decode_a1z26(rendered: RenderedArtifact, params: PlaintextOnlyParams, context: MechanicContext) -> str:
@@ -166,7 +166,7 @@ def vigenere_letters(text: str, shifts: list[int], direction: int) -> str:
 def build_vigenere(params: VigenereParams, context: MechanicContext) -> Artifact:
     plaintext: str = plaintext_for(params.plaintext, context, keep_punctuation=True)
     ciphertext: str = vigenere_letters(plaintext, keyword_shifts(params.keyword), 1)
-    return Artifact(html=cipher_html("vigenere-cipher", ciphertext), solver_text=f"Ciphertext: {ciphertext}")
+    return Artifact(html=cipher_html("vigenere-cipher", ciphertext), solver_text=ciphertext)
 
 
 def decode_vigenere(rendered: RenderedArtifact, params: VigenereParams, context: MechanicContext) -> str:
@@ -198,13 +198,12 @@ def morse_chart_html() -> str:
 
 def build_morse(params: MorseParams, context: MechanicContext) -> Artifact:
     ciphertext: str = encode_tokens(plaintext_for(params.plaintext, context, keep_punctuation=False), MORSE_CODES, " ")
-    solver_text: str = f"Morse code: {ciphertext}"
     if not params.include_reference_chart:
-        return Artifact(html=cipher_html("morse-code", ciphertext), solver_text=solver_text)
+        return Artifact(html=cipher_html("morse-code", ciphertext), solver_text=ciphertext)
     chart_text: str = ", ".join(f"{character} {code}" for character, code in MORSE_CODES.items())
     return Artifact(
         html=cipher_html("morse-code", ciphertext, morse_chart_html()),
-        solver_text=f"{solver_text}\nReference chart: {chart_text}",
+        solver_text=f"{ciphertext}\n\n{chart_text}",
     )
 
 
@@ -249,7 +248,7 @@ def build_phone_keypad(params: PhoneKeypadParams, context: MechanicContext) -> A
     plaintext: str = plaintext_for(params.plaintext, context, keep_punctuation=False)
     require_no_digits(plaintext, "the phone keypad")
     ciphertext: str = encode_tokens(plaintext, presses_for(params.style), "-")
-    return Artifact(html=cipher_html("phone-keypad", ciphertext), solver_text=f"Phone keypad code: {ciphertext}")
+    return Artifact(html=cipher_html("phone-keypad", ciphertext), solver_text=ciphertext)
 
 
 def decode_phone_keypad(rendered: RenderedArtifact, params: PhoneKeypadParams, context: MechanicContext) -> str:
@@ -280,14 +279,14 @@ def build_nato(params: NatoParams, context: MechanicContext) -> Artifact:
     plaintext: str = plaintext_for(params.plaintext, context, keep_punctuation=False)
     if not params.scramble:
         ciphertext: str = encode_tokens(plaintext, NATO_WORDS, " ")
-        return Artifact(html=cipher_html("nato-alphabet", ciphertext), solver_text=f"NATO alphabet: {ciphertext}")
+        return Artifact(html=cipher_html("nato-alphabet", ciphertext), solver_text=ciphertext)
     characters: str = plaintext.replace(" ", "")
     order: list[int] = cyclic_permutation(len(characters), random.Random(context.seed))
     entries: list[str] = [f"{index + 1}. {NATO_WORDS[characters[index]]}" for index in order]
     items: str = "".join(f'<li class="mf-nato-entry">{escape_text(entry)}</li>' for entry in entries)
     return Artifact(
         html=f'<div class="mf-cipher mf-nato-alphabet"><ul class="mf-nato-list">{items}</ul></div>',
-        solver_text="NATO words with their positions: " + "; ".join(entries),
+        solver_text="\n".join(entries),
     )
 
 
@@ -318,7 +317,8 @@ def build_mirror(params: MirrorParams, context: MechanicContext) -> Artifact:
     text: str = " ".join((context.answer if params.plaintext is None else params.plaintext).split())
     return Artifact(
         html=f'<div class="mf-cipher mf-mirror-writing"><p class="mf-mirror">{escape_text(text)}</p></div>',
-        solver_text=f"Mirror-reversed text (it reads correctly in a mirror): {text[::-1]}",
+        # A text has no mirrored glyphs, so the solver gets the reversed order and a note on how the letters look.
+        solver_text=f"{text[::-1]}\n(Each letter is drawn flipped from left to right.)",
     )
 
 
@@ -377,11 +377,11 @@ def build_cryptogram(params: CryptogramParams, context: MechanicContext) -> Arti
     cipher_for: dict[str, str] = substitution_alphabet(context.seed)
     ciphertext: str = "".join(cipher_for.get(character, character) for character in plaintext)
     if not revealed:
-        return Artifact(html=cipher_html("cryptogram", ciphertext), solver_text=f"Ciphertext: {ciphertext}")
+        return Artifact(html=cipher_html("cryptogram", ciphertext), solver_text=ciphertext)
     key: str = ", ".join(f"{cipher_for[letter]} = {letter}" for letter in revealed)
     return Artifact(
         html=cipher_html("cryptogram", ciphertext, f'<p class="mf-cipher-key">{key}</p>'),
-        solver_text=f"Ciphertext: {ciphertext}\nKnown letters: {key}",
+        solver_text=f"{ciphertext}\n{key}",
     )
 
 

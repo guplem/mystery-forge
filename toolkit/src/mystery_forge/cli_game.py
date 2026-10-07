@@ -392,7 +392,7 @@ def failing_panel_items(
                 DEDUCTION_KEY,
                 DEDUCTION_KEY,
                 [*failing_questions, *failing_story_only][0],
-                ["story.yaml", *group_files(DOCUMENTS_GROUP, owners)],
+                ["story.yaml", PLAN_FILE, *group_files(DOCUMENTS_GROUP, owners)],
                 {
                     "questions": [panel_item_notes(verdict, players) for verdict in failing_questions],
                     "puzzles_not_needed": [panel_item_notes(verdict, story_only) for verdict in failing_story_only],

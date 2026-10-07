@@ -9,6 +9,7 @@ An LLM writes the game. Long prose inside one big JSON file is hard for an LLM t
 - A game work folder is `generator/games/<date>-<slug>/`. Its `source/` folder holds the files that agents write, and the toolkit writes the rest.
   - `config.json` and `brief.json`: the normalized user config and the derived numbers. The toolkit writes both.
   - `story.yaml`: the fact registry (characters, locations, objects, timeline events), the truth, the deduction, the intro, and the epilogues.
+  - `plan.yaml`: the puzzle plan. It names the documents that each writer owns and the sentences (`must_contain`) that those documents must keep. `forge check` compares the written game with it.
   - `flow.yaml`: the stages (envelopes) in order and what opens each one.
   - `puzzles/<id>.yaml`: one puzzle each, with its answer, its mechanic parameters, its clues, its solution steps, and its hints.
   - `documents/<id>.md`: one player document each. Front matter holds the metadata; the body is Markdown with a small fixed set of directives.

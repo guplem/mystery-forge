@@ -100,7 +100,7 @@ def build_anagram(params: AnagramParams, context: MechanicContext) -> Artifact:
             fix_hint="Shuffle the letters so that the answer does not show.",
         )
     spans: str = "".join(f'<span class="mf-tile">{escape_text(tile)}</span>' for tile in tiles)
-    return Artifact(html=f'<div class="mf-anagram">{spans}</div>', solver_text=f"Letter tiles: {' '.join(tiles)}")
+    return Artifact(html=f'<div class="mf-anagram">{spans}</div>', solver_text=" ".join(tiles))
 
 
 def decode_anagram(rendered: RenderedArtifact, params: AnagramParams, context: MechanicContext) -> str:

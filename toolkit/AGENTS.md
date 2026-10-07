@@ -22,11 +22,11 @@ The Python package `mystery_forge` and its CLI `forge`. It loads configs, builds
 | `game.py`                | `Game`: the assembled, validated model that `game.json` holds.                                                         |
 | `assemble.py`            | Load the source, build each puzzle, render each document body, and return `Game` plus findings.                        |
 | `story_checks.py`        | Checks of `story.yaml` alone, before any puzzle exists.                                                                |
-| `plan.py`                | The puzzle plan model (`plan.yaml`) and its checks: ownership, graph, mechanics, variety, budget.                      |
+| `plan.py`                | The puzzle plan (`plan.yaml`) and its checks: ownership, graph, mechanics, variety, budget, written-game drift.        |
 | `checks/`                | The whole-game checks, one module per rule family; `runner.py` runs them.                                              |
 | `fix_groups.py`          | Group findings by the writer that owns their files, for parallel fixer subagents.                                      |
-| `panel/`                 | Solver packets per stage, the guesser packet, and the judge with the panel thresholds.                                 |
-| `verification.py`        | Content hashes per puzzle and the ledger that tells fresh checks from stale ones.                                      |
+| `panel/`                 | Solver packets per stage, the story-only packet, the guesser packet, and the judge with the panel thresholds.          |
+| `verification.py`        | Content hashes per puzzle, and the ledger that tells fresh checks from stale ones and the panel stages to run.         |
 | `render/`                | HTML and PDF outputs: materials, manual, hints, solutions, companion. `game_renderer.py` is the entry point.           |
 | `render/layout.py`       | Page height estimates and the split of a long text, so that toolkit-built lists flow over as many sheets as they need. |
 | `render_checks.py`       | Checks of the rendered pages: the round-trip decode of each artifact, and answer leaks on a printed sheet.             |

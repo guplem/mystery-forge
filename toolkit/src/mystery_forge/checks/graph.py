@@ -1,7 +1,8 @@
 """The puzzle graph: stages, dependencies, stage openings, reachability, the final puzzle, and artifact placement.
 
 Players move through the game along this graph. A puzzle that depends on an unknown or a later puzzle, a stage that
-never opens, or an artifact that no document prints makes the printed game impossible to finish.
+never opens, an artifact that no document prints, or a text that an artifact needs and no document prints makes the
+printed game impossible to finish.
 
 The rules that the plan step shares (`plan.py`) are pure functions over `PuzzleNode`, so one definition serves both.
 """

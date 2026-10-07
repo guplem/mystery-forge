@@ -111,13 +111,13 @@ def pigpen_box(position: int, with_dot: bool) -> Glyph:
         if present
     ]
     body: str = "".join(BOX_SIDES[side] for side in sides) + (dot(20, 20) if with_dot else "")
-    return Glyph(body, "0 0 40 40", f"[pigpen box: {' '.join(sides)}{', dot' if with_dot else ''}]")
+    return Glyph(body, "0 0 40 40", f"[box: {' '.join(sides)}{', dot' if with_dot else ''}]")
 
 
 def pigpen_x(part: int, with_dot: bool) -> Glyph:
     points, opening, (dot_x, dot_y) = X_PARTS[part]
     body: str = f'<polyline points="{points}"/>' + (dot(dot_x, dot_y) if with_dot else "")
-    return Glyph(body, "0 0 40 40", f"[pigpen V: opening {opening}{', dot' if with_dot else ''}]")
+    return Glyph(body, "0 0 40 40", f"[V: opening {opening}{', dot' if with_dot else ''}]")
 
 
 PIGPEN_GLYPHS: dict[str, Glyph] = {
@@ -141,7 +141,7 @@ def build_pigpen(params: PigpenParams, context: MechanicContext) -> Artifact:
     plaintext: str = symbol_plaintext(params.plaintext, context, "the pigpen cipher")
     return Artifact(
         html=message_html("pigpen-cipher", plaintext, PIGPEN_GLYPHS, params.include_key),
-        solver_text=message_solver_text("Pigpen symbols", plaintext, PIGPEN_GLYPHS, params.include_key),
+        solver_text=message_solver_text("Symbols", plaintext, PIGPEN_GLYPHS, params.include_key),
     )
 
 
@@ -165,7 +165,7 @@ def braille_cell(dots: str) -> Glyph:
         dot(x, y) if number in dots else f'<circle cx="{x}" cy="{y}" r="3" stroke-width="1"/>'
         for number, (x, y) in BRAILLE_DOT_CENTERS.items()
     )
-    return Glyph(body, "0 0 30 44", f"[braille dots {'-'.join(dots)}]")
+    return Glyph(body, "0 0 30 44", f"[dots {'-'.join(dots)}]")
 
 
 BRAILLE_GLYPHS: dict[str, Glyph] = {letter: braille_cell(dots) for letter, dots in BRAILLE_DOTS.items()}
@@ -184,7 +184,7 @@ def build_braille(params: BrailleParams, context: MechanicContext) -> Artifact:
     plaintext: str = symbol_plaintext(params.plaintext, context, "Braille")
     return Artifact(
         html=message_html("braille", plaintext, BRAILLE_GLYPHS, params.include_key),
-        solver_text=message_solver_text("Braille cells", plaintext, BRAILLE_GLYPHS, params.include_key),
+        solver_text=message_solver_text("Symbols", plaintext, BRAILLE_GLYPHS, params.include_key),
     )
 
 
