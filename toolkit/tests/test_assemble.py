@@ -179,3 +179,21 @@ def test_the_game_json_round_trips(game_dir: Path) -> None:
     assert result.game is not None
     dumped = json.loads(result.game.model_dump_json())
     assert Game.model_validate(dumped) == result.game
+
+
+def test_references_in_header_fields_are_resolved(game_dir: Path) -> None:
+    path = game_dir / "source" / "documents" / "D1.md"
+    text = path.read_text(encoding="utf-8").replace("sender: Harbour Master E. Lowe", "sender: '{{char:tom-bell}}'")
+    path.write_text(text, encoding="utf-8")
+    result = assemble_game(game_dir, FAKE_IMPLEMENTATIONS)
+    assert result.findings == []
+    assert result.game is not None
+    assert result.game.documents[0].meta.fields["sender"] == "Tom Bell"
+
+
+def test_an_unknown_reference_in_a_header_field_is_a_finding(game_dir: Path) -> None:
+    path = game_dir / "source" / "documents" / "D1.md"
+    text = path.read_text(encoding="utf-8").replace("sender: Harbour Master E. Lowe", "sender: '{{char:nobody}}'")
+    path.write_text(text, encoding="utf-8")
+    result = assemble_game(game_dir, FAKE_IMPLEMENTATIONS)
+    assert rules(result.findings) == ["reference.unknown"]

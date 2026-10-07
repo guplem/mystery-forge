@@ -78,6 +78,15 @@ def registry_spellings(game: Game) -> dict[str, str]:
 def near_name_findings(game: Game) -> list[Finding]:
     spellings: dict[str, str] = registry_spellings(game)
     comparable: list[str] = [name for name in spellings if allowed_distance(name) > 0]
+    # A first name or a surname alone is a correct short form of a registry name, never a misspelling.
+    name_parts: set[str] = {part for name in spellings for part in name.split()}
+    # A capitalized word that the documents also write in lower case is a common word at a sentence start.
+    lower_words: set[str] = {
+        match.group(0)
+        for document in game.documents
+        for match in WORD_PATTERN.finditer(document.text)
+        if match.group(0).islower()
+    }
     word_counts: list[int] = sorted({len(name.split()) for name in comparable})
     findings: list[Finding] = []
     for document in game.documents:
@@ -87,7 +96,7 @@ def near_name_findings(game: Game) -> list[Finding]:
                 for start in range(len(run) - count + 1):
                     candidate: str = " ".join(run[start : start + count])
                     folded: str = candidate.casefold()
-                    if folded in spellings or folded in reported:
+                    if folded in spellings or folded in reported or is_known_word(folded, name_parts, lower_words):
                         continue
                     closest: str | None = closest_name(folded, comparable)
                     if closest is None:
@@ -105,6 +114,11 @@ def near_name_findings(game: Game) -> list[Finding]:
                         )
                     )
     return findings
+
+
+def is_known_word(folded: str, name_parts: set[str], lower_words: set[str]) -> bool:
+    words: list[str] = folded.split()
+    return all(word in name_parts for word in words) or (len(words) == 1 and folded in lower_words)
 
 
 def closest_name(folded: str, names: list[str]) -> str | None:
