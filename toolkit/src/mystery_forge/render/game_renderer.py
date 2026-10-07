@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict
 
 from mystery_forge.findings import Finding
 from mystery_forge.game import Game
+from mystery_forge.i18n import LANGUAGES
 from mystery_forge.mechanics.base import RenderedArtifact
 from mystery_forge.render.hints import hint_sheets
 from mystery_forge.render.html import render_output_html
@@ -26,11 +27,13 @@ from mystery_forge.render.pdf import (
     rendered_artifacts,
 )
 from mystery_forge.render.sheets import (
-    OUTPUT_FILES,
+    OUTPUT_HTML_FILES,
+    OutputFileNames,
     OutputId,
     OutputPlan,
     number_sheets,
     number_sheets_by_stage,
+    output_file_names,
 )
 from mystery_forge.render.solutions import solution_sheets
 from mystery_forge.render.themes import StyleSettings, style_settings
@@ -109,11 +112,17 @@ def preview_paths(out_dir: Path, plan: OutputPlan) -> list[Path]:
 
 
 def remove_stale_outputs(out_dir: Path) -> None:
-    """Delete the previews and the output files of an earlier render, so that a shorter render leaves no old page."""
+    """Delete the previews and the output files of an earlier render, so that a shorter render leaves no old page.
+
+    The game language may have changed since that render, so the PDF and companion names of every language go.
+    """
     shutil.rmtree(out_dir / PREVIEW_FOLDER, ignore_errors=True)
-    for files in OUTPUT_FILES.values():
-        (out_dir / files.html).unlink(missing_ok=True)
-        (out_dir / files.pdf).unlink(missing_ok=True)
+    for html_file in OUTPUT_HTML_FILES.values():
+        (out_dir / html_file).unlink(missing_ok=True)
+    for language in LANGUAGES:
+        names: OutputFileNames = output_file_names(language)
+        for name in (*names.pdfs.values(), names.companion):
+            (out_dir / name).unlink(missing_ok=True)
 
 
 def render_game(
@@ -125,6 +134,7 @@ def render_game(
     render again, up to `MAX_PASSES` times. Only an output whose HTML changed goes back to the browser.
     """
     settings: StyleSettings = style_settings(game, theme_override)
+    pdf_files: dict[OutputId, str] = output_file_names(game.config.language).pdfs
     out_dir.mkdir(parents=True, exist_ok=True)
     remove_stale_outputs(out_dir)
     levels: dict[str, int] = {}
@@ -142,7 +152,8 @@ def render_game(
         groups: set[str] = set()
         for plan in plans:
             if plan.id not in printed or printed[plan.id][0] != pages[plan.id]:
-                probe = browser.print_output(pages[plan.id], out_dir / plan.files.pdf, preview_paths(out_dir, plan))
+                pdf_path: Path = out_dir / pdf_files[plan.id]
+                probe = browser.print_output(pages[plan.id], pdf_path, preview_paths(out_dir, plan))
                 printed[plan.id] = (pages[plan.id], probe)
             groups |= groups_to_tighten(plan, printed[plan.id][1])
         if not groups or pass_number >= MAX_PASSES:
@@ -160,24 +171,25 @@ def written_report(
     probes: dict[OutputId, PageProbe],
 ) -> RenderReport:
     """Write the final HTML files and gather the report from the last probe of each output."""
+    pdf_files: dict[OutputId, str] = output_file_names(game.config.language).pdfs
     files: list[Path] = []
     previews: list[Path] = []
     findings: list[Finding] = []
     artifacts: dict[str, RenderedArtifact] = {}
     outputs: dict[OutputId, RenderedOutput] = {}
     for plan in plans:
-        html_path: Path = out_dir / plan.files.html
+        html_path: Path = out_dir / plan.html_file
         html_path.write_text(pages[plan.id], encoding="utf-8")
         files.append(html_path)
         pdf_path: Path | None = None
         texts: list[str] = []
         probe: PageProbe | None = probes.get(plan.id)
         if probe is not None:
-            pdf_path = out_dir / plan.files.pdf
+            pdf_path = out_dir / pdf_files[plan.id]
             files.append(pdf_path)
             previews.extend(preview_paths(out_dir, plan))
             texts = [sheet.text for sheet in probe.sheets]
-            findings.extend(overflow_findings(probe, plan.files.html, sheet_source_files(game, plan)))
+            findings.extend(overflow_findings(probe, plan.html_file, sheet_source_files(game, plan)))
             if plan.id == "materials":
                 artifacts = rendered_artifacts(probe)
         outputs[plan.id] = RenderedOutput(

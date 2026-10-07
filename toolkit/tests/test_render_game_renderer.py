@@ -145,3 +145,28 @@ def test_a_new_render_removes_the_previews_and_outputs_of_the_last_one(tmp_path:
     assert not (tmp_path / "3 - Hints.pdf").exists()
     assert not (tmp_path / "4 - Solutions.pdf").exists()
     assert (tmp_path / "game.json").read_text(encoding="utf-8") == "old"
+
+
+def test_a_spanish_game_prints_pdfs_with_spanish_names(tmp_path: Path) -> None:
+    browser = FakeSheetBrowser()
+    report = render_game(configured(golden_game(), {"language": "es"}), tmp_path, browser)
+    assert browser.calls == [
+        "1 - EMPIEZA AQUÍ (manual).pdf",
+        "2 - IMPRIME ESTO (materiales del juego).pdf",
+        "3 - Pistas.pdf",
+        "4 - Soluciones.pdf",
+    ]
+    assert report.outputs["manual"].pdf_file == tmp_path / "1 - EMPIEZA AQUÍ (manual).pdf"
+    assert report.outputs["manual"].html_file == tmp_path / "manual.html"
+
+
+def test_a_new_render_removes_the_outputs_of_an_earlier_language(tmp_path: Path) -> None:
+    for name in ("1 - START HERE (manual).pdf", "Game companion.html", "3 - Pistas.pdf", "Compañero de juego.html"):
+        (tmp_path / name).write_text("old", encoding="utf-8")
+    render_game(configured(golden_game(), {"language": "es"}), tmp_path, None)
+    assert sorted(path.name for path in tmp_path.iterdir()) == [
+        "hints.html",
+        "manual.html",
+        "materials.html",
+        "solutions.html",
+    ]

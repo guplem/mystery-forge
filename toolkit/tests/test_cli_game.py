@@ -10,6 +10,7 @@ import yaml
 
 from mystery_forge import cli
 from mystery_forge.paths import SystemFolders
+from mystery_forge.render.sheets import OutputFileNames, output_file_names
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
 
@@ -140,13 +141,7 @@ def test_packets_judge_status_render_and_export(
     rendered = run(["render", "--game", str(game_dir), "--html-only"])
     assert rendered["ok"] is True
     assert (game_dir / "render" / "Game companion.html").is_file()
-    for name in (
-        "1 - START HERE (manual).pdf",
-        "2 - PRINT THIS (game materials).pdf",
-        "3 - Hints.pdf",
-        "4 - Solutions.pdf",
-    ):
-        (game_dir / "render" / name).write_bytes(b"%PDF")
+    make_fake_pdfs(game_dir)
     exported = run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out")])
     assert exported["ok"] is True
     assert Path(exported["folder"]).name == "The Lens of Gull Rock"
@@ -244,6 +239,23 @@ def test_render_without_a_companion_page(game_dir: Path) -> None:
     result = run(["render", "--game", str(game_dir), "--html-only"])
     assert result["ok"] is True
     assert not (game_dir / "render" / "Game companion.html").exists()
+
+
+def test_render_and_export_name_the_files_in_the_game_language(game_dir: Path, tmp_path: Path) -> None:
+    set_config(game_dir, language="es")
+    assert run(["render", "--game", str(game_dir), "--html-only"])["ok"] is True
+    assert (game_dir / "render" / "Compañero de juego.html").is_file()
+    assert not (game_dir / "render" / "Game companion.html").exists()
+    make_fake_pdfs(game_dir, output_file_names("es"))
+    exported = run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out"), "--force"])
+    assert exported["ok"] is True
+    assert exported["files"] == [
+        "1 - EMPIEZA AQUÍ (manual).pdf",
+        "2 - IMPRIME ESTO (materiales del juego).pdf",
+        "Compañero de juego.html",
+        "SOLO ANFITRIÓN - spoilers/3 - Pistas.pdf",
+        "SOLO ANFITRIÓN - spoilers/4 - Soluciones.pdf",
+    ]
 
 
 def test_full_check_records_a_pass_for_every_code_in_the_ledger(game_dir: Path) -> None:
@@ -400,14 +412,9 @@ def test_export_refuses_a_game_that_verification_blocks(game_dir: Path, tmp_path
     assert forced["ok"] is True
 
 
-def make_fake_pdfs(game_dir: Path) -> None:
+def make_fake_pdfs(game_dir: Path, names: OutputFileNames | None = None) -> None:
     (game_dir / "render").mkdir(exist_ok=True)
-    for name in (
-        "1 - START HERE (manual).pdf",
-        "2 - PRINT THIS (game materials).pdf",
-        "3 - Hints.pdf",
-        "4 - Solutions.pdf",
-    ):
+    for name in (names or output_file_names("en")).pdfs.values():
         (game_dir / "render" / name).write_bytes(b"%PDF")
 
 

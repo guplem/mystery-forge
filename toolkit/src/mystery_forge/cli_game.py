@@ -51,8 +51,8 @@ from mystery_forge.paths import SystemFolders
 from mystery_forge.plan import PLAN_FILE, Plan, check_plan_folder
 from mystery_forge.render.companion_data import build_companion_html
 from mystery_forge.render.game_renderer import PREVIEW_FOLDER, RenderReport, render_game
-from mystery_forge.render.manual import COMPANION_FILE
 from mystery_forge.render.pdf import BrowserNotFoundError, open_sheet_browser
+from mystery_forge.render.sheets import output_file_names
 from mystery_forge.render_checks import check_rendered
 from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
 from mystery_forge.story_checks import check_story_folder
@@ -463,12 +463,10 @@ def render_and_report(
     except (BrowserNotFoundError, PlaywrightError) as error:
         emit(output, {"ok": False, "message": str(error), "fix": BROWSER_FIX, "fix_groups": [], **capped_findings([])})
         return 0
-    companion: Path = render_dir / COMPANION_FILE
+    # The render removed the companion page of any earlier render, because export copies whatever the folder holds.
     if game.config.assistance.companion_page:
+        companion: Path = render_dir / output_file_names(game.config.language).companion
         companion.write_text(build_companion_html(game), encoding="utf-8")
-    else:
-        # An earlier render may have written it; export copies whatever the folder holds.
-        companion.unlink(missing_ok=True)
     # Without a browser nothing was read back from the pages, so only the HTML was written and nothing can be checked.
     rendered_findings: list[Finding] = [] if html_only else check_rendered(game, report, all_implementations())
     findings: list[Finding] = options.selected([*report.findings, *rendered_findings])
@@ -504,7 +502,9 @@ def command_export(arguments: argparse.Namespace, output: TextIO, folders: Syste
         return 0
     root: Path = Path(arguments.to) if arguments.to else output_root(game.config.output.folder, folders.desktop)
     try:
-        result: ExportResult = export_game(game_dir / RENDER_FOLDER, root, game.story.title)
+        result: ExportResult = export_game(
+            game_dir / RENDER_FOLDER, root, game.story.title, output_file_names(game.config.language)
+        )
     except ExportError as error:
         emit(output, {"ok": False, "message": str(error)})
         return 0
