@@ -137,6 +137,11 @@ def test_the_language_switch_changes_the_labels(opened: OpenedPage) -> None:
     assert page.inner_text("#download-config") == "Descargar configuración"
     assert page.get_attribute("html", "lang") == "es"
     assert page.get_attribute('[data-ui-language="es"]', "aria-pressed") == "true"
+    page.click('[data-ui-language="ca"]')
+    assert page.inner_text("#section-players-title") == "Qui juga"
+    assert page.get_attribute("html", "lang") == "ca"
+    assert page.get_attribute('[data-ui-language="ca"]', "aria-pressed") == "true"
+    assert page.get_attribute('[data-ui-language="es"]', "aria-pressed") == "false"
     page.click('[data-ui-language="en"]')
     assert page.inner_text("#section-players-title") == "Who is playing"
     assert opened.errors == []
@@ -202,16 +207,19 @@ def count_text_lines(page: Page, selector: str) -> int:
 
 
 @pytest.mark.parametrize("viewport", [ViewportSize(width=1366, height=900), ViewportSize(width=390, height=844)])
-def test_the_spanish_actions_fit_on_one_line(browser: Browser, viewport: ViewportSize) -> None:
-    spanish = open_page(browser, locale="es-ES", viewport=viewport)
+@pytest.mark.parametrize(("locale", "puzzles_word"), [("es-ES", "enigmas"), ("ca-ES", "enigmes")])
+def test_the_spanish_and_catalan_actions_fit_on_one_line(
+    browser: Browser, viewport: ViewportSize, locale: str, puzzles_word: str
+) -> None:
+    opened = open_page(browser, locale=locale, viewport=viewport)
     try:
-        page: Page = spanish.page
+        page: Page = opened.page
         page.click("#prompt-panel > summary")
         for selector in ("#download-config span", ".file-button span", "#reset-config span", "#copy-prompt span"):
             assert count_text_lines(page, selector) == 1, selector
-        assert re.fullmatch(r"\d+ enigmas · 1 h 30 min", page.inner_text("#mobile-summary-numbers"))
+        assert re.fullmatch(rf"\d+ {puzzles_word} · 1 h 30 min", page.inner_text("#mobile-summary-numbers"))
     finally:
-        spanish.page.context.close()
+        opened.page.context.close()
 
 
 def test_a_spanish_browser_opens_the_page_in_spanish_with_a4_paper(browser: Browser) -> None:
@@ -222,6 +230,17 @@ def test_a_spanish_browser_opens_the_page_in_spanish_with_a4_paper(browser: Brow
         assert spanish.page.input_value("#input-language") == "es"
     finally:
         spanish.page.context.close()
+
+
+def test_a_catalan_browser_opens_the_page_in_catalan_with_a4_paper(browser: Browser) -> None:
+    catalan = open_page(browser, locale="ca-ES")
+    try:
+        assert catalan.page.inner_text("#section-players-title") == "Qui juga"
+        assert catalan.page.get_attribute("html", "lang") == "ca"
+        assert catalan.page.is_checked("#input-equipment-paper-A4")
+        assert catalan.page.input_value("#input-language") == "ca"
+    finally:
+        catalan.page.context.close()
 
 
 def test_an_audience_preset_updates_the_fields(opened: OpenedPage) -> None:

@@ -88,7 +88,7 @@ interface MysteryForgeConfigEstimateApi {
 declare var MysteryForgeConfigEstimate: MysteryForgeConfigEstimateApi;
 
 /** The languages of the configurator page itself (not of the game). */
-type MysteryForgeUiLanguage = 'en' | 'es';
+type MysteryForgeUiLanguage = 'en' | 'es' | 'ca';
 
 interface MysteryForgeUiTextApi {
   UI_LANGUAGES: readonly MysteryForgeUiLanguage[];
