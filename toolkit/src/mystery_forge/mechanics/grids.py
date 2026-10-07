@@ -442,8 +442,8 @@ def build_grid_coordinates(params: GridCoordinatesParams, context: MechanicConte
     labelled_rows: list[str] = [f"{number} {' '.join(row)}" for number, row in enumerate(grid, start=1)]
     return Artifact(
         html=grid_table_html(grid, "mf-grid-coordinates", f' data-coordinates="{escape(" ".join(names))}"', True),
-        solver_text="\n".join(["  " + " ".join(FILL_LETTERS[: params.size]), *labelled_rows])
-        + f"\n\nCoordinates: {', '.join(names)}",
+        solver_text="\n".join(["  " + " ".join(FILL_LETTERS[: params.size]), *labelled_rows]),
+        needs_in_documents=tuple(names),
     )
 
 

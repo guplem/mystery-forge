@@ -2071,6 +2071,7 @@ mechanics:
     builder: grid-coordinates
     pitfalls:
       - A cell with 2 labels. One label per cell.
+      - The builder prints the grid only. Print the coordinate list in a document of the puzzle; the check names the coordinates when it is missing.
     hint_ladder:
       - Use the list on <document> with the map on <other document>.
       - Letters and numbers, like on a map.

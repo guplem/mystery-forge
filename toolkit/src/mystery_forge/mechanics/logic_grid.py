@@ -521,10 +521,9 @@ def build_logic_grid(params: LogicGridParams, context: MechanicContext) -> Artif
         *category_lines,
         *([] if order is None else [order]),
         "",
-        "Clues:",
         *(f"{number}. {sentence}" for number, sentence in enumerate(sentences, start=1)),
         "",
-        f"Question: {question}",
+        question,
     ]
     return Artifact(
         html=f'<div class="mf-logic-grid" data-clues="{escape(clues_json(clues, puzzle))}">'

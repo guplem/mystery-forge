@@ -199,7 +199,7 @@ def build_maze(params: MazeParams, context: MechanicContext) -> Artifact:
     letters: dict[Cell, str] = maze_letters(path, answer, params.size, params.distractors, rng)
     return Artifact(
         html=maze_svg(walls, letters),
-        solver_text="\n".join(["Enter at the top left. Leave at the bottom right.", *maze_ascii(walls, letters)]),
+        solver_text="\n".join(["  v", *maze_ascii(walls, letters), " " * (4 * (params.size - 1) + 2) + "v"]),
     )
 
 

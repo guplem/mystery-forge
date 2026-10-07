@@ -13,7 +13,7 @@ from typing import Literal
 
 from mystery_forge.answers import normalize_answer
 from mystery_forge.catalog import Mechanic
-from mystery_forge.checks.game_index import FLOW_FILE, id_number, puzzles_by_id, squash, stage_positions
+from mystery_forge.checks.game_index import FLOW_FILE, id_number, mentions, puzzles_by_id, squash, stage_positions
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledPuzzle, Game
 from mystery_forge.spec.documents import ARTIFACT_MARK
@@ -53,6 +53,7 @@ def check_graph(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
         *document_findings(game),
         *parallel_width_findings(game),
         *artifact_findings(game),
+        *needed_text_findings(game),
         *unused_dependency_findings(game, mechanics),
     ]
 
@@ -463,6 +464,40 @@ def artifact_findings(game: Game) -> list[Finding]:
                     fix_hint="Keep the artifact reference in one document only.",
                 )
             )
+    return findings
+
+
+def needed_text_findings(game: Game) -> list[Finding]:
+    """Report a text that a puzzle's material needs but does not print, when no document of its stage prints it.
+
+    The solver packet shows only the documents, so the panel cannot catch this: it sees the same gap as players.
+    """
+    positions: dict[str, int] = stage_positions(game)
+    findings: list[Finding] = []
+    for puzzle in game.puzzles:
+        if puzzle.artifact is None or not puzzle.artifact.needs_in_documents:
+            continue
+        limit: int = positions.get(puzzle.source.stage, len(positions))
+        available: str = "\n".join(
+            document.text for document in game.documents if positions.get(document.meta.stage, len(positions)) <= limit
+        )
+        missing: list[str] = [
+            needed for needed in puzzle.artifact.needs_in_documents if not mentions(available, squash(needed))
+        ]
+        if not missing:
+            continue
+        listed: str = ", ".join(f"'{needed}'" for needed in missing)
+        findings.append(
+            Finding(
+                severity="error",
+                rule="graph.needed_text_missing",
+                message=f"The material of {puzzle.source.id} needs {listed}, but no document that players have at "
+                f"stage {puzzle.source.stage} prints it.",
+                file=puzzle.file,
+                fix_hint="Print these texts in a document of this puzzle, in the story world (for example a list of "
+                "grid squares in a diary).",
+            )
+        )
     return findings
 
 

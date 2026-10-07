@@ -183,6 +183,21 @@ def test_an_empty_or_missing_artifact_needs_no_document() -> None:
     assert graph_findings(edit_document(no_artifact, "D2", body_html="")) == []
 
 
+def test_a_text_that_the_material_needs_must_be_in_a_document_of_its_stage() -> None:
+    artifact = golden_game().puzzles[0].artifact
+    assert artifact is not None
+    needs = artifact.model_copy(update={"needs_in_documents": ("G2", "B5", "C1")})
+    game: Game = edit_assembled_puzzle(golden_game(), "P1", artifact=needs)
+    game = edit_document(game, "D1", text="Dig at G2, then at c1.")
+    game = edit_document(game, "D4", text="And at B5.")
+    findings = only_rule(graph_findings(game), "graph.needed_text_missing")
+    assert [(finding.file, finding.severity) for finding in findings] == [("puzzles/P1.yaml", "error")]
+    assert "'B5'" in findings[0].message
+    assert "'G2'" not in findings[0].message
+    all_printed: Game = edit_document(game, "D1", text="Dig at G2, then at c1, then at B5.")
+    assert only_rule(graph_findings(all_printed), "graph.needed_text_missing") == []
+
+
 def test_a_dependency_whose_answer_the_puzzle_never_uses_is_a_warning() -> None:
     built: Game = edit_puzzle(golden_game(), "P3", mechanic="caesar-cipher")
     findings = graph_findings(built)
