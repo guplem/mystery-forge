@@ -1,4 +1,4 @@
-name: a verification is stale before export, so the panel runs again
+name: the document review finds a contradiction, and a fixer repairs it
 inputs:
   config: c.json
 scripts:
@@ -17,14 +17,10 @@ scripts:
       ["D2"], "relies_on": []}, {"name": "P2 maze", "id": "P2", "stage": "B", "mechanic": "maze", "documents": ["D3"], "relies_on":
       ["D1"]}]}'
   render:
-  - &id001
-    exit_code: 0
+  - exit_code: 0
     stdout: '{"ok": true, "report": "games/g/reports/render.json", "previews_dir": "games/g/render/previews", "fix_groups":
       []}'
-  - *id001
   status:
-  - exit_code: 0
-    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"]}'
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'
   export:
@@ -33,7 +29,7 @@ scripts:
       materials).pdf"]}'
 calls:
   story_check:
-  - &id002
+  - &id001
     status: succeeded
     outputs:
       ok: true
@@ -42,18 +38,17 @@ calls:
       rounds: 0
       report: r.json
   plan_check:
-  - *id002
+  - *id001
   game_check:
-  - *id002
+  - *id001
+  - *id001
   panel:
-  - &id003
-    status: succeeded
+  - status: succeeded
     outputs:
       ok: true
       failing: []
       failing_items: []
       report: p.json
-  - *id003
 answers:
   confirm_config:
   - choice: go
@@ -83,7 +78,11 @@ answers:
   review_plan:
   - findings: []
   review_documents:
-  - findings: []
+  - findings:
+    - severity: required
+      document: D4
+      problem: Wrong date.
+      fix: Use 14 March.
   write_story_documents:
   - documents:
     - documents/D1.md
@@ -105,6 +104,10 @@ answers:
     summary: A map and two stamps.
   visual_review:
   - findings: []
+  document_fix:
+  - changed_files:
+    - documents/D4.md
+    summary: Fixed the date.
 expect:
   path:
   - doctor
@@ -124,12 +127,11 @@ expect:
   - illustrate
   - game_check
   - review_documents
+  - document_fix
+  - game_check
   - panel
   - render
   - visual_review
-  - status
-  - panel
-  - render
   - status
   - export
   - done

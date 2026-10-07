@@ -12,17 +12,20 @@ Use the strongest check that each puzzle allows, in this order:
 2. **Code verifiers.** The agent writes the material; code checks a stated rule (an acrostic spells the answer, an anagram uses the same letters, the arithmetic gives the code).
 3. **The AI solver panel**, for puzzles that only a reader can check (riddles, deduction, observation). Solver subagents get the player view of one stage: the text of every document available there, the answers already found, and the answer formats. They do not get answers, hints, or mechanic names. Each solver returns its answers, the candidates that it considered, and evidence quotes.
 
+**Puzzles must matter.** The story has hidden clues: facts that no document prints, because a puzzle reveals them (`hidden: true`, `revealed_by`). At least two accusation questions need a hidden clue, and every planned puzzle has a job (it opens a stage, feeds another puzzle, is the final puzzle, or reveals a hidden clue). The puzzle-design reviewer checks each puzzle for an aha before any puzzle is written.
+
 Whole-game code checks run on every assembly: the puzzle graph, the evidence ledger (each clue quote is verbatim in its document, each solution step and hint cites clues), answer leaks, the hint ladder, the fact registry (near-duplicate names, nobody in two places at once), the deduction (each innocent suspect has an exclusion clue), variety by player action, the time and reading budgets, and the SVG images (valid, safe, small, and used).
 
 Panel rules:
 
-- 5 solvers (best quality) or 3 (fast draft) per stage, each with a different persona (literal, lateral, fast, skeptic, newcomer; a 10-year-old for kids' games). Pass needs this many correct answers with verified evidence: easy 4 of 5 (3 of 3), medium 3 of 5 (2 of 3), hard and expert 2 of 5 (1 of 3). With fewer than 3 valid solvers the verdict is `insufficient_solvers`.
+- 5 solvers (best quality) or 3 (fast draft) per stage, each with a different persona (literal, lateral, fast, skeptic, newcomer; a 10-year-old for kids' games). Pass needs this many correct answers with verified evidence: easy 3 of 5 (2 of 3), medium 3 of 5 (2 of 3), hard and expert 2 of 5 (1 of 3). With fewer than 3 valid solvers the verdict is `insufficient_solvers`.
 - A correct answer whose quotes are not in the packet counts as a guess, not a solve.
 - A wrong answer that 2 or more solvers share, or that a solver marks as "fits every clue" with verified quotes, makes the puzzle ambiguous. The fixer must exclude it with a clue or accept it as an equivalent variant.
 - When 3 or more solvers agree on the same wrong answer, the fixer checks the gold answer first.
 - One guesser gets only the premise and the answer formats. A correct guess marks the puzzle as guessable.
 - Each puzzle file holds a canary string. A solver answer that contains a canary read the source files, so it does not count.
-- When several verdicts apply, the first of this order wins: `insufficient_solvers`, `gold_suspect`, `ambiguous`, `guessable`, `too_hard`, `pass`. The accusation questions are judged like medium puzzles.
+- Each solver also names the insight that unlocked a puzzle and says whether the material stated every step. When at least half of the solvers say it did, the puzzle is `trivial` (a worksheet, not a puzzle); the first puzzle of the game is exempt.
+- When several verdicts apply, the first of this order wins: `insufficient_solvers`, `gold_suspect`, `ambiguous`, `guessable`, `trivial`, `too_hard`, `pass`. The accusation questions are judged like medium puzzles.
 - Every check result stores a content hash of what it checked (`reports/verification.json`). The skill runs the panel again before export when a result is stale.
 
 **Rejected alternative:** a panel vote on every puzzle, with no builders. Same-model solvers make correlated mistakes, and LLMs solve ciphers that humans find hard while they fail at folds and overlays that humans find easy. The panel finds ambiguity; it does not measure human difficulty.

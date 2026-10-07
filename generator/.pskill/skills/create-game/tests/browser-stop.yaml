@@ -18,7 +18,8 @@ scripts:
       ["D1"]}]}'
   render:
   - exit_code: 0
-    stdout: '{"ok": true, "previews_dir": "games/g/render/previews", "fix_groups": []}'
+    stdout: '{"ok": true, "report": "games/g/reports/render.json", "previews_dir": "games/g/render/previews", "fix_groups":
+      []}'
   status:
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'

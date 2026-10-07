@@ -1,4 +1,4 @@
-name: a verification is stale before export, so the panel runs again
+name: a late fix leaves the checks stale, so the full check and the panel run again
 inputs:
   config: c.json
 scripts:
@@ -24,7 +24,7 @@ scripts:
   - *id001
   status:
   - exit_code: 0
-    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"]}'
+    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": ["A1"], "panel_stale": ["A1"]}'
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'
   export:
@@ -44,6 +44,7 @@ calls:
   plan_check:
   - *id002
   game_check:
+  - *id002
   - *id002
   panel:
   - &id003
@@ -128,6 +129,7 @@ expect:
   - render
   - visual_review
   - status
+  - game_check
   - panel
   - render
   - status

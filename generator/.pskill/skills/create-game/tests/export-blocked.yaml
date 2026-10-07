@@ -1,4 +1,4 @@
-name: a verification is stale before export, so the panel runs again
+name: the export finds a blocker, so the game exports with warnings
 inputs:
   config: c.json
 scripts:
@@ -17,23 +17,22 @@ scripts:
       ["D2"], "relies_on": []}, {"name": "P2 maze", "id": "P2", "stage": "B", "mechanic": "maze", "documents": ["D3"], "relies_on":
       ["D1"]}]}'
   render:
-  - &id001
-    exit_code: 0
+  - exit_code: 0
     stdout: '{"ok": true, "report": "games/g/reports/render.json", "previews_dir": "games/g/render/previews", "fix_groups":
       []}'
-  - *id001
   status:
-  - exit_code: 0
-    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"]}'
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'
   export:
+  - exit_code: 0
+    stdout: '{"ok": false, "findings": [], "errors": 1}'
+  export_with_warnings:
   - exit_code: 0
     stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
       materials).pdf"]}'
 calls:
   story_check:
-  - &id002
+  - &id001
     status: succeeded
     outputs:
       ok: true
@@ -42,18 +41,16 @@ calls:
       rounds: 0
       report: r.json
   plan_check:
-  - *id002
+  - *id001
   game_check:
-  - *id002
+  - *id001
   panel:
-  - &id003
-    status: succeeded
+  - status: succeeded
     outputs:
       ok: true
       failing: []
       failing_items: []
       report: p.json
-  - *id003
 answers:
   confirm_config:
   - choice: go
@@ -128,10 +125,8 @@ expect:
   - render
   - visual_review
   - status
-  - panel
-  - render
-  - status
   - export
+  - export_with_warnings
   - done
   status: succeeded
   outputs:

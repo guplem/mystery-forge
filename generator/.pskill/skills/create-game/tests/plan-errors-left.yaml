@@ -1,4 +1,4 @@
-name: a verification is stale before export, so the panel runs again
+name: the plan keeps errors after the fix rounds
 inputs:
   config: c.json
 scripts:
@@ -17,14 +17,10 @@ scripts:
       ["D2"], "relies_on": []}, {"name": "P2 maze", "id": "P2", "stage": "B", "mechanic": "maze", "documents": ["D3"], "relies_on":
       ["D1"]}]}'
   render:
-  - &id001
-    exit_code: 0
+  - exit_code: 0
     stdout: '{"ok": true, "report": "games/g/reports/render.json", "previews_dir": "games/g/render/previews", "fix_groups":
       []}'
-  - *id001
   status:
-  - exit_code: 0
-    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"]}'
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'
   export:
@@ -33,8 +29,7 @@ scripts:
       materials).pdf"]}'
 calls:
   story_check:
-  - &id002
-    status: succeeded
+  - status: succeeded
     outputs:
       ok: true
       errors: 0
@@ -42,18 +37,13 @@ calls:
       rounds: 0
       report: r.json
   plan_check:
-  - *id002
-  game_check:
-  - *id002
-  panel:
-  - &id003
-    status: succeeded
+  - status: succeeded
     outputs:
-      ok: true
-      failing: []
-      failing_items: []
-      report: p.json
-  - *id003
+      ok: false
+      errors: 2
+      warnings: 0
+      rounds: 4
+      report: r.json
 answers:
   confirm_config:
   - choice: go
@@ -80,31 +70,6 @@ answers:
   - findings: []
   plan:
   - summary: Eight puzzles, six actions.
-  review_plan:
-  - findings: []
-  review_documents:
-  - findings: []
-  write_story_documents:
-  - documents:
-    - documents/D1.md
-    summary: The briefing.
-  write_puzzles:
-  - status: written
-    files:
-    - puzzles/P1.yaml
-    - documents/D2.md
-    summary: A coded line.
-  - status: written
-    files:
-    - puzzles/P2.yaml
-    - documents/D3.md
-    summary: A maze.
-  illustrate:
-  - images:
-    - images/ferry-map.svg
-    summary: A map and two stamps.
-  visual_review:
-  - findings: []
 expect:
   path:
   - doctor
@@ -117,23 +82,7 @@ expect:
   - review_story
   - plan
   - plan_check
-  - review_plan
-  - write_story_documents
-  - writer_tasks
-  - write_puzzles
-  - illustrate
-  - game_check
-  - review_documents
-  - panel
-  - render
-  - visual_review
-  - status
-  - panel
-  - render
-  - status
-  - export
-  - done
-  status: succeeded
+  - failed
+  status: failed
   outputs:
-    result: exported
-    folder: D/Mystery Forge/The Game
+    result: failed

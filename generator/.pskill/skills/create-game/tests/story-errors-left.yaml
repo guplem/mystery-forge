@@ -18,7 +18,8 @@ scripts:
       ["D1"]}]}'
   render:
   - exit_code: 0
-    stdout: '{"ok": true, "previews_dir": "games/g/render/previews", "fix_groups": []}'
+    stdout: '{"ok": true, "report": "games/g/reports/render.json", "previews_dir": "games/g/render/previews", "fix_groups":
+      []}'
   status:
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'
@@ -49,6 +50,8 @@ answers:
     - title: Title 3
       teaser: Teaser 3.
     summary: Three tones.
+    recommended: second
+    recommended_reason: It fits a family table best.
   pick_concept:
   - choice: second
     rationale: The user said so.

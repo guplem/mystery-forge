@@ -18,7 +18,8 @@ scripts:
       ["D1"]}]}'
   render:
   - exit_code: 0
-    stdout: '{"ok": true, "previews_dir": "games/g/render/previews", "fix_groups": []}'
+    stdout: '{"ok": true, "report": "games/g/reports/render.json", "previews_dir": "games/g/render/previews", "fix_groups":
+      []}'
   status:
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'
@@ -61,12 +62,18 @@ answers:
     - title: Title 3
       teaser: Teaser 3.
     summary: Three tones.
+    recommended: second
+    recommended_reason: It fits a family table best.
   write_story:
   - summary: A ferry, five people, three envelopes.
   review_story:
   - findings: []
   plan:
   - summary: Eight puzzles, six actions.
+  review_plan:
+  - findings: []
+  review_documents:
+  - findings: []
   write_story_documents:
   - documents:
     - documents/D1.md
@@ -103,11 +110,13 @@ expect:
   - review_story
   - plan
   - plan_check
+  - review_plan
   - write_story_documents
   - writer_tasks
   - write_puzzles
   - illustrate
   - game_check
+  - review_documents
   - panel
   - render
   - visual_review

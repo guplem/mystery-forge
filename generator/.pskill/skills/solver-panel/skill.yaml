@@ -53,6 +53,8 @@ blocks:
             answer: {type: string}
             stuck: {type: boolean}
             reasoning: {type: string}
+            aha: {type: string}
+            all_steps_stated: {type: boolean}
             evidence:
               type: array
               items:

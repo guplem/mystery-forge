@@ -1,4 +1,4 @@
-name: a verification is stale before export, so the panel runs again
+name: a toolkit page overflows and no writer can fix it
 inputs:
   config: c.json
 scripts:
@@ -17,14 +17,9 @@ scripts:
       ["D2"], "relies_on": []}, {"name": "P2 maze", "id": "P2", "stage": "B", "mechanic": "maze", "documents": ["D3"], "relies_on":
       ["D1"]}]}'
   render:
-  - &id001
-    exit_code: 0
-    stdout: '{"ok": true, "report": "games/g/reports/render.json", "previews_dir": "games/g/render/previews", "fix_groups":
-      []}'
-  - *id001
-  status:
   - exit_code: 0
-    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"]}'
+    stdout: '{"ok": false, "report": "games/g/reports/render.json", "previews_dir": "p", "fix_groups": []}'
+  status:
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'
   export:
@@ -33,7 +28,7 @@ scripts:
       materials).pdf"]}'
 calls:
   story_check:
-  - &id002
+  - &id001
     status: succeeded
     outputs:
       ok: true
@@ -42,18 +37,16 @@ calls:
       rounds: 0
       report: r.json
   plan_check:
-  - *id002
+  - *id001
   game_check:
-  - *id002
+  - *id001
   panel:
-  - &id003
-    status: succeeded
+  - status: succeeded
     outputs:
       ok: true
       failing: []
       failing_items: []
       report: p.json
-  - *id003
 answers:
   confirm_config:
   - choice: go
@@ -103,8 +96,6 @@ answers:
   - images:
     - images/ferry-map.svg
     summary: A map and two stamps.
-  visual_review:
-  - findings: []
 expect:
   path:
   - doctor
@@ -126,14 +117,7 @@ expect:
   - review_documents
   - panel
   - render
-  - visual_review
-  - status
-  - panel
-  - render
-  - status
-  - export
-  - done
-  status: succeeded
+  - toolkit_bug
+  status: failed
   outputs:
-    result: exported
-    folder: D/Mystery Forge/The Game
+    result: failed
