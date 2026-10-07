@@ -15,7 +15,7 @@ from jinja2 import Environment, StrictUndefined
 
 from mystery_forge.answers import answer_hash, normalize_answer
 from mystery_forge.game import AssembledPuzzle, Game
-from mystery_forge.i18n import STRINGS, known_language, text
+from mystery_forge.i18n import STRINGS, known_language, text, text_direction
 from mystery_forge.spec.models import AccusationQuestion, Deduction
 
 COMPANION_FOLDER: Final[str] = "companion"
@@ -126,6 +126,7 @@ def build_companion_html(game: Game) -> str:
     template = environment.from_string(folder.joinpath(TEMPLATE_FILE).read_text(encoding="utf-8"))
     return template.render(
         language=game.config.language,
+        direction=text_direction(game.config.language),
         title=game.story.title,
         style=folder.joinpath(STYLE_FILE).read_text(encoding="utf-8"),
         scripts=[folder.joinpath(name).read_text(encoding="utf-8") for name in SCRIPT_FILES],

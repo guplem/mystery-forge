@@ -6,7 +6,10 @@ every language has every key.
 """
 
 from datetime import datetime
+from string import Formatter
 from typing import Final
+
+from pydantic import BaseModel, ConfigDict, Field
 
 LANGUAGES: Final[tuple[str, ...]] = ("en", "es", "ca", "fr", "de", "it", "pt")
 
@@ -2165,6 +2168,76 @@ DATE_PATTERNS: Final[dict[str, str]] = {
     "it": "{day} {month} {year}",
     "pt": "{day} de {month} de {year}",
 }
+
+
+class LanguagePack(BaseModel):
+    """The fixed texts of one language that has no checked table here. The generator translates the English pack
+    into `source/strings.json` once per game, and the toolkit checks it before it uses it."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    strings: dict[str, str]
+    months: list[str] = Field(min_length=12, max_length=12)
+    weekdays: list[str] = Field(min_length=7, max_length=7)
+    date_pattern: str
+
+
+DATE_FIELDS: Final[frozenset[str]] = frozenset({"day", "month", "year"})
+# The texts that name the exported files. Windows refuses these characters in a file name.
+FILE_NAME_PREFIX: Final[str] = "file_"
+FORBIDDEN_FILE_CHARACTERS: Final[frozenset[str]] = frozenset(r'<>:"/\|?*')
+
+
+def language_pack_template() -> LanguagePack:
+    return LanguagePack(
+        strings=dict(STRINGS["en"]),
+        months=list(MONTHS["en"]),
+        weekdays=list(WEEKDAYS["en"]),
+        date_pattern=DATE_PATTERNS["en"],
+    )
+
+
+def placeholders(value: str) -> list[str]:
+    return sorted({field for _, field, _, _ in Formatter().parse(value) if field})
+
+
+def language_pack_problems(pack: LanguagePack) -> list[str]:
+    """Return what a translated pack lost or changed: a key, a {field} that the code fills, or a date field."""
+    english: dict[str, str] = STRINGS["en"]
+    problems: list[str] = [f"The key '{key}' is missing." for key in english if key not in pack.strings]
+    problems += [f"The key '{key}' is not a fixed text." for key in pack.strings if key not in english]
+    for key, value in pack.strings.items():
+        expected: list[str] = placeholders(english.get(key, value))
+        found: list[str] = placeholders(value)
+        if found != expected:
+            listed: str = ", ".join(f"{{{name}}}" for name in expected) or "no field"
+            given: str = ", ".join(f"{{{name}}}" for name in found) or "no field"
+            problems.append(f"The text '{key}' must keep the fields {listed}, not {given}.")
+    for key, value in pack.strings.items():
+        if key.startswith(FILE_NAME_PREFIX):
+            forbidden: list[str] = sorted({character for character in value if character in FORBIDDEN_FILE_CHARACTERS})
+            if forbidden:
+                listed_characters: str = ", ".join(f"'{character}'" for character in forbidden)
+                problems.append(f"The file name '{key}' holds a character that file names forbid: {listed_characters}.")
+    if set(placeholders(pack.date_pattern)) != DATE_FIELDS:
+        problems.append("The date pattern must hold {day}, {month}, and {year}.")
+    return problems
+
+
+def register_language(language: str, pack: LanguagePack) -> None:
+    """Serve a checked pack for this language, for the rest of this process."""
+    STRINGS[language] = dict(pack.strings)
+    MONTHS[language] = tuple(pack.months)
+    WEEKDAYS[language] = tuple(pack.weekdays)
+    DATE_PATTERNS[language] = pack.date_pattern
+
+
+# Languages whose script runs from right to left; the pages set `dir="rtl"` for them.
+RIGHT_TO_LEFT_LANGUAGES: Final[frozenset[str]] = frozenset({"ar", "he", "fa", "ur"})
+
+
+def text_direction(language: str) -> str:
+    return "rtl" if language in RIGHT_TO_LEFT_LANGUAGES else "ltr"
 
 
 def known_language(language: str) -> str:

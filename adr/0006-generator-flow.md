@@ -7,6 +7,7 @@ One game takes hours of agent work and dozens of files. One agent session cannot
 ## Decision
 
 - The user opens the agent in `generator/`. The pskill skill `create-game` drives the whole run.
+- **Fixed texts for any language.** The toolkit has checked tables of its fixed texts for 7 languages. For any other game language, the `texts` step has a subagent translate the English pack into `source/strings.json`, and `forge strings` checks every key, every `{field}`, the calendar, and the file names before any story work starts.
 - **The main agent is an orchestrator.** It routes between steps and makes short decisions. Every heavy writing step (concepts, story, plan, each puzzle, documents, fixes, images, reviews) runs in a fresh subagent through a pskill `parallel` block, often with one item. A task returns the list of files that it wrote and a summary of five lines at most.
 - **Every command runs as a pskill `script` block**, never inside a subagent. Scripts print one small JSON object and exit 0, also when they find problems; the next edge routes on the `ok` field. Full reports go to files.
 - **Each fix loop is an internal child skill** called by a `call` block, so that each call starts with an empty `history` and its own visit cap. `game-check-loop` checks one scope (story, plan, full) and fixes it; `solver-panel` runs one panel round.

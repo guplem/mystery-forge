@@ -1,4 +1,4 @@
-name: two plan revisions at most, then the writing starts
+name: the game language needs translated fixed texts, and one translation passes
 inputs:
   config: c.json
 scripts:
@@ -13,7 +13,11 @@ scripts:
       "generation_minutes": 90}, "draw_file": "games/g/source/draw.json"}'
   texts:
   - exit_code: 0
-    stdout: '{"ok": true, "needed": false}'
+    stdout: '{"ok": false, "needed": true, "language": "ja", "template": "games/g/reports/strings-template.json", "target":
+      "games/g/source/strings.json", "findings": [{"severity": "error", "rule": "strings.missing", "message": "No strings.json.",
+      "fix_hint": "Translate."}]}'
+  - exit_code: 0
+    stdout: '{"ok": true, "needed": true, "language": "ja"}'
   writer_tasks:
   - exit_code: 0
     stdout: '{"ok": true, "tasks": [{"name": "P1 caesar-cipher", "id": "P1", "stage": "A", "mechanic": "caesar-cipher", "documents":
@@ -41,8 +45,6 @@ calls:
       rounds: 0
       report: r.json
   plan_check:
-  - *id001
-  - *id001
   - *id001
   game_check:
   - *id001
@@ -80,14 +82,7 @@ answers:
   plan:
   - summary: Eight puzzles, six actions.
   review_plan:
-  - &id002
-    findings:
-    - severity: required
-      puzzle: P3
-      problem: No aha.
-      fix: Use a grid.
-  - *id002
-  - *id002
+  - findings: []
   review_documents:
   - findings: []
   write_story_documents:
@@ -111,14 +106,15 @@ answers:
     summary: A map and two stamps.
   visual_review:
   - findings: []
-  revise_plan:
-  - summary: One.
-  - summary: Two.
+  translate_texts:
+  - summary: The fixed texts are in Japanese.
 expect:
   path:
   - doctor
   - setup
   - confirm_config
+  - texts
+  - translate_texts
   - texts
   - concepts
   - pick_concept
@@ -126,12 +122,6 @@ expect:
   - story_check
   - review_story
   - plan
-  - plan_check
-  - review_plan
-  - revise_plan
-  - plan_check
-  - review_plan
-  - revise_plan
   - plan_check
   - review_plan
   - write_story_documents
