@@ -132,3 +132,16 @@ def test_sheet_source_files_point_document_sheets_to_their_file() -> None:
     plans = output_plans(golden_game())
     files = sheet_source_files(golden_game(), plans[1])
     assert files[:7] == [None, None, None, None, None, None, "documents/D1.md"]
+
+
+def test_a_new_render_removes_the_previews_and_outputs_of_the_last_one(tmp_path: Path) -> None:
+    (tmp_path / "previews").mkdir()
+    (tmp_path / "previews" / "materials-19.png").write_bytes(b"old")
+    for name in ("hints.html", "3 - Hints.pdf", "4 - Solutions.pdf", "game.json"):
+        (tmp_path / name).write_text("old", encoding="utf-8")
+    render_game(configured(golden_game(), assistance={"hints": False}), tmp_path, None)
+    assert not (tmp_path / "previews").exists()
+    assert not (tmp_path / "hints.html").exists()
+    assert not (tmp_path / "3 - Hints.pdf").exists()
+    assert not (tmp_path / "4 - Solutions.pdf").exists()
+    assert (tmp_path / "game.json").read_text(encoding="utf-8") == "old"

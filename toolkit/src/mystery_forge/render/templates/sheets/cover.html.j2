@@ -17,7 +17,7 @@
       {% if content.names %}<p class="cover-names">{{ t("cover_detectives", names=content.names | join(", ")) }}</p>{% endif %}
       {% if content.dedication %}<p class="cover-dedication">{{ content.dedication }}</p>{% endif %}
     </div>
-    <div class="cover-warning"><span class="mf-stamp">{{ t("stop") }}</span><p>{{ t("cover_do_not_read") }}</p></div>
+    <p class="cover-warning">{{ t("cover_do_not_read") }}</p>
     <p class="cover-credit">{{ t("made_with") }}</p>
   </div>
 </div>

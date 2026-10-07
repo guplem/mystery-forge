@@ -15,7 +15,7 @@ from mystery_forge.render.solutions import (
     item_height,
     solution_sheets,
 )
-from mystery_forge.spec.models import Epilogue, RevealStep, SolutionStep
+from mystery_forge.spec.models import Clue, Epilogue, RevealStep, SolutionStep
 
 
 def sections(sheets: list[Sheet], role: str) -> list[SectionPage]:
@@ -52,6 +52,28 @@ def test_citations_skip_an_unknown_clue() -> None:
     assert citations(golden_game(), ["nope", "felix-debt"]) == [
         Citation(document="Two papers from the box", quote="Mr Ward still owes me forty pounds for the brass sextant")
     ]
+
+
+def test_a_hidden_clue_names_the_puzzle_that_reveals_it() -> None:
+    game = golden_game()
+    hidden = Clue(id="keys-hidden", quote="Tom hid the spare keys in the boathouse.", hidden=True, revealed_by="P1")
+    unplanned = Clue(id="keys-later", quote="The keys are gone.", hidden=True)
+    game = with_story(game, clues=[*game.story.clues, hidden, unplanned])
+    assert citations(game, ["keys-hidden", "keys-later"]) == [
+        Citation(document="Revealed by puzzle A1", quote="Tom hid the spare keys in the boathouse."),
+        Citation(document="Revealed by puzzle ?", quote="The keys are gone."),
+    ]
+
+
+def test_internal_ids_in_the_solutions_print_as_codes_and_titles() -> None:
+    game = golden_game()
+    puzzles = list(game.puzzles)
+    steps = [SolutionStep(text="Use the answer of P2 and the receipt D3.", uses=[])]
+    puzzles[0] = puzzles[0].model_copy(update={"source": puzzles[0].source.model_copy(update={"solution": steps})})
+    game = with_story(game.model_copy(update={"puzzles": puzzles}), truth="P1 led to D4.")
+    sheets = solution_sheets(game)
+    assert solution_pages(sheets)[0].steps[0].text == "Use the answer of A2 and the receipt The supply receipt."
+    assert sections(sheets, "truth")[0].items[0].text == "A1 led to Notes from the boathouse box."
 
 
 def test_the_deduction_page_explains_answers_then_exclusions() -> None:

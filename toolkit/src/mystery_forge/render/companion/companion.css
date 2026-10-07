@@ -336,6 +336,15 @@ input {
   line-height: 1.6;
 }
 
+/* A wide screen shows the whole intro, so the button has nothing to open there. */
+.intro-more {
+  display: none;
+  margin-top: 8px;
+  padding: 0;
+  color: var(--ink);
+  font-weight: 650;
+}
+
 .timer-card {
   display: flex;
   flex-direction: column;
@@ -1197,6 +1206,29 @@ input {
   *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* ---------- Phones ---------- */
+
+@media (max-width: 600px) {
+  /* The clock and the envelopes come first: the group reads the intro once, but needs the clock to start. */
+  .main-start .intro,
+  .main-start .help,
+  .main-start .reset-row {
+    order: 1;
+  }
+
+  .intro.is-folded .intro-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    overflow: hidden;
+  }
+
+  .intro.is-folded .intro-more {
+    display: inline-flex;
   }
 }
 

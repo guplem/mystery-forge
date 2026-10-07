@@ -75,3 +75,12 @@ def test_puzzle_order_reads_the_number_as_a_number() -> None:
     codes = ["B1", "A10", "A9"]
     ordered = sorted((puzzle.model_copy(update={"code": code}) for code in codes), key=puzzle_order_key)
     assert [item.code for item in ordered] == ["A9", "A10", "B1"]
+
+
+def test_internal_ids_in_a_hint_print_as_codes_and_titles() -> None:
+    game = golden_game()
+    puzzles = list(game.puzzles)
+    hints = [Hint(level=1, text="Read D3 again, as in P1.", points_to=[])]
+    puzzles[1] = puzzles[1].model_copy(update={"source": puzzles[1].source.model_copy(update={"hints": hints})})
+    cards = [card for page in card_pages(game.model_copy(update={"puzzles": puzzles})) for card in page.cards]
+    assert next(card.text for card in cards if card.code == "A2") == "Read The supply receipt again, as in A1."

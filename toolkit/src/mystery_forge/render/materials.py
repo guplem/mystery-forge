@@ -6,19 +6,24 @@ the last stage, so it travels in the last envelope.
 """
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from typing import Final
 
 from markupsafe import Markup
 
 from mystery_forge.answers import normalize_answer
+from mystery_forge.catalog.loader import mechanics_by_id
+from mystery_forge.checks.budget import estimate_game_minutes
 from mystery_forge.game import AssembledDocument, Game
 from mystery_forge.i18n import text
+from mystery_forge.mechanics.base import Artifact
 from mystery_forge.render.answer_register import AnswerRegister, RegisterEntry, ResultParagraph, build_answer_register
 from mystery_forge.render.document_body import insert_artifacts, insert_images, split_pages
 from mystery_forge.render.kinds import DocumentKind, document_kind
 from mystery_forge.render.layout import Tightness, page_budget, split_text, text_height, tightness
 from mystery_forge.render.sheets import Sheet, paginate
+from mystery_forge.spec.documents import ARTIFACT_MARK
 from mystery_forge.spec.models import AccusationQuestion, Stage
 
 # The flow groups of the materials. The sizes are millimetres on the printed page, as `themes/base.css` sets them.
@@ -44,8 +49,17 @@ NOTES_TABLE_HEAD_MM: Final[float] = 21
 NOTES_FREE_LINES_MM: Final[float] = 32
 NOTES_MIN_PLACES: Final[int] = 3
 ACCUSATION_RESERVED_MM: Final[float] = HEADER_MM + 26
-ACCUSATION_CHARS_PER_LINE: Final[int] = 80
+# One accusation question: its frame (margins, the proof line), its prompt lines (beside the points), its option rows.
+QUESTION_FRAME_MM: Final[float] = 24
+QUESTION_PROMPT_CHARS_PER_LINE: Final[int] = 70
+QUESTION_PROMPT_LINE_MM: Final[float] = 5.6
+QUESTION_OPTION_CHARS_PER_ROW: Final[int] = 92
+# An option costs its text plus its check box and the gap after it.
+QUESTION_OPTION_EXTRA_CHARS: Final[int] = 10
+QUESTION_OPTION_ROW_MM: Final[float] = 7
 LABEL_ROW_MM: Final[float] = 60
+# The cover rounds the estimated play time to this many minutes, so it reads as an estimate.
+PLAY_TIME_STEP: Final[int] = 5
 
 
 @dataclass(frozen=True)
@@ -147,7 +161,9 @@ def cover_sheet(game: Game) -> Sheet:
         tagline=game.story.tagline,
         players=config.players.count,
         names=config.players.names,
-        minutes=config.duration_minutes,
+        minutes=max(
+            PLAY_TIME_STEP, PLAY_TIME_STEP * round(estimate_game_minutes(game, mechanics_by_id()) / PLAY_TIME_STEP)
+        ),
         dedication=config.personalization.dedication,
     )
     return Sheet(role="cover", template="cover.html.j2", content=content)
@@ -167,10 +183,20 @@ def document_sort_key(document: AssembledDocument) -> tuple[int, int]:
     return (document.meta.order, int(document.meta.id[1:]))
 
 
+def holds_cut_out(document: AssembledDocument, artifacts: Mapping[str, Artifact | None]) -> bool:
+    """True when the document holds an artifact with its own print notes, such as strips that players cut apart."""
+    return any(
+        artifact is not None and artifact.print_notes and ARTIFACT_MARK.format(puzzle=puzzle_id) in document.body_html
+        for puzzle_id, artifact in artifacts.items()
+    )
+
+
 def document_sheets(game: Game, document: AssembledDocument) -> list[Sheet]:
     meta = document.meta
-    artifacts = {puzzle.source.id: puzzle.artifact for puzzle in game.puzzles}
+    artifacts: dict[str, Artifact | None] = {puzzle.source.id: puzzle.artifact for puzzle in game.puzzles}
     body: str = insert_images(insert_artifacts(document.body_html, artifacts), game.images)
+    # A cut-out carries its own dashed lines. A dashed line around the whole page would tell players to cut it too.
+    cut: bool = meta.print.cut and not holds_cut_out(document, artifacts)
     pages: list[str] = split_pages(body)
     code: str | None = puzzle_codes(game).get(meta.puzzle) if meta.puzzle else None
     return [
@@ -187,7 +213,7 @@ def document_sheets(game: Game, document: AssembledDocument) -> list[Sheet]:
                 page_number=page_number,
                 page_count=len(pages),
                 puzzle_code=code,
-                cut=meta.print.cut,
+                cut=cut,
                 fold=meta.print.fold,
                 note=meta.print.note,
                 copy_number=copy_number,
@@ -211,26 +237,16 @@ def stage_sheets(game: Game, stage: Stage) -> list[Sheet]:
 
 
 def result_height(paragraph: ResultParagraph) -> float:
-    parts: list[str] = [part for part in (paragraph.message, paragraph.reveals, paragraph.action) if part]
-    return RESULT_FRAME_MM + sum(text_height(part, RESULT_CHARS_PER_LINE, RESULT_LINE_MM) for part in parts)
+    return RESULT_FRAME_MM + text_height(paragraph.message, RESULT_CHARS_PER_LINE, RESULT_LINE_MM)
 
 
 def split_result(paragraph: ResultParagraph, column_mm: float) -> list[ResultParagraph]:
-    """Split a paragraph taller than one column: its `reveals` text goes on in parts with the same number."""
+    """Split a paragraph taller than one column: its message goes on in parts with the same number."""
     if result_height(paragraph) <= column_mm:
         return [paragraph]
-    lines: int = max(1, int((column_mm - RESULT_FRAME_MM) / RESULT_LINE_MM) - 4)
-    pieces: list[str] = split_text(paragraph.reveals, lines * RESULT_CHARS_PER_LINE) or [""]
-    return [
-        replace(
-            paragraph,
-            message=paragraph.message if index == 0 else "",
-            reveals=piece,
-            action=paragraph.action if index == len(pieces) - 1 else "",
-            continued=index > 0,
-        )
-        for index, piece in enumerate(pieces)
-    ]
+    lines: int = max(1, int((column_mm - RESULT_FRAME_MM) / RESULT_LINE_MM) - 1)
+    pieces: list[str] = split_text(paragraph.message, lines * RESULT_CHARS_PER_LINE)
+    return [replace(paragraph, message=piece, continued=index > 0) for index, piece in enumerate(pieces)]
 
 
 def register_sheets(game: Game, levels: Tightness) -> list[Sheet]:
@@ -330,8 +346,10 @@ def detective_notes_sheets(game: Game, levels: Tightness) -> list[Sheet]:
 
 
 def question_height(question: AccusationQuestion) -> float:
-    option_rows: int = math.ceil(sum(len(option.text) + 10 for option in question.options) / ACCUSATION_CHARS_PER_LINE)
-    return 26 + text_height(question.prompt, ACCUSATION_CHARS_PER_LINE, 5.5) + option_rows * 7
+    option_chars: int = sum(len(option.text) + QUESTION_OPTION_EXTRA_CHARS for option in question.options)
+    option_rows: int = math.ceil(option_chars / QUESTION_OPTION_CHARS_PER_ROW)
+    prompt_mm: float = text_height(question.prompt, QUESTION_PROMPT_CHARS_PER_LINE, QUESTION_PROMPT_LINE_MM)
+    return QUESTION_FRAME_MM + prompt_mm + option_rows * QUESTION_OPTION_ROW_MM
 
 
 def accusation_sheets(game: Game, questions: list[AccusationQuestion], stage: str, levels: Tightness) -> list[Sheet]:

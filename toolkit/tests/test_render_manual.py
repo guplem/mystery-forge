@@ -63,13 +63,29 @@ def test_the_first_page_is_the_printing_checklist_with_exact_page_counts() -> No
     assert checklist.table.rows == [
         ["1 - START HERE (manual).pdf", "3", "Yes"],
         ["2 - PRINT THIS (game materials).pdf", "13", "Yes"],
-        ["3 - Hints.pdf", "3", "Only if you play without a phone or computer"],
-        ["4 - Solutions.pdf", "7", "Only if you play without a phone or computer"],
+        ["HOST ONLY - spoilers/3 - Hints.pdf", "3", "Only if you play without a phone or computer"],
+        ["HOST ONLY - spoilers/4 - Solutions.pdf", "7", "Only if you play without a phone or computer"],
         [COMPANION_FILE, "-", "No: open it on a phone or computer"],
     ]
     assert "Print at 100% (actual size), single-sided, on A4 paper." in checklist.paragraphs[0]
     assert checklist.paragraphs[1].startswith("Color looks best")
     assert "use the Game companion page instead" in checklist.paragraphs[2]
+
+
+def test_the_first_page_shows_where_to_set_100_percent_in_each_program() -> None:
+    first = pages(golden_game())[0]
+    box = next(block for block in first.blocks if block.kind == "box")
+    assert box.text == "Print at 100%"
+    assert box.items == [
+        "Chrome: More settings > Scale > Default",
+        "Edge: More settings > Scale > Actual size",
+        "Adobe Acrobat Reader: Page Sizing & Handling > Actual size",
+    ]
+    assert block_height(box) > 0
+    spanish = next(
+        block for block in pages(configured(golden_game(), {"language": "es"}))[0].blocks if block.kind == "box"
+    )
+    assert spanish.items[0] == "Chrome: Más ajustes > Escala > Predeterminado"
 
 
 def test_what_you_need_follows_the_equipment() -> None:
@@ -78,6 +94,7 @@ def test_what_you_need_follows_the_equipment() -> None:
         "Pencils and an eraser",
         "Some scrap paper",
         "Scissors",
+        "Tape or glue for the envelope labels (or write the letter on each envelope)",
     ]
     bare = configured(
         golden_game(),
@@ -211,4 +228,4 @@ def test_a_long_checklist_is_cut_into_blocks() -> None:
     many = ManualSection(heading="x", checklist=[f"item {number}" for number in range(23)])
     lists = [block for block in section_blocks(many, 200) if block.kind == "checklist"]
     assert [len(block.items) for block in lists] == [10, 10, 3]
-    assert "Tape or glue" in needs.checklist
+    assert needs.checklist[-1].startswith("Tape or glue for the envelope labels")

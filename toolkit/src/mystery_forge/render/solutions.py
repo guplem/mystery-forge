@@ -10,7 +10,9 @@ from typing import Final, Literal
 
 from mystery_forge.config import Paper
 from mystery_forge.game import Game
+from mystery_forge.i18n import text
 from mystery_forge.render.hints import WarningContent, puzzle_order_key
+from mystery_forge.render.internal_ids import printed_ids
 from mystery_forge.render.layout import Tightness, page_budget, split_text, text_height, tightness
 from mystery_forge.render.sheets import Sheet, SheetRole, paginate
 from mystery_forge.spec.models import Clue
@@ -82,12 +84,21 @@ def clue_index(game: Game) -> dict[str, Clue]:
     return clues
 
 
+def clue_source(game: Game, clue: Clue) -> str:
+    """The document title of a clue, or the puzzle that reveals a hidden clue."""
+    if clue.document is None:
+        codes: dict[str, str] = {puzzle.source.id: puzzle.code for puzzle in game.puzzles}
+        code: str = codes.get(clue.revealed_by or "", "?")
+        return text(game.config.language, "citation_revealed_by", code=code)
+    titles: dict[str, str] = {document.meta.id: document.meta.title for document in game.documents}
+    return titles.get(clue.document, clue.document)
+
+
 def citations(game: Game, clue_ids: list[str]) -> list[Citation]:
     """Return the citation of each known clue. An unknown id is skipped: the evidence check reports it."""
     clues: dict[str, Clue] = clue_index(game)
-    titles: dict[str, str] = {document.meta.id: document.meta.title for document in game.documents}
     return [
-        Citation(document=titles.get(clues[clue_id].document, clues[clue_id].document), quote=clues[clue_id].quote)
+        Citation(document=clue_source(game, clues[clue_id]), quote=clues[clue_id].quote)
         for clue_id in clue_ids
         if clue_id in clues
     ]
@@ -146,8 +157,8 @@ def deduction_sheets(game: Game, levels: Tightness) -> list[Sheet]:
     names: dict[str, str] = {character.id: character.name for character in game.story.characters}
     items: list[Explained] = [
         Explained(
-            heading=question.prompt,
-            text=next(option.text for option in question.options if option.id == question.correct),
+            heading=printed_ids(game, question.prompt),
+            text=printed_ids(game, next(option.text for option in question.options if option.id == question.correct)),
             citations=citations(game, question.proven_by),
             points=question.points,
         )
@@ -157,7 +168,9 @@ def deduction_sheets(game: Game, levels: Tightness) -> list[Sheet]:
         items.append(Explained(heading="exclusions_title", text="", citations=[], kind="subtitle"))
     items.extend(
         Explained(
-            heading=names.get(item.suspect, item.suspect), text=item.explanation, citations=citations(game, item.clues)
+            heading=names.get(item.suspect, item.suspect),
+            text=printed_ids(game, item.explanation),
+            citations=citations(game, item.clues),
         )
         for item in deduction.exclusions
     )
@@ -165,11 +178,14 @@ def deduction_sheets(game: Game, levels: Tightness) -> list[Sheet]:
 
 
 def truth_sheets(game: Game, levels: Tightness) -> list[Sheet]:
-    items: list[Explained] = [Explained(heading="", text=game.story.truth, citations=[], kind="truth")]
+    items: list[Explained] = [
+        Explained(heading="", text=printed_ids(game, game.story.truth), citations=[], kind="truth")
+    ]
     if game.story.reveal:
         items.append(Explained(heading="reveal_title", text="", citations=[], kind="subtitle"))
     items.extend(
-        Explained(heading="", text=step.text, citations=citations(game, step.clues)) for step in game.story.reveal
+        Explained(heading="", text=printed_ids(game, step.text), citations=citations(game, step.clues))
+        for step in game.story.reveal
     )
     return section_sheets("truth", "truth_title", items, game.config.equipment.paper, levels, 0)
 
@@ -177,7 +193,11 @@ def truth_sheets(game: Game, levels: Tightness) -> list[Sheet]:
 def epilogues_sheets(game: Game, levels: Tightness) -> list[Sheet]:
     items: list[Explained] = [
         Explained(
-            heading=epilogue.title, text=epilogue.text, citations=[], points=epilogue.min_score_percent, kind="epilogue"
+            heading=epilogue.title,
+            text=printed_ids(game, epilogue.text),
+            citations=[],
+            points=epilogue.min_score_percent,
+            kind="epilogue",
         )
         for epilogue in sorted(game.story.epilogues, key=lambda item: -item.min_score_percent)
     ]
@@ -193,7 +213,8 @@ def solution_pages(game: Game, puzzle_index: int, levels: Tightness) -> list[She
         part
         for step in source.solution
         for part in fit_item(
-            Explained(heading="", text=step.text, citations=citations(game, step.uses)), budget - ANSWER_BOX_MM
+            Explained(heading="", text=printed_ids(game, step.text), citations=citations(game, step.uses)),
+            budget - ANSWER_BOX_MM,
         )
     ]
     # The answer box opens the first page: a placeholder of its height keeps the first page short enough.

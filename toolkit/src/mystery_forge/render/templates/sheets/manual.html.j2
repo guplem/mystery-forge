@@ -16,6 +16,8 @@
   <p class="manual-paragraph">{{ block.text }}</p>
   {% elif block.kind == "read_aloud" %}
   <blockquote class="read-aloud-quote">{{ block.text }}</blockquote>
+  {% elif block.kind == "box" %}
+  <aside class="manual-box"><p class="manual-box-title">{{ block.text }}</p><ul>{% for item in block.items %}<li>{{ item }}</li>{% endfor %}</ul></aside>
   {% elif block.kind == "table" %}
   <table class="manual-table">
     <thead><tr>{% for header in block.table.headers %}<th>{{ header }}</th>{% endfor %}</tr></thead>

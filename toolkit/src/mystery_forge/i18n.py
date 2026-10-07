@@ -35,20 +35,27 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "stage_turn_page": "After you open the envelope, turn this page around and read the text aloud.",
         "stage_read_aloud": "Read aloud",
         "register_title": "Answer register",
-        "register_intro": (
-            "Find your answer in the list: numbers come first, then words from A to Z. Then read the result paragraph "
-            "with the number next to it. If your answer is not in the list, it is not correct."
-        ),
         "register_answer": "Answer",
         "register_paragraph": "Paragraph",
         "results_title": "Result paragraphs",
         "results_intro": "Read only the paragraph that the answer register sends you to.",
-        "register_correct": "Correct! You solved puzzle {code}.",
-        "register_open_envelope": "Open {envelope} now.",
-        "register_keep_answer": "Keep this answer: you will need it later.",
-        "register_go_accusation": "This was the last puzzle. Now fill in the accusation form together.",
-        "register_case_solved": "You solved the case! Read the ending in the solutions.",
         "register_wrong": "Nothing happens. Try again.",
+        "register_intro": (
+            "Write your answer in capital letters, with no spaces and no accents, then find it in this list. "
+            "Numbers come first, then words from A to Z. Read the result paragraph with the number next to it. "
+            "If your answer is not in the list, it is not correct."
+        ),
+        "register_correct_open": "Correct! Open {envelope} now.",
+        "register_correct_keep": "Correct! Write this answer down: a later puzzle needs it.",
+        "register_correct_accusation": "Correct! This was the last puzzle: turn to the accusation.",
+        "register_correct_notes": "Correct! Write it in your notes.",
+        "print_cut_strips": "When you open this envelope, cut the strips apart along the dashed lines.",
+        "manual_need_label_tape": "Tape or glue for the envelope labels (or write the letter on each envelope)",
+        "manual_print_box_title": "Print at 100%",
+        "manual_print_box_chrome": "Chrome: More settings > Scale > Default",
+        "manual_print_box_edge": "Edge: More settings > Scale > Actual size",
+        "manual_print_box_acrobat": "Adobe Acrobat Reader: Page Sizing & Handling > Actual size",
+        "citation_revealed_by": "Revealed by puzzle {code}",
         "accusation_title": "Accusation form",
         "accusation_intro": (
             "Answer every question together. Tick one box for each question and name the document that proves it. Then "
@@ -239,21 +246,29 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "stage_turn_page": "Cuando abras el sobre, gira esta página y lee el texto en voz alta.",
         "stage_read_aloud": "Leed en voz alta",
         "register_title": "Registro de respuestas",
-        "register_intro": (
-            "Busca tu respuesta en la lista: primero van los números y después las palabras de la A a la Z. Luego lee "
-            "el párrafo de resultado con el número que tiene al lado. Si tu respuesta no está en la lista, no es "
-            "correcta."
-        ),
         "register_answer": "Respuesta",
         "register_paragraph": "Párrafo",
         "results_title": "Párrafos de resultado",
         "results_intro": "Lee solo el párrafo al que te envía el registro de respuestas.",
-        "register_correct": "¡Correcto! Has resuelto el enigma {code}.",
-        "register_open_envelope": "Abre ahora el {envelope}.",
-        "register_keep_answer": "Guarda esta respuesta: la necesitarás más adelante.",
-        "register_go_accusation": "Era el último enigma. Ahora rellenad juntos el formulario de acusación.",
-        "register_case_solved": "¡Habéis resuelto el caso! Leed el final en las soluciones.",
         "register_wrong": "No pasa nada. Inténtalo de nuevo.",
+        "register_intro": (
+            "Escribe tu respuesta en mayúsculas, sin espacios y sin acentos (la Ñ se escribe N), y búscala en "
+            "esta lista. Primero van los números y después las palabras de la A a la Z. Lee el párrafo de "
+            "resultado con el número que tiene al lado. Si tu respuesta no está en la lista, no es correcta."
+        ),
+        "register_correct_open": "¡Correcto! Abre ahora el {envelope}.",
+        "register_correct_keep": "¡Correcto! Apunta esta respuesta: un enigma posterior la necesita.",
+        "register_correct_accusation": "¡Correcto! Era el último enigma: pasad a la acusación.",
+        "register_correct_notes": "¡Correcto! Apúntalo en tus notas.",
+        "print_cut_strips": "Cuando abras este sobre, separa las tiras: recorta por las líneas discontinuas.",
+        "manual_need_label_tape": (
+            "Cinta adhesiva o pegamento para las etiquetas de los sobres (o escribe la letra en cada sobre)"
+        ),
+        "manual_print_box_title": "Imprime al 100 %",
+        "manual_print_box_chrome": "Chrome: Más ajustes > Escala > Predeterminado",
+        "manual_print_box_edge": "Edge: Más configuraciones > Escala > Tamaño real",
+        "manual_print_box_acrobat": "Adobe Acrobat Reader: Ajuste de tamaño y gestión de páginas > Tamaño real",
+        "citation_revealed_by": "Lo revela el enigma {code}",
         "accusation_title": "Formulario de acusación",
         "accusation_intro": (
             "Responded juntos a cada pregunta. Marcad una casilla por pregunta y escribid el documento que lo "
@@ -445,21 +460,30 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "stage_turn_page": "Quan obris el sobre, gira aquesta pàgina i llegeix el text en veu alta.",
         "stage_read_aloud": "Llegiu en veu alta",
         "register_title": "Registre de respostes",
-        "register_intro": (
-            "Busca la teva resposta a la llista: primer hi ha els números i després les paraules de la A a la Z. "
-            "Després llegeix el paràgraf de resultat amb el número que té al costat. Si la teva resposta no és a la "
-            "llista, no és correcta."
-        ),
         "register_answer": "Resposta",
         "register_paragraph": "Paràgraf",
         "results_title": "Paràgrafs de resultat",
         "results_intro": "Llegeix només el paràgraf on t'envia el registre de respostes.",
-        "register_correct": "Correcte! Has resolt l'enigma {code}.",
-        "register_open_envelope": "Obre ara el {envelope}.",
-        "register_keep_answer": "Guarda aquesta resposta: la necessitaràs més endavant.",
-        "register_go_accusation": "Era l'últim enigma. Ara ompliu junts el formulari d'acusació.",
-        "register_case_solved": "Heu resolt el cas! Llegiu el final a les solucions.",
         "register_wrong": "No passa res. Torna-ho a provar.",
+        "register_intro": (
+            "Escriu la teva resposta en majúscules, sense espais i sense accents (la Ç s'escriu C), i busca-la "
+            "en aquesta llista. Primer hi ha els números i després les paraules de la A a la Z. Llegeix el "
+            "paràgraf de resultat amb el número que té al costat. Si la teva resposta no és a la llista, no és "
+            "correcta."
+        ),
+        "register_correct_open": "Correcte! Obre ara el {envelope}.",
+        "register_correct_keep": "Correcte! Apunta aquesta resposta: un enigma posterior la necessita.",
+        "register_correct_accusation": "Correcte! Era l'últim enigma: passeu a l'acusació.",
+        "register_correct_notes": "Correcte! Apunta-ho a les teves notes.",
+        "print_cut_strips": "Quan obris aquest sobre, separa les tires: retalla per les línies discontínues.",
+        "manual_need_label_tape": (
+            "Cinta adhesiva o cola per a les etiquetes dels sobres (o escriu la lletra a cada sobre)"
+        ),
+        "manual_print_box_title": "Imprimeix al 100 %",
+        "manual_print_box_chrome": "Chrome: Més opcions de configuració > Escala > Predeterminada",
+        "manual_print_box_edge": "Edge: Més opcions de configuració > Escala > Mida real",
+        "manual_print_box_acrobat": "Adobe Acrobat Reader: Ajuste de tamaño y gestión de páginas > Tamaño real",
+        "citation_revealed_by": "Ho revela l'enigma {code}",
         "accusation_title": "Formulari d'acusació",
         "accusation_intro": (
             "Responeu junts cada pregunta. Marqueu una casella per pregunta i escriviu el document que ho demostra. "
@@ -649,23 +673,33 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "stage_turn_page": "Après avoir ouvert l'enveloppe, retournez cette page et lisez le texte à voix haute.",
         "stage_read_aloud": "À lire à voix haute",
         "register_title": "Registre des réponses",
-        "register_intro": (
-            "Cherchez votre réponse dans la liste : d'abord les nombres, puis les mots de A à Z. Lisez ensuite le "
-            "paragraphe de résultat dont le numéro est à côté. Si votre réponse n'est pas dans la liste, elle n'est "
-            "pas correcte."
-        ),
         "register_answer": "Réponse",
         "register_paragraph": "Paragraphe",
         "results_title": "Paragraphes de résultat",
         "results_intro": "Lisez seulement le paragraphe indiqué par le registre des réponses.",
-        "register_correct": "Bravo ! Vous avez résolu l'énigme {code}.",
-        "register_open_envelope": "Ouvrez maintenant l'{envelope}.",
-        "register_keep_answer": "Gardez cette réponse : vous en aurez besoin plus tard.",
-        "register_go_accusation": (
-            "C'était la dernière énigme. Remplissez maintenant ensemble le formulaire d'accusation."
-        ),
-        "register_case_solved": "Vous avez résolu l'affaire ! Lisez la fin dans les solutions.",
         "register_wrong": "Il ne se passe rien. Essayez encore.",
+        "register_intro": (
+            "Écrivez votre réponse en majuscules, sans espaces et sans accents (le Ç s'écrit C), puis "
+            "cherchez-la dans cette liste. D'abord les nombres, puis les mots de A à Z. Lisez le paragraphe de "
+            "résultat dont le numéro est à côté. Si votre réponse n'est pas dans la liste, elle n'est pas "
+            "correcte."
+        ),
+        "register_correct_open": "Bravo ! Ouvrez maintenant l'{envelope}.",
+        "register_correct_keep": "Bravo ! Notez cette réponse : une énigme plus loin en a besoin.",
+        "register_correct_accusation": "Bravo ! C'était la dernière énigme : passez à l'accusation.",
+        "register_correct_notes": "Bravo ! Notez-la dans vos notes.",
+        "print_cut_strips": (
+            "Quand vous ouvrez cette enveloppe, séparez les bandes : découpez le long des lignes pointillées."
+        ),
+        "manual_need_label_tape": (
+            "Du ruban adhésif ou de la colle pour les étiquettes des enveloppes (ou écrivez la lettre sur chaque "
+            "enveloppe)"
+        ),
+        "manual_print_box_title": "Imprimez à 100 %",
+        "manual_print_box_chrome": "Chrome : Plus de paramètres > Mise à l'échelle > Par défaut",
+        "manual_print_box_edge": "Edge : Plus de paramètres > Mise à l'échelle > Taille réelle",
+        "manual_print_box_acrobat": "Adobe Acrobat Reader : Dimensionnement et gestion des pages > Taille réelle",
+        "citation_revealed_by": "Révélé par l'énigme {code}",
         "accusation_title": "Formulaire d'accusation",
         "accusation_intro": (
             "Répondez ensemble à chaque question. Cochez une case par question et notez le document qui le prouve. "
@@ -857,20 +891,31 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "stage_turn_page": "Wenn ihr den Umschlag geöffnet habt, dreht diese Seite um und lest den Text laut vor.",
         "stage_read_aloud": "Laut vorlesen",
         "register_title": "Antwortregister",
-        "register_intro": (
-            "Sucht eure Antwort in der Liste: zuerst die Zahlen, dann die Wörter von A bis Z. Lest dann den "
-            "Ergebnisabschnitt mit der Nummer daneben. Steht eure Antwort nicht in der Liste, ist sie falsch."
-        ),
         "register_answer": "Antwort",
         "register_paragraph": "Abschnitt",
         "results_title": "Ergebnisabschnitte",
         "results_intro": "Lest nur den Abschnitt, zu dem euch das Antwortregister schickt.",
-        "register_correct": "Richtig! Ihr habt Rätsel {code} gelöst.",
-        "register_open_envelope": "Öffnet jetzt {envelope}.",
-        "register_keep_answer": "Merkt euch diese Antwort: Ihr braucht sie später.",
-        "register_go_accusation": "Das war das letzte Rätsel. Füllt jetzt gemeinsam das Anklageformular aus.",
-        "register_case_solved": "Ihr habt den Fall gelöst! Lest das Ende in den Lösungen.",
         "register_wrong": "Nichts passiert. Versucht es noch einmal.",
+        "register_intro": (
+            "Schreibt eure Antwort in Großbuchstaben, ohne Leerzeichen und ohne Akzente (A statt Ä, SS statt ß), "
+            "und sucht sie dann in dieser Liste. Zuerst kommen die Zahlen, dann die Wörter von A bis Z. Lest den "
+            "Ergebnisabschnitt mit der Nummer daneben. Steht eure Antwort nicht in der Liste, ist sie falsch."
+        ),
+        "register_correct_open": "Richtig! Öffnet jetzt {envelope}.",
+        "register_correct_keep": "Richtig! Schreibt diese Antwort auf: Ein späteres Rätsel braucht sie.",
+        "register_correct_accusation": "Richtig! Das war das letzte Rätsel: Weiter zur Anklage.",
+        "register_correct_notes": "Richtig! Schreibt sie in eure Notizen.",
+        "print_cut_strips": (
+            "Wenn ihr diesen Umschlag öffnet, schneidet die Streifen entlang der gestrichelten Linien auseinander."
+        ),
+        "manual_need_label_tape": (
+            "Klebeband oder Kleber für die Umschlag-Etiketten (oder schreibt den Buchstaben auf jeden Umschlag)"
+        ),
+        "manual_print_box_title": "In 100 % drucken",
+        "manual_print_box_chrome": "Chrome: Weitere Einstellungen > Skalieren > Standard",
+        "manual_print_box_edge": "Edge: Weitere Einstellungen > Skalierung > Tatsächliche Größe",
+        "manual_print_box_acrobat": "Adobe Acrobat Reader: Seitengröße und -handhabung > Tatsächliche Größe",
+        "citation_revealed_by": "Aufgedeckt durch Rätsel {code}",
         "accusation_title": "Anklageformular",
         "accusation_intro": (
             "Beantwortet jede Frage gemeinsam. Kreuzt pro Frage ein Kästchen an und nennt das Dokument, das es "
@@ -1063,20 +1108,29 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "stage_turn_page": "Dopo aver aperto la busta, gira questa pagina e leggi il testo ad alta voce.",
         "stage_read_aloud": "Leggete ad alta voce",
         "register_title": "Registro delle risposte",
-        "register_intro": (
-            "Cerca la tua risposta nell'elenco: prima i numeri, poi le parole dalla A alla Z. Poi leggi il paragrafo "
-            "di risultato con il numero accanto. Se la tua risposta non è nell'elenco, non è corretta."
-        ),
         "register_answer": "Risposta",
         "register_paragraph": "Paragrafo",
         "results_title": "Paragrafi di risultato",
         "results_intro": "Leggi solo il paragrafo indicato dal registro delle risposte.",
-        "register_correct": "Esatto! Avete risolto l'enigma {code}.",
-        "register_open_envelope": "Aprite ora la {envelope}.",
-        "register_keep_answer": "Tenete a mente questa risposta: vi servirà più avanti.",
-        "register_go_accusation": "Era l'ultimo enigma. Ora compilate insieme il modulo d'accusa.",
-        "register_case_solved": "Avete risolto il caso! Leggete il finale nelle soluzioni.",
         "register_wrong": "Non succede nulla. Riprovate.",
+        "register_intro": (
+            "Scrivi la tua risposta in maiuscolo, senza spazi e senza accenti, poi cercala in questo elenco. "
+            "Prima i numeri, poi le parole dalla A alla Z. Poi leggi il paragrafo di risultato con il numero "
+            "accanto. Se la tua risposta non è nell'elenco, non è corretta."
+        ),
+        "register_correct_open": "Esatto! Aprite ora la {envelope}.",
+        "register_correct_keep": "Esatto! Scrivete questa risposta: un enigma successivo ne ha bisogno.",
+        "register_correct_accusation": "Esatto! Era l'ultimo enigma: passate all'accusa.",
+        "register_correct_notes": "Esatto! Scrivetela nei vostri appunti.",
+        "print_cut_strips": "Quando aprite questa busta, separate le strisce: tagliate lungo le linee tratteggiate.",
+        "manual_need_label_tape": (
+            "Nastro adesivo o colla per le etichette delle buste (oppure scrivete la lettera su ogni busta)"
+        ),
+        "manual_print_box_title": "Stampa al 100%",
+        "manual_print_box_chrome": "Chrome: Altre impostazioni > Scala > Predefinita",
+        "manual_print_box_edge": "Edge: Altre impostazioni > Scala > Dimensioni effettive",
+        "manual_print_box_acrobat": "Adobe Acrobat Reader: Ridimensionamento e gestione pagine > Dimensioni effettive",
+        "citation_revealed_by": "Rivelato dall'enigma {code}",
         "accusation_title": "Modulo d'accusa",
         "accusation_intro": (
             "Rispondete insieme a ogni domanda. Segnate una casella per domanda e scrivete il documento che lo prova. "
@@ -1268,20 +1322,29 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "stage_turn_page": "Depois de abrir o envelope, vire esta página e leia o texto em voz alta.",
         "stage_read_aloud": "Leiam em voz alta",
         "register_title": "Registo de respostas",
-        "register_intro": (
-            "Procure a sua resposta na lista: primeiro os números, depois as palavras de A a Z. Depois leia o "
-            "parágrafo de resultado com o número ao lado. Se a sua resposta não está na lista, não está correta."
-        ),
         "register_answer": "Resposta",
         "register_paragraph": "Parágrafo",
         "results_title": "Parágrafos de resultado",
         "results_intro": "Leia só o parágrafo indicado pelo registo de respostas.",
-        "register_correct": "Correto! Resolveram o enigma {code}.",
-        "register_open_envelope": "Abram agora o {envelope}.",
-        "register_keep_answer": "Guardem esta resposta: vão precisar dela mais tarde.",
-        "register_go_accusation": "Era o último enigma. Agora preencham juntos o formulário de acusação.",
-        "register_case_solved": "Resolveram o caso! Leiam o final nas soluções.",
         "register_wrong": "Não acontece nada. Tentem outra vez.",
+        "register_intro": (
+            "Escreva a sua resposta em maiúsculas, sem espaços e sem acentos (o Ç escreve-se C), e depois "
+            "procure-a nesta lista. Primeiro os números, depois as palavras de A a Z. Leia o parágrafo de "
+            "resultado com o número ao lado. Se a sua resposta não está na lista, não está correta."
+        ),
+        "register_correct_open": "Correto! Abram agora o {envelope}.",
+        "register_correct_keep": "Correto! Anotem esta resposta: um enigma mais à frente precisa dela.",
+        "register_correct_accusation": "Correto! Era o último enigma: passem à acusação.",
+        "register_correct_notes": "Correto! Escrevam-na nas vossas notas.",
+        "print_cut_strips": "Quando abrirem este envelope, separem as tiras: cortem pelas linhas tracejadas.",
+        "manual_need_label_tape": (
+            "Fita-cola ou cola para as etiquetas dos envelopes (ou escrevam a letra em cada envelope)"
+        ),
+        "manual_print_box_title": "Imprima a 100%",
+        "manual_print_box_chrome": "Chrome: Mais definições > Escala > Predefinição",
+        "manual_print_box_edge": "Edge: Mais definições > Escala > Tamanho real",
+        "manual_print_box_acrobat": "Adobe Acrobat Reader: Dimensionamento e manuseamento de páginas > Tamanho real",
+        "citation_revealed_by": "Revelado pelo enigma {code}",
         "accusation_title": "Formulário de acusação",
         "accusation_intro": (
             "Respondam juntos a cada pergunta. Marquem uma caixa por pergunta e escrevam o documento que o prova. "
@@ -1465,6 +1528,7 @@ COMPANION_STRINGS: Final[dict[str, dict[str, str]]] = {
         "companion_tab_solutions": "Solutions",
         "companion_tab_help": "How to play",
         "companion_read_aloud": "Read this aloud",
+        "companion_intro_more": "Read the whole introduction",
         "companion_game_length": "About {minutes} minutes",
         "companion_timer_label": "Time left",
         "companion_timer_overtime": "Extra time",
@@ -1536,6 +1600,7 @@ COMPANION_STRINGS: Final[dict[str, dict[str, str]]] = {
         "companion_tab_solutions": "Soluciones",
         "companion_tab_help": "Cómo se juega",
         "companion_read_aloud": "Leedlo en voz alta",
+        "companion_intro_more": "Leer toda la introducción",
         "companion_game_length": "Unos {minutes} minutos",
         "companion_timer_label": "Tiempo restante",
         "companion_timer_overtime": "Tiempo extra",
@@ -1608,6 +1673,7 @@ COMPANION_STRINGS: Final[dict[str, dict[str, str]]] = {
         "companion_tab_solutions": "Solucions",
         "companion_tab_help": "Com es juga",
         "companion_read_aloud": "Llegiu-ho en veu alta",
+        "companion_intro_more": "Llegir tota la introducció",
         "companion_game_length": "Uns {minutes} minuts",
         "companion_timer_label": "Temps restant",
         "companion_timer_overtime": "Temps extra",
@@ -1679,6 +1745,7 @@ COMPANION_STRINGS: Final[dict[str, dict[str, str]]] = {
         "companion_tab_solutions": "Solutions",
         "companion_tab_help": "Comment jouer",
         "companion_read_aloud": "Lisez ce texte à voix haute",
+        "companion_intro_more": "Lire toute l'introduction",
         "companion_game_length": "Environ {minutes} minutes",
         "companion_timer_label": "Temps restant",
         "companion_timer_overtime": "Temps supplémentaire",
@@ -1751,6 +1818,7 @@ COMPANION_STRINGS: Final[dict[str, dict[str, str]]] = {
         "companion_tab_solutions": "Lösungen",
         "companion_tab_help": "Spielregeln",
         "companion_read_aloud": "Lest diesen Text laut vor",
+        "companion_intro_more": "Die ganze Einleitung lesen",
         "companion_game_length": "Etwa {minutes} Minuten",
         "companion_timer_label": "Restzeit",
         "companion_timer_overtime": "Nachspielzeit",
@@ -1823,6 +1891,7 @@ COMPANION_STRINGS: Final[dict[str, dict[str, str]]] = {
         "companion_tab_solutions": "Soluzioni",
         "companion_tab_help": "Come si gioca",
         "companion_read_aloud": "Leggete questo testo ad alta voce",
+        "companion_intro_more": "Leggi tutta l'introduzione",
         "companion_game_length": "Circa {minutes} minuti",
         "companion_timer_label": "Tempo rimasto",
         "companion_timer_overtime": "Tempo extra",
@@ -1894,6 +1963,7 @@ COMPANION_STRINGS: Final[dict[str, dict[str, str]]] = {
         "companion_tab_solutions": "Soluções",
         "companion_tab_help": "Como jogar",
         "companion_read_aloud": "Leiam isto em voz alta",
+        "companion_intro_more": "Ler toda a introdução",
         "companion_game_length": "Cerca de {minutes} minutos",
         "companion_timer_label": "Tempo restante",
         "companion_timer_overtime": "Tempo extra",

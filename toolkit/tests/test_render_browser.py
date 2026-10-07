@@ -12,6 +12,7 @@ from mystery_forge.assemble import assemble_game
 from mystery_forge.game import Game
 from mystery_forge.mechanics.registry import all_implementations
 from mystery_forge.render import materials
+from mystery_forge.render.answer_register import register_form
 from mystery_forge.render.game_renderer import RenderReport, render_game
 from mystery_forge.render.pdf import PlaywrightSheetBrowser, open_sheet_browser
 from mystery_forge.spec.documents import ARTIFACT_MARK
@@ -74,10 +75,10 @@ def test_the_materials_reveal_no_answer_before_its_puzzle_is_solved(golden_repor
     materials = golden_report.outputs["materials"]
     stage_order: list[str] = [stage.id for stage in game.flow.stages]
     sheets = list(zip(materials.sheet_texts, materials.sheet_roles, materials.sheet_stages, strict=True))
-    register_text: str = " ".join(text for text, role, _ in sheets if role == "register").casefold()
+    register_text: str = " ".join(text for text, role, _ in sheets if role == "register")
     for puzzle in game.puzzles:
+        assert register_form(puzzle.source.answer) in register_text
         answer: str = puzzle.source.answer.casefold()
-        assert answer in register_text
         solved_in: int = stage_order.index(puzzle.source.stage)
         for text, role, stage in sheets:
             before_solved: bool = stage is None or stage_order.index(stage) <= solved_in
@@ -116,6 +117,31 @@ def test_a_document_that_is_too_long_is_reported(browser: PlaywrightSheetBrowser
     documents[4] = documents[4].model_copy(update={"body_html": long_body})
     report = render_game(game.model_copy(update={"documents": documents}), tmp_path, browser)
     assert [(finding.rule, finding.file) for finding in report.findings] == [("render.overflow", "documents/D5.md")]
+
+
+def test_a_slightly_rotated_handwriting_block_that_fits_is_no_overflow(
+    browser: PlaywrightSheetBrowser, tmp_path: Path
+) -> None:
+    game = golden_game()
+    documents = list(game.documents)
+    lines: str = " ".join(f"The keeper wrote line {number} of his note in a hurry." for number in range(24))
+    documents[4] = documents[4].model_copy(update={"body_html": f'<div class="mf-handwriting"><p>{lines}</p></div>'})
+    report = render_game(game.model_copy(update={"documents": documents}), tmp_path, browser)
+    assert report.findings == []
+
+
+def test_an_overflow_finding_says_how_much_and_what_overflows(browser: PlaywrightSheetBrowser, tmp_path: Path) -> None:
+    game = golden_game()
+    documents = list(game.documents)
+    long_body: str = "".join(
+        f'<div class="mf-handwriting"><p>Line {number} of a long note.</p></div>' for number in range(60)
+    )
+    documents[4] = documents[4].model_copy(update={"body_html": long_body})
+    report = render_game(game.model_copy(update={"documents": documents}), tmp_path, browser)
+    assert len(report.findings) == 1
+    assert re.search(
+        r"content \d+ px too tall; the first part past the edge is a handwriting block", report.findings[0].message
+    )
 
 
 @pytest.mark.parametrize(
@@ -158,15 +184,14 @@ def overflow_rules(report: RenderReport) -> list[tuple[str, str | None]]:
 def test_the_live_game_has_no_toolkit_page_that_overflows(
     browser: PlaywrightSheetBrowser, tmp_path: Path, live_game: Game, theme: str, paper: str
 ) -> None:
-    # A real 6-puzzle game with 13 places, written by an agent. Some of its documents really are too long for one
-    # page (its letter D10 on A4, two more on the shorter Letter paper): those findings belong to the game writer.
+    # A real 6-puzzle game with 13 places, written by an agent. Every page fits on A4. Two documents are too long for
+    # the shorter Letter paper: those findings belong to the game writer.
     game = configured(live_game, equipment={"paper": paper})
     report = render_game(game, tmp_path, browser, theme)  # type: ignore[arg-type]
     rules = overflow_rules(report)
-    assert ("render.overflow", "documents/D10.md") in rules
     assert all(rule == "render.overflow" and (file or "").startswith("documents/") for rule, file in rules)
     if paper == "A4":
-        assert rules == [("render.overflow", "documents/D10.md")]
+        assert rules == []
 
 
 def test_the_browser_loop_repairs_an_estimate_that_is_too_optimistic(
@@ -175,5 +200,5 @@ def test_the_browser_loop_repairs_an_estimate_that_is_too_optimistic(
     monkeypatch.setattr(materials, "RESULT_CHARS_PER_LINE", 90)
     first_plan = [sheet for sheet in materials.materials_sheets(live_game) if sheet.role == "register-results"]
     report = render_game(live_game, tmp_path, browser)
-    assert overflow_rules(report) == [("render.overflow", "documents/D10.md")]
+    assert overflow_rules(report) == []
     assert report.outputs["materials"].sheet_roles.count("register-results") > len(first_plan)

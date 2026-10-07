@@ -198,7 +198,13 @@ def test_cut_strips_vertical_strips_reassemble_the_message_by_dot_count() -> Non
     row_count: int = len(ordered[0][1])
     text: str = "".join("".join(lines[row] for _dots, lines in ordered) for row in range(row_count))
     assert text.replace("\u00a0", " ").strip() == MESSAGE
-    assert artifact.print_notes == ("Cut along the dashed lines to separate the strips.",)
+    assert artifact.print_notes == ("When you open this envelope, cut the strips apart along the dashed lines.",)
+
+
+def test_cut_strips_say_when_to_cut_in_the_game_language() -> None:
+    context: MechanicContext = make_context("lighthouse").model_copy(update={"language": "es"})
+    artifact: Artifact = build("cut-strips", {"message": MESSAGE}, context)
+    assert artifact.print_notes == ("Cuando abras este sobre, separa las tiras: recorta por las líneas discontinuas.",)
 
 
 def test_cut_strips_horizontal_strips_hold_one_line_each() -> None:
