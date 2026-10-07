@@ -9,11 +9,11 @@ answers:
   solve:
     - status: done
       answers:
-        - {code: A1, answer: boathouse, stuck: false, reasoning: Shifted back by three., aha: The tide counts back., all_steps_stated: false, evidence: [{document: The keeper's logbook, quote: my code goes back three steps}], candidates: []}
+        - {code: A1, answer: boathouse, stuck: false, reasoning: Shifted back by three., aha: The tide counts back., all_steps_stated: false, gaps: [], evidence: [{document: The keeper's logbook, quote: my code goes back three steps}], candidates: []}
       accusation: []
     - status: done
       answers:
-        - {code: A1, answer: "", stuck: true, reasoning: I could not find the key., aha: "", all_steps_stated: false, evidence: [], candidates: [{answer: mill, fits_all_clues: false, failing_clue: the shift}]}
+        - {code: A1, answer: "", stuck: true, reasoning: I could not find the key., aha: "", all_steps_stated: false, gaps: [], evidence: [], candidates: [{answer: mill, fits_all_clues: false, failing_clue: the shift}]}
       accusation: []
   guess:
     - guesses: [{code: A1, answer: lighthouse}]
