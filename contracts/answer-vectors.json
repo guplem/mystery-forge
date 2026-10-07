@@ -1,5 +1,5 @@
 {
-  "description": "Shared test vectors for answer normalization and hashing. The Python toolkit and the JavaScript companion must give these exact results.",
+  "description": "Shared test vectors for answer normalization and hashing. The Python toolkit and the JavaScript companion must give these exact results. Letters and digits of every script count; accents are dropped only from Latin, Greek, and Cyrillic letters, because in other scripts a mark can change the letter.",
   "salt": "test-salt",
   "normalization": [
     {
@@ -106,6 +106,71 @@
       "language": "xx",
       "input": "The End",
       "expected": "theend"
+    },
+    {
+      "language": "ru",
+      "input": "Ёлка!",
+      "expected": "елка"
+    },
+    {
+      "language": "ru",
+      "input": "Старая мельница",
+      "expected": "стараямельница"
+    },
+    {
+      "language": "el",
+      "input": "Οδός Σοφίας",
+      "expected": "οδοσσοφιασ"
+    },
+    {
+      "language": "ja",
+      "input": "がっこう",
+      "expected": "がっこう"
+    },
+    {
+      "language": "ja",
+      "input": "ＡＢＣ１２",
+      "expected": "abc12"
+    },
+    {
+      "language": "zh",
+      "input": "图书馆！",
+      "expected": "图书馆"
+    },
+    {
+      "language": "ko",
+      "input": "도서관",
+      "expected": "도서관"
+    },
+    {
+      "language": "hi",
+      "input": "पुरानी किताब",
+      "expected": "पुरानीकिताब"
+    },
+    {
+      "language": "ar",
+      "input": "المكتبة القديمة",
+      "expected": "المكتبةالقديمة"
+    },
+    {
+      "language": "he",
+      "input": "ספרייה",
+      "expected": "ספרייה"
+    },
+    {
+      "language": "vi",
+      "input": "Thư viện",
+      "expected": "thuvien"
+    },
+    {
+      "language": "tr",
+      "input": "İSTANBUL",
+      "expected": "istanbul"
+    },
+    {
+      "language": "en",
+      "input": "́abc",
+      "expected": "́abc"
     }
   ],
   "hashes": [
@@ -120,6 +185,14 @@
     {
       "normalized": "senorgarcia",
       "expected_sha256": "0ad88df1f90ede4d0becddba6d6edeb12b1328370cf9800ccd5149b9dc9bf805"
+    },
+    {
+      "normalized": "图书馆",
+      "expected_sha256": "e59be0d060f666c59553cab636fa3c3010b5eaef149b3579bb76b196e6ee40e5"
+    },
+    {
+      "normalized": "елка",
+      "expected_sha256": "351a6da4ecc87855b43b19327aba9d547de5cc200f06dac2ac82d29c0d58924d"
     }
   ]
 }

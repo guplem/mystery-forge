@@ -29,7 +29,7 @@ class ClueEntry:
 
 
 def squash(text: str) -> str:
-    """Return the text as lowercase ASCII letters and digits only, so "B O A T" and "boat" compare equal."""
+    """Return the text as lowercase letters and digits only, so "B O A T" and "boat" compare equal."""
     return normalize_answer(text, NO_LANGUAGE)
 
 

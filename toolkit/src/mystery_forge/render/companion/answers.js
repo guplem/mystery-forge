@@ -20,20 +20,56 @@
     pt: ['o', 'a', 'os', 'as', 'um', 'uma'],
   };
 
+  /** The first letter that keeps its marks: Armenian. Below it lie Latin, Greek, and Cyrillic. */
+  const FIRST_MARKED_SCRIPT = 0x0530;
+  /** Latin Extended Additional and Greek Extended: their letters lose their accents too. */
+  const EXTENDED_ACCENTED_START = 0x1e00;
+  const EXTENDED_ACCENTED_END = 0x2000;
+
   /**
-   * Return the comparable form of an answer: lowercase ASCII letters and digits, no accents, no leading article.
+   * True when a mark on this base letter is only an accent: in Latin, Greek, and Cyrillic, "é" counts as "e".
+   * @param {string} base
+   * @returns {boolean}
+   */
+  function dropsAccent(base) {
+    const code = /** @type {number} */ (base.codePointAt(0));
+    return code < FIRST_MARKED_SCRIPT || (code >= EXTENDED_ACCENTED_START && code < EXTENDED_ACCENTED_END);
+  }
+
+  /**
+   * @param {string} decomposed
+   * @returns {string}
+   */
+  function withoutAccents(decomposed) {
+    /** @type {string[]} */
+    const kept = [];
+    let base = '';
+    for (const character of decomposed) {
+      if (!/\p{M}/u.test(character)) {
+        base = character;
+      } else if (base && dropsAccent(base)) {
+        continue;
+      }
+      kept.push(character);
+    }
+    // Compose again, so a kana with its voicing mark or a Hangul syllable is one character, as players type it.
+    return kept.join('').normalize('NFC');
+  }
+
+  /**
+   * Return the comparable form of an answer: lowercase letters and digits of any script, no Latin, Greek, or
+   * Cyrillic accents, no punctuation or spaces, and no leading article.
    * @param {string} text
    * @param {string} language
    * @returns {string}
    */
   function normalizeAnswer(text, language) {
-    const withoutMarks = text.normalize('NFKD').replace(/\p{M}/gu, '');
-    // Python uses casefold(). For the Latin letters that survive the filter below, toLowerCase() gives the same
-    // result except for ß, which casefold() turns into "ss".
-    const lowered = withoutMarks.toLowerCase().replace(/ß/g, 'ss');
+    // Python uses casefold(). toLowerCase() gives the same result for these letters, except for ß, which casefold()
+    // turns into "ss", and the Greek final sigma, which casefold() turns into a plain sigma.
+    const lowered = withoutAccents(text.normalize('NFKD')).toLowerCase().replace(/ß/g, 'ss').replace(/ς/g, 'σ');
     const transliterated = Array.from(lowered, (character) => SPECIAL_LETTERS[character] ?? character).join('');
     /** @type {string[]} */
-    let words = transliterated.match(/[a-z0-9]+/g) ?? [];
+    let words = transliterated.match(/[\p{L}\p{N}\p{M}]+/gu) ?? [];
     const articles = LEADING_ARTICLES[language] ?? [];
     if (words.length > 1 && articles.includes(/** @type {string} */ (words[0]))) {
       words = words.slice(1);
