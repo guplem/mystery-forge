@@ -134,7 +134,10 @@ def opened_envelopes_section(game: Game, stage: str) -> list[str]:
 
 
 def document_section(document: AssembledDocument) -> str:
-    return f"## {document.meta.title} ({document_kind(document.meta.kind).name})\n\n{document.text}"
+    """The document as players hold it: the title, the printed header fields (sender, date, subject), and the text."""
+    heading: str = f"## {document.meta.title} ({document_kind(document.meta.kind).name})"
+    fields: str = "".join(f"{key}: {value}\n" for key, value in document.meta.fields.items())
+    return f"{heading}\n\n{fields}\n{document.text}" if fields else f"{heading}\n\n{document.text}"
 
 
 def answers_found_section(earlier: list[AssembledPuzzle]) -> str:

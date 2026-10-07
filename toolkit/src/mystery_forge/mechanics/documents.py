@@ -276,6 +276,11 @@ class TimelineOrderParams(BaseModel):
     events: list[TimelineEvent] = Field(
         min_length=2, max_length=20, description="The events. In date order, their first letters spell the answer."
     )
+    show_times: bool = Field(
+        default=False,
+        description="Print each card's time. Off by default: players must work out the order from the documents, "
+        "which is the puzzle. With the times printed, the puzzle is only a sort.",
+    )
 
 
 def parse_event_time(event: TimelineEvent) -> datetime:
@@ -305,9 +310,11 @@ def sorted_events(events: list[TimelineEvent]) -> list[tuple[str, TimelineEvent]
     return sorted(dated.items())
 
 
-def timeline_card_html(when: str, text: str) -> str:
+def timeline_card_html(when: str, text: str, show_time: bool) -> str:
+    # The time stays in data-when either way: the round-trip decoder sorts by it, and players never see attributes.
+    time_line: str = f'<p class="mf-timeline-when">{escape(when)}</p>' if show_time else ""
     return (
-        f'<div class="mf-timeline-card" data-when="{escape(when)}"><p class="mf-timeline-when">{escape(when)}</p>'
+        f'<div class="mf-timeline-card" data-when="{escape(when)}">{time_line}'
         f'<p class="mf-timeline-text">{escape(text)}</p></div>'
     )
 
@@ -324,11 +331,9 @@ def build_timeline_order(params: TimelineOrderParams, context: MechanicContext) 
     shown: list[tuple[str, TimelineEvent]] = [
         ordered[position] for position in shuffled_order(len(ordered), random.Random(context.seed))
     ]
-    cards: str = "".join(timeline_card_html(when, event.text) for when, event in shown)
-    return Artifact(
-        html=f'<div class="mf-timeline">{cards}</div>',
-        solver_text="\n".join(f"{when} | {event.text}" for when, event in shown),
-    )
+    cards: str = "".join(timeline_card_html(when, event.text, params.show_times) for when, event in shown)
+    lines: list[str] = [f"{when} | {event.text}" if params.show_times else event.text for when, event in shown]
+    return Artifact(html=f'<div class="mf-timeline">{cards}</div>', solver_text="\n".join(lines))
 
 
 def decode_timeline_order(rendered: RenderedArtifact, params: TimelineOrderParams, context: MechanicContext) -> str:

@@ -134,10 +134,12 @@ def leak_finding(puzzle: AssembledPuzzle, visible: VisibleText, answer: str, rev
     return Finding(
         severity="error",
         rule=visible.rule,
-        message=f"The answer of {puzzle.source.id} ('{answer}') appears {how}in {visible.label}, which players read "
-        "before they solve it.",
-        file=visible.file,
-        path=visible.path,
+        message=f"The answer of {puzzle.source.id} ('{answer}') appears {how}in {visible.label} ({visible.file}), "
+        "which players read before they solve it.",
+        # A leak in a document body goes to the puzzle's owner, who can fix it either way: change the answer, or
+        # allow the passage in the puzzle file. The writer of another puzzle's document cannot edit that allowlist.
+        file=puzzle.file if visible.path is None else visible.file,
+        path="leak_allowlist" if visible.path is None else visible.path,
         fix_hint=f"Rephrase the text so that it does not contain the answer. If the text must contain it, add the "
         f"passage to `leak_allowlist` in {puzzle.file} with the reason.",
     )

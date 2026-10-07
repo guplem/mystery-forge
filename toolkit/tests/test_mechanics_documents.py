@@ -294,7 +294,7 @@ def test_timeline_order_cards_in_date_order_spell_the_answer() -> None:
     assert len(cards) == 4
     assert "".join(normalize_answer(text, "")[0] for _when, text in sorted(cards)) == "toae"
     assert [when for when, _text in cards] != sorted(when for when, _text in cards)
-    assert "1923-05-02 21:15" in artifact.solver_text
+    assert "Omar leaves the club." in artifact.solver_text
 
 
 def test_timeline_order_never_shows_the_cards_already_sorted() -> None:
@@ -351,3 +351,12 @@ def test_timeline_order_escapes_the_event_text() -> None:
     ]
     artifact: Artifact = build("timeline-order", {"events": events}, make_context("sb"))
     assert "<script" not in artifact.html
+
+
+def test_timeline_order_hides_the_times_unless_asked() -> None:
+    artifact: Artifact = build("timeline-order", {"events": EVENTS}, make_context("Toae"))
+    assert "mf-timeline-when" not in artifact.html
+    assert all(event["when"] not in artifact.solver_text for event in EVENTS)
+    shown: Artifact = build("timeline-order", {"events": EVENTS, "show_times": "true"}, make_context("Toae"))
+    assert "mf-timeline-when" in shown.html
+    assert EVENTS[0]["when"] in shown.solver_text
