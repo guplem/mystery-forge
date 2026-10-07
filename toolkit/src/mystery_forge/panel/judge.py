@@ -3,7 +3,8 @@
 The rules come from `adr/0004-verification-strategy.md`. A solve counts only when every evidence quote is in the packet
 that the solver got, so a solver that guesses right does not pass a puzzle. Same-model solvers make correlated
 mistakes, so a wrong answer that two solvers share is a real signal of a second answer, not noise. A puzzle whose
-material prints its own method is no puzzle: when half of the solvers that solved it say so, it is trivial.
+material prints its own method is no puzzle: when half of the solvers that solved it say so, it is trivial. A puzzle
+that most of its solvers could finish only by assuming a missing link is incomplete, even when they got it right.
 The story-only solvers get no puzzle and no answer. When as many of them prove an accusation answer as a pass needs,
 players can skip the puzzles: the verdict is puzzles_not_needed.
 """
@@ -65,6 +66,7 @@ class Attempt:
     candidates: tuple[tuple[str, Candidate], ...]
     all_steps_stated: bool = False
     aha: str = ""
+    gaps: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -192,6 +194,7 @@ def puzzle_attempt(solver: ValidSolver, code: str, gold: frozenset[str], languag
         candidates=tuple((normalize_answer(candidate.answer, language), candidate) for candidate in answer.candidates),
         all_steps_stated=answer.all_steps_stated,
         aha=answer.aha,
+        gaps=tuple(answer.gaps),
     )
 
 
@@ -231,6 +234,7 @@ def judge_item(
     solved: list[Attempt] = [attempt for attempt in attempts if attempt.correct and attempt.verified]
     solves: int = len(solved)
     stated: list[Attempt] = [attempt for attempt in solved if attempt.all_steps_stated]
+    gapped: list[Attempt] = [attempt for attempt in solved if attempt.gaps]
     wrong_attempts: list[Attempt] = [attempt for attempt in attempts if attempt.normalized and not attempt.correct]
     wrong: list[AnswerCount] = answer_counts(wrong_attempts)
     alternatives: list[Alternative] = find_alternatives(attempts, wrong_attempts, gold)
@@ -250,6 +254,9 @@ def judge_item(
         verdict, notes = "ambiguous", []
     elif guessable:
         verdict, notes = "guessable", ["The guesser found the answer without the documents."]
+    elif 2 * len(gapped) > solves:
+        verdict = "incomplete"
+        notes = [f"{attempt.solver}: {gap}" for attempt in gapped for gap in attempt.gaps]
     elif can_be_trivial and stated and 2 * len(stated) >= solves:
         verdict = "trivial"
         notes = [f"{attempt.solver}: the material states every step; aha: {attempt.aha}" for attempt in stated]
@@ -269,6 +276,7 @@ def judge_item(
         alternatives=alternatives,
         guessable=guessable,
         steps_stated=len(stated),
+        gaps=len(gapped),
         notes=notes,
     )
 
@@ -396,6 +404,8 @@ def item_reason(item: ItemVerdict) -> str:
         return (
             f"puzzles not needed: {item.solves_verified} of {item.solvers} solvers proved it without any puzzle answer"
         )
+    if item.verdict == "incomplete":
+        return f"incomplete: {item.gaps} of {item.solves_verified} solvers say a step has no support in the material"
     if item.verdict == "trivial":
         return f"trivial: {item.steps_stated} of {item.solves_verified} solvers say the material states every step"
     return f"too hard: {item.solves_verified} verified solves of {item.solvers}, needs {item.required}"

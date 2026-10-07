@@ -55,6 +55,7 @@ blocks:
             reasoning: {type: string}
             aha: {type: string}
             all_steps_stated: {type: boolean}
+            gaps: {type: array, items: {type: string}}
             evidence:
               type: array
               items:

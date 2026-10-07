@@ -424,3 +424,40 @@ def test_the_judge_judges_only_the_items_of_the_packets_that_it_gets(golden_game
     report = judge_panel(golden_game, stage_a_only, full_panel([]), None)
     assert [item.code for item in report.puzzles] == ["A1", "A2"]
     assert report.questions == []
+
+
+def with_gap(code: str, gap: str) -> SolverAnswer:
+    return good_answer(code).model_copy(update={"gaps": [gap]})
+
+
+def test_a_gap_that_most_solvers_report_makes_the_puzzle_incomplete(
+    golden_game: Game, packets: list[StagePacket]
+) -> None:
+    results = full_panel()
+    for index in range(3):
+        results[index] = stage_a(f"a{index}", good_answer("A1"), with_gap("A2", "No document shows the oil stamp."))
+    report = judge_panel(golden_game, packets, results, None)
+    lock = verdict_of(report, "A2")
+    assert (lock.verdict, lock.gaps) == ("incomplete", 3)
+    assert lock.notes == [f"a{index}: No document shows the oil stamp." for index in range(3)]
+    assert not report.ok
+    assert report_summary(report)["failing"] == [
+        {"code": "A2", "reason": "incomplete: 3 of 5 solvers say a step has no support in the material"}
+    ]
+
+
+def test_a_gap_that_few_solvers_report_does_not_fail_the_puzzle(golden_game: Game, packets: list[StagePacket]) -> None:
+    results = full_panel()
+    for index in range(2):
+        results[index] = stage_a(f"a{index}", good_answer("A1"), with_gap("A2", "I guessed one letter."))
+    assert verdict_of(judge_panel(golden_game, packets, results, None), "A2").verdict == "pass"
+
+
+def test_incomplete_comes_after_guessable_and_before_trivial(golden_game: Game, packets: list[StagePacket]) -> None:
+    gapped_and_stated = with_gap("A2", "A link is missing.").model_copy(update={"all_steps_stated": True})
+    results = full_panel()
+    for index in range(5):
+        results[index] = stage_a(f"a{index}", good_answer("A1"), gapped_and_stated)
+    assert verdict_of(judge_panel(golden_game, packets, results, None), "A2").verdict == "incomplete"
+    guess = GuesserResult(guesses=[Guess(code="A2", answer="0726")])
+    assert verdict_of(judge_panel(golden_game, packets, results, guess), "A2").verdict == "guessable"

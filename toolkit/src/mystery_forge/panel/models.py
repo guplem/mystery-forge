@@ -17,6 +17,7 @@ Verdict = Literal[
     "trivial",
     "insufficient_solvers",
     "puzzles_not_needed",
+    "incomplete",
 ]
 SolverStatus = Literal["done", "failed"]
 
@@ -53,6 +54,8 @@ class SolverAnswer(PanelModel):
     aha: str = ""
     # True when the material stated every step of the method, so solving it took no insight.
     all_steps_stated: bool = False
+    # Each step that the material did not support: a link that the solver assumed, or a letter found by elimination.
+    gaps: list[str] = []
 
 
 class AccusationChoice(PanelModel):
@@ -111,6 +114,8 @@ class ItemVerdict(PanelModel):
     guessable: bool
     # The verified solvers that say the material states every step of the method.
     steps_stated: int = 0
+    # The verified solvers that report a step with no support in the material.
+    gaps: int = 0
     notes: list[str]
 
 
