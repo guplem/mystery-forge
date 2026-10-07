@@ -330,7 +330,7 @@ blocks:
     description: Assemble the game, run every check, and fix the errors
     skill: game-check-loop
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: full}
-    max_visits: 6
+    max_visits: 9
     on_max_visits: failed
     next:
       - when: "{{ not steps.game_check.outputs.ok }}"
@@ -489,7 +489,7 @@ blocks:
     next:
       - when: "{{ steps.status.json.ok }}"
         to: export
-      - when: "{{ (steps.status.json.checks_stale | default([]) | length) > 0 and (history.game_check | length) < 5 }}"
+      - when: "{{ (steps.status.json.checks_stale | default([]) | length) > 0 and (history.game_check | length) < 8 }}"
         to: game_check
       - when: "{{ inputs.panel and (history.panel | length) < 5 }}"
         to: panel

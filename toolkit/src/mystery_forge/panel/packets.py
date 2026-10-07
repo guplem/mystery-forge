@@ -204,7 +204,8 @@ def puzzle_entry(game: Game, puzzle: AssembledPuzzle) -> str:
     ]
     if puzzle.source.answer_format.choices:
         lines.append("  Choices: " + " | ".join(puzzle.source.answer_format.choices))
-    lines.append("  Documents for this puzzle: " + ("; ".join(titles) if titles else "none"))
+    # Other documents can matter too: a solver that reads this list as complete reports false gaps.
+    lines.append("  Its material is in: " + ("; ".join(titles) if titles else "no document of its own"))
     return "\n".join(lines)
 
 

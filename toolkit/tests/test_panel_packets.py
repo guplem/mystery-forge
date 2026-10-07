@@ -84,9 +84,9 @@ def test_a_later_packet_lists_the_answers_of_earlier_stages_and_the_opened_envel
 def test_the_puzzles_to_solve_show_the_format_and_the_attached_documents(golden_game: Game) -> None:
     first, second = build_stage_packets(golden_game)
     assert "- A1: The keeper's coded line\n  Answer format: one word (9 characters)" in first.text
-    assert "  Documents for this puzzle: The keeper's logbook" in first.text
+    assert "  Its material is in: The keeper's logbook" in first.text
     assert "- B1: How did the thief reach the rock?\n  Answer format: two words\n" in second.text
-    assert "  Documents for this puzzle: Notes from the boathouse box" in second.text
+    assert "  Its material is in: Notes from the boathouse box" in second.text
 
 
 def test_a_choice_puzzle_shows_its_choices_and_a_puzzle_without_documents_says_so(golden_game: Game) -> None:
@@ -99,7 +99,7 @@ def test_a_choice_puzzle_shows_its_choices_and_a_puzzle_without_documents_says_s
     game = golden_game.model_copy(update={"puzzles": [*golden_game.puzzles[:2], choice_puzzle], "documents": documents})
     text = build_stage_packets(game)[1].text
     assert "  Choices: low tide | dusk" in text
-    assert "  Documents for this puzzle: none" in text
+    assert "  Its material is in: no document of its own" in text
 
 
 def test_only_the_last_stage_shows_the_final_accusation(golden_game: Game) -> None:
