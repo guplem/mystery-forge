@@ -64,6 +64,16 @@ Then, on both systems:
 1. Claude Code asks whether you trust the folder. Say yes.
 2. Type **create a game** and press Enter.
 
+## Languages
+
+A game can be in any of 50 languages, from Afrikaans to Chinese. The agent writes the story, the documents, and the puzzles in that language.
+
+- **English, Spanish, Catalan, French, German, Italian, and Portuguese** have hand-checked tables of the fixed texts (the manual, the labels, the answer register, the companion page, the file names).
+- **Every other language:** the agent translates those fixed texts once per game, and the toolkit checks that nothing is missing.
+- **Non-Latin scripts** (for example Japanese, Russian, or Arabic): the game leaves out the puzzle types that only work with the letters A to Z, such as letter-shift ciphers and Morse code.
+- **Arabic, Hebrew, Persian, and Urdu** pages read from right to left.
+- **Fonts:** the PDFs use your system's fonts for scripts that the built-in fonts do not cover. Windows and macOS have them. On Linux, install a font package for the script (for example Noto CJK) before you generate.
+
 ## Printing tips
 
 - Print at **100% (actual size)**, single-sided. "Fit to page" breaks grids and cut-out pieces. Where to find the setting:
