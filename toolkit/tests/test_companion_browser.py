@@ -49,7 +49,7 @@ def launch_chromium(playwright: Playwright) -> Browser:
             return playwright.chromium.launch(channel=channel) if channel else playwright.chromium.launch()
         except Error:
             continue
-    pytest.fail("No Chromium-based browser found. Install Chrome or Edge, or run `forge doctor --install-browser`.")
+    pytest.fail("No Chromium-based browser found. Install Chrome or Edge, or run `uv run playwright install chromium`.")
 
 
 def launch_firefox(playwright: Playwright) -> Browser:

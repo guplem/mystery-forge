@@ -14,7 +14,7 @@ You are the documentation consistency checker for mystery-forge. You run after c
 - **ADRs** in `adr/`, and the ADR index table in the root `AGENTS.md`.
 - **Contract descriptions** in `contracts/*.json` (the `description` fields of the schema and the vector files).
 - **pskill skill instructions** in `generator/.pskill/skills/*/instructions/*.md`: they name `forge` verbs, file names, and config fields.
-- **Toolkit catalog files** in `toolkit/src/mystery_forge/catalog/*.yaml`: their mechanic, document kind, and theme descriptions must match what the builders and templates do.
+- **Toolkit catalog files** in `toolkit/src/mystery_forge/catalog/*.yaml`: their mechanic, ingredient, and evidence descriptions must match what the builders and checks do.
 
 You verify and fix drift. You do not author new ADRs or decide new decisions: that is the **adr-checker** agent in maintain mode. If a change introduced a new pattern that has no ADR, note it for adr-checker rather than writing the ADR yourself.
 
@@ -44,7 +44,7 @@ You verify and fix drift. You do not author new ADRs or decide new decisions: th
 | `toolkit/src/mystery_forge/cli.py` (verbs, flags, JSON output)                 | `toolkit/AGENTS.md`, `generator/AGENTS.md`, pskill `skill.yaml` script blocks and `instructions/*.md`, `README.md` |
 | `toolkit/src/mystery_forge/mechanics/`                                         | `catalog/mechanics.yaml`, `toolkit/AGENTS.md`, pskill instructions that list mechanics                             |
 | `toolkit/src/mystery_forge/checks/`                                            | `toolkit/AGENTS.md`, pskill fix-loop instructions that name check rules                                            |
-| `toolkit/src/mystery_forge/render/` (document kinds, themes, outputs)          | `catalog/document_kinds.yaml`, `catalog/themes.yaml`, `README.md` output folder section                            |
+| `toolkit/src/mystery_forge/render/` (document kinds, themes, outputs)          | `render/kinds.py`, `render/themes.py`, `README.md` output folder section                                           |
 | `toolkit/src/mystery_forge/spec/` (game source format)                         | `generator/AGENTS.md`, pskill instructions that describe the source files, related ADR                             |
 | `contracts/`                                                                   | `description` fields in the same file, `configurator/AGENTS.md`, `toolkit/AGENTS.md`, related ADR                  |
 | `configurator/` (fields, labels)                                               | `configurator/AGENTS.md`, `README.md` configure section, `contracts/game-config.schema.json` descriptions          |

@@ -1,7 +1,7 @@
 """Run the whole-game checks on an assembled game and return their findings, errors first.
 
-Each check family owns the rules that start with its prefix, so `forge check --only <prefix>` runs only the families
-that can report those rules.
+Each check family owns the rules that start with its prefix, so a caller that passes `only` (the story checks) runs
+only the families that can report those rules.
 """
 
 from collections.abc import Callable, Mapping, Sequence

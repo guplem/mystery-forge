@@ -12,7 +12,7 @@ Use the strongest check that each puzzle allows, in this order:
 2. **Code verifiers.** The agent writes the material; code checks a stated rule (an acrostic spells the answer, an anagram uses the same letters, the arithmetic gives the code).
 3. **The AI solver panel**, for puzzles that only a reader can check (riddles, deduction, observation). Solver subagents get the player view of one stage: the text of every document available there, the answers already found, and the answer formats. They do not get answers, hints, or mechanic names. Each solver returns its answers, the candidates that it considered, and evidence quotes.
 
-Whole-game code checks run on every assembly: the puzzle graph, the evidence ledger (each clue quote is verbatim in its document, each solution step and hint cites clues), answer leaks, the hint ladder, the fact registry (near-duplicate names, nobody in two places at once), the deduction (each innocent suspect has an exclusion clue), variety by player action, and the time and reading budgets.
+Whole-game code checks run on every assembly: the puzzle graph, the evidence ledger (each clue quote is verbatim in its document, each solution step and hint cites clues), answer leaks, the hint ladder, the fact registry (near-duplicate names, nobody in two places at once), the deduction (each innocent suspect has an exclusion clue), variety by player action, the time and reading budgets, and the SVG images (valid, safe, small, and used).
 
 Panel rules:
 
