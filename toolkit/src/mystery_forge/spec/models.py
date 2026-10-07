@@ -271,6 +271,9 @@ class Puzzle(SourceModel):
     depends_on: list[PuzzleId] = []
     in_world_reason: Text
     reveals: Text
+    # What the companion page shows when players solve the puzzle: the story payoff, in the voice of the story.
+    # Paper players never see it, so it may add no fact that the accusation needs.
+    reveal_text: str = ""
     answer: ShortText
     accepted: list[ShortText] = []
     near_misses: list[NearMiss] = []

@@ -50,6 +50,7 @@ function sampleData() {
           { level: 2, text: 'Three steps.' },
         ],
         solution: { steps: ['Shift back.'], answer: 'boathouse' },
+        reveal_text: '',
       },
       {
         code: 'A2',
@@ -61,6 +62,7 @@ function sampleData() {
         unlocks: null,
         hints: [{ level: 1, text: 'Receipt.' }],
         solution: { steps: ['Read it.'], answer: '0726' },
+        reveal_text: '',
       },
       {
         code: 'B1',
@@ -72,6 +74,7 @@ function sampleData() {
         unlocks: null,
         hints: [{ level: 1, text: 'The sea.' }],
         solution: { steps: ['Tide table.'], answer: 'low tide' },
+        reveal_text: 'The causeway was dry.',
       },
     ],
     deduction: {
@@ -109,7 +112,10 @@ function sampleData() {
 
 test('checkAnswer accepts the answer in any spelling and names the stage that it opens', () => {
   assert.deepEqual(logic.checkAnswer(sampleData(), 'A1', ' Boat-House '), { result: 'correct', unlocksStage: 'B' });
-  assert.deepEqual(logic.checkAnswer(sampleData(), 'B1', 'At LOW tide!'), { result: 'correct' });
+  assert.deepEqual(logic.checkAnswer(sampleData(), 'B1', 'At LOW tide!'), {
+    result: 'correct',
+    revealText: 'The causeway was dry.',
+  });
 });
 
 test('checkAnswer gives the message of a near miss', () => {

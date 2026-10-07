@@ -187,3 +187,9 @@ def test_no_static_script_can_close_its_script_tag() -> None:
     folder = files("mystery_forge.render").joinpath("companion")
     for name in COMPANION_STATIC_FILES:
         assert "</script" not in folder.joinpath(name).read_text(encoding="utf-8").lower(), name
+
+
+def test_a_puzzle_carries_its_reveal_text_for_the_moment_it_is_solved(golden_game: Game) -> None:
+    puzzles = build_companion_data(golden_game)["puzzles"]
+    assert puzzles[0]["reveal_text"] == ""
+    assert puzzles[2]["reveal_text"].startswith("The tide table settles it.")
