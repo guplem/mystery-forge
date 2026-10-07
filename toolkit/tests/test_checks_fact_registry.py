@@ -119,3 +119,21 @@ def test_an_unknown_participant_in_two_places_is_named_by_id() -> None:
     findings = check_fact_registry(with_events(first, second))
     assert "registry.two_places" in rules(findings)
     assert "stranger" in findings[-1].message
+
+
+def noria_game() -> Game:
+    objects: list[StoryObject] = [StoryObject(id="noria", name="Noria", description="A big wheel.")]
+    characters: list[Character] = [
+        *golden_game().story.characters,
+        Character(id="nerea-sanz", name="Nerea Sanz", role="guide", description="The guide."),
+    ]
+    return edit_story(golden_game(), objects=objects, characters=characters)
+
+
+def test_a_part_of_a_registry_name_is_never_a_near_duplicate() -> None:
+    assert check_fact_registry(with_d2_text("Then Nerea waved.", noria_game())) == []
+
+
+def test_a_common_word_that_the_documents_also_write_in_lower_case_is_not_a_name() -> None:
+    game: Game = with_d2_text("Copia del recibo. Keep the copia safe.", noria_game())
+    assert check_fact_registry(game) == []

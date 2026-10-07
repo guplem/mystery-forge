@@ -156,7 +156,14 @@ def assemble_document(
     rendered = render_markdown(resolved, document.file, document.body_line)
     findings.extend(rendered.findings)
     text: str = IMAGE_MARK_PATTERN.sub(lambda match: image_caption(match.group(2)), rendered.text)
-    return AssembledDocument(meta=document.meta, file=document.file, body_html=rendered.html, text=text)
+    fields: dict[str, str] = {}
+    for key, value in document.meta.fields.items():
+        # Header fields print too (a sender, a signature), so they take the same references as the body.
+        resolved_value, field_findings = resolve_references(value, document.meta.puzzle, context, document.file, 1)
+        findings.extend(field_findings)
+        fields[key] = resolved_value
+    meta = document.meta.model_copy(update={"fields": fields})
+    return AssembledDocument(meta=meta, file=document.file, body_html=rendered.html, text=text)
 
 
 def image_caption(caption: str) -> str:
