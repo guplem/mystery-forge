@@ -13,6 +13,7 @@ Write `{{ steps.setup.json.game_dir }}/source/story.yaml`, in the game language,
   - Every wrong option is plausible: a document makes it tempting (a red herring with an innocent explanation). No joke options.
   - No single document names the culprit's act in their own words (no confession, no written plan, no motive spelled out by the culprit). The players must combine at least two clues.
   - Clear at least one innocent suspect by inference (two facts that together rule them out), not only by a timestamped alibi.
+  - **The plain clues leave the case open.** With the plain clues alone, at least two suspects still fit, and each question that cites a hidden clue still has two defensible options. So clear at least one innocent suspect only with a hidden clue (cite it in that exclusion). Never state a hidden fact in other words in a plain clue or in the intro. The checks reject a culprit that plain clues name by elimination, and solvers who get no puzzle later test the rest.
 - **The intro** (read aloud at the start: 80 to 160 words; who the players are, the goal, and the stakes), the **epilogues** (at least three: full success at 75%, partial success at 40%, failure at 0%), and the **reveal**: 3 to 6 steps of "how you could have known", each citing clues.
 - `visual_style` only when the config's `visuals.style` is `auto`: the style that fits the story best.
 

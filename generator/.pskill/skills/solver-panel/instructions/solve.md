@@ -10,6 +10,7 @@ Then solve each puzzle that the packet lists under the puzzles to solve, the way
 - Keep `reasoning` to three sentences at most.
 - In `aha`, name in one sentence the insight that unlocked the puzzle. Set `all_steps_stated: true` when the material told you every step of the method, so that you only had to follow instructions; set it to false when you had to discover something yourself.
 - Write your answer to a file with the Write tool and submit it from that file (`... submit <run> --task <n> < answer.yaml`): a long shell command fails on Windows.
-{% if item.has_accusation %}- The packet also has a final accusation. Answer each question with the option id that the evidence supports, with your evidence quotes.
+{% if item.story_only %}- Your packet has no puzzle: return an empty `answers` list. It tests whether players can skip the puzzles. Answer an accusation question only when the documents prove the option, with your evidence quotes; otherwise leave `option` empty. Do not guess.
+{% elif item.has_accusation %}- The packet also has a final accusation. Answer each question with the option id that the evidence supports, with your evidence quotes.
 {% else %}- Return an empty `accusation` list.
 {% endif %}

@@ -15,6 +15,7 @@ from mystery_forge.verification import (
     game_hashes,
     ledger_path,
     load_ledger,
+    panel_stages_to_run,
     puzzle_closure_hash,
     record_checks,
     record_panel,
@@ -159,6 +160,18 @@ def test_record_panel_stores_the_verdicts_and_merges_the_questions() -> None:
     assert record_panel(ledger, {"A1": "h1"}, report([], [item("who", "pass")])) == ledger
 
 
+def test_a_story_only_failure_fails_the_deduction_entry() -> None:
+    story_only_failure = PanelReport(
+        ok=False,
+        puzzles=[],
+        questions=[item("who", "pass")],
+        story_only=[item("who", "puzzles_not_needed")],
+        invalid_solvers=[],
+    )
+    ledger = record_panel(VerificationLedger(), HASHES, story_only_failure)
+    assert ledger.entries["deduction"] == LedgerEntry(panel_hash="h3", panel_verdict="puzzles_not_needed")
+
+
 def test_stale_codes_need_a_pass_on_the_current_hash() -> None:
     assert stale_codes(VerificationLedger(), HASHES) == ["A1", "B1", "deduction"]
     ledger = record_checks(VerificationLedger(), HASHES, ["A1", "B1", "deduction"])
@@ -190,3 +203,20 @@ def test_export_blockers_name_failing_and_stale_codes() -> None:
     assert "too_hard" in blockers[1].message
     assert all(finding.severity == "error" and finding.fix_hint for finding in blockers)
     assert [finding.path for finding in export_blockers(ledger, HASHES, panel_required=False)] == ["B1"]
+
+
+def test_the_panel_runs_the_stages_that_have_no_pass_on_their_current_content(golden_game: Game) -> None:
+    hashes = game_hashes(golden_game)
+    assert panel_stages_to_run(golden_game, VerificationLedger()) == {"A", "B", "story-only"}
+    passing = PanelReport(
+        ok=True,
+        puzzles=[item(code, "pass") for code in ("A1", "A2", "B1")],
+        questions=[item("who", "pass")],
+        invalid_solvers=[],
+    )
+    ledger = record_panel(VerificationLedger(), hashes, passing)
+    assert panel_stages_to_run(golden_game, ledger) == set()
+    stale_a2 = record_panel(ledger, {**hashes, "A2": "old"}, report([item("A2", "pass")], []))
+    assert panel_stages_to_run(golden_game, stale_a2) == {"A"}
+    stale_deduction = record_panel(ledger, {**hashes, "deduction": "old"}, report([], [item("who", "pass")]))
+    assert panel_stages_to_run(golden_game, stale_deduction) == {"B", "story-only"}

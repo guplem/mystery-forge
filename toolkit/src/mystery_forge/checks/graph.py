@@ -11,6 +11,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Literal
 
+from mystery_forge.answers import normalize_answer
 from mystery_forge.catalog import Mechanic
 from mystery_forge.checks.game_index import FLOW_FILE, id_number, puzzles_by_id, squash, stage_positions
 from mystery_forge.findings import Finding
@@ -318,6 +319,42 @@ def final_puzzle_findings(game: Game) -> list[Finding]:
         )
     if game.flow.structure == "funnel":
         findings.extend(funnel_findings(game, final))
+    findings.extend(feeder_variant_findings(game, final))
+    return findings
+
+
+def feeder_variant_findings(game: Game, final: AssembledPuzzle) -> list[Finding]:
+    """Report an answer variant with other letters on a puzzle that the final puzzle uses.
+
+    The final puzzle works on the letters or the digits of the earlier answers. A group that typed an accepted
+    variant with other letters ("12" for "twelve") gets a wrong final answer, so only spellings that normalize to the
+    same answer may count.
+    """
+    puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
+    findings: list[Finding] = []
+    for feeder_id in final.source.depends_on:
+        feeder: AssembledPuzzle | None = puzzles.get(feeder_id)
+        if feeder is None:
+            continue
+        answer: str = normalize_answer(feeder.source.answer, game.config.language)
+        others: list[str] = [
+            variant for variant in feeder.source.accepted if normalize_answer(variant, game.config.language) != answer
+        ]
+        if not others:
+            continue
+        listed: str = ", ".join(f"'{variant}'" for variant in others)
+        findings.append(
+            Finding(
+                severity="error",
+                rule="graph.feeder_variant",
+                message=f"{feeder_id} feeds the final puzzle {final.source.id}, but it also accepts {listed}: a group "
+                "that types one of them uses other letters in the final puzzle.",
+                file=feeder.file,
+                path="accepted",
+                fix_hint="Remove these variants. Make the answer format force one spelling instead (for example "
+                "'a number in words'), or add the variant as a near miss whose message asks for the other form.",
+            )
+        )
     return findings
 
 

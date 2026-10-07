@@ -4,12 +4,17 @@ A solver must see what a player sees at that stage and nothing more. A packet th
 answers of earlier stages, and the answer formats, and never the answers of its own stage, hints, solutions, mechanic
 names, difficulties, or canaries. The workflow pastes the packet text into the solver prompt, so the solver needs no
 file.
+
+The story-only packet tests the promise that the puzzles matter. It holds every plain document (no puzzle document,
+no answer) and the accusation questions whose proof cites a clue that a puzzle reveals. When solvers can still prove
+those answers, players can skip the puzzles.
 """
 
 import hashlib
 
 from pydantic import BaseModel, ConfigDict
 
+from mystery_forge.checks.game_index import revealed_clue_ids
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
 from mystery_forge.i18n import text
 from mystery_forge.render.kinds import document_kind
@@ -30,6 +35,17 @@ the case summary below and the answer format of each puzzle. Give your best gues
 
 ACCUSATION_INSTRUCTIONS: str = "Answer each question with the id of one option, and quote the evidence."
 
+STORY_ONLY_STAGE: str = "story-only"
+STORY_ONLY_INSTRUCTIONS: str = """You are a player of a printed mystery game. You read the plain documents of every \
+envelope, but you solved no puzzle, so you know no puzzle answer. Everything you have is below. Do not open any file \
+and do not search anywhere else. Use only this text.
+
+Answer each question of the final accusation only when the documents below prove the answer:
+- Give the option id, and quote the exact words of the documents that prove it.
+- Ruling out every other option with quoted evidence counts as proof. A hunch, or the option that seems most likely, \
+does not.
+- If the documents do not prove one option, leave the option empty. Do not guess."""
+
 
 class StagePacket(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -37,7 +53,7 @@ class StagePacket(BaseModel):
     stage: str
     # The codes of the puzzles of this stage, in the order of the packet.
     codes: list[str]
-    # The ids of the accusation questions; only the last stage has them.
+    # The ids of the accusation questions; only the last stage and the story-only packet have them.
     questions: list[str]
     text: str
     sha256: str
@@ -81,6 +97,41 @@ def stage_packet(game: Game, stage: str, deduction: Deduction | None) -> StagePa
         stage=stage,
         codes=[puzzle.code for puzzle in current],
         questions=[question.id for question in deduction.questions] if deduction is not None else [],
+        text=packet_text,
+        sha256=sha256_text(packet_text),
+    )
+
+
+def build_panel_packets(game: Game) -> list[StagePacket]:
+    """Return the stage packets, then the story-only packet when the accusation has a question that a puzzle proves."""
+    story_only: StagePacket | None = build_story_only_packet(game)
+    return [*build_stage_packets(game), *([story_only] if story_only is not None else [])]
+
+
+def build_story_only_packet(game: Game) -> StagePacket | None:
+    deduction: Deduction | None = game.story.deduction
+    if deduction is None:
+        return None
+    revealed: set[str] = revealed_clue_ids(game)
+    questions = [question for question in deduction.questions if revealed.intersection(question.proven_by)]
+    if not questions:
+        return None
+    plain_documents: list[AssembledDocument] = [
+        document for document in available_documents(game, game.flow.stages[-1].id) if document.meta.puzzle is None
+    ]
+    sections: list[str] = [
+        f"# {game.story.title}\n\n{STORY_ONLY_INSTRUCTIONS}",
+        f"# The case\n\n{game.story.intro}",
+        *opened_envelopes_section(game, game.flow.stages[-1].id),
+        "# Documents",
+        *(document_section(document) for document in plain_documents),
+        accusation_section(deduction.model_copy(update={"questions": questions})),
+    ]
+    packet_text: str = "\n\n".join(sections) + "\n"
+    return StagePacket(
+        stage=STORY_ONLY_STAGE,
+        codes=[],
+        questions=[question.id for question in questions],
         text=packet_text,
         sha256=sha256_text(packet_text),
     )

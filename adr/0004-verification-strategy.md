@@ -12,7 +12,7 @@ Use the strongest check that each puzzle allows, in this order:
 2. **Code verifiers.** The agent writes the material; code checks a stated rule (an acrostic spells the answer, an anagram uses the same letters, the arithmetic gives the code).
 3. **The AI solver panel**, for puzzles that only a reader can check (riddles, deduction, observation). Solver subagents get the player view of one stage: the text of every document available there, the answers already found, and the answer formats. They do not get answers, hints, or mechanic names. Each solver returns its answers, the candidates that it considered, and evidence quotes.
 
-**Puzzles must matter.** The story has hidden clues: facts that no document prints, because a puzzle reveals them (`hidden: true`, `revealed_by`). At least two accusation questions need a hidden clue, and every planned puzzle has a job (it opens a stage, feeds another puzzle, is the final puzzle, or reveals a hidden clue). The puzzle-design reviewer checks each puzzle for an aha before any puzzle is written.
+**Puzzles must matter.** The story has hidden clues: facts that no document prints, because a puzzle reveals them (`hidden: true`, `revealed_by`). At least two accusation questions need a hidden clue, and every planned puzzle has a job (it opens a stage, feeds another puzzle, is the final puzzle, or reveals a hidden clue). The puzzle-design reviewer checks each puzzle for an aha before any puzzle is written. The plain clues must leave the case open: at least one innocent suspect's exclusion cites a hidden clue (`deduction.culprit_by_elimination`). Each `must_contain` sentence of the plan, such as a link of the final puzzle, must stay in its documents through every later fix (`plan.must_contain_missing`). A puzzle that feeds the final puzzle accepts no answer variant with other letters (`graph.feeder_variant`).
 
 Whole-game code checks run on every assembly: the puzzle graph, the evidence ledger (each clue quote is verbatim in its document, each solution step and hint cites clues), answer leaks, the hint ladder, the fact registry (near-duplicate names, nobody in two places at once), the deduction (each innocent suspect has an exclusion clue), variety by player action, the time and reading budgets, and the SVG images (valid, safe, small, and used).
 
@@ -26,12 +26,14 @@ Panel rules:
 - Each puzzle file holds a canary string. A solver answer that contains a canary read the source files, so it does not count.
 - Each solver also names the insight that unlocked a puzzle and says whether the material stated every step. When at least half of the solvers say it did, the puzzle is `trivial` (a worksheet, not a puzzle); the first puzzle of the game is exempt.
 - When several verdicts apply, the first of this order wins: `insufficient_solvers`, `gold_suspect`, `ambiguous`, `guessable`, `trivial`, `too_hard`, `pass`. The accusation questions are judged like medium puzzles.
-- Every check result stores a content hash of what it checked (`reports/verification.json`). The skill runs the panel again before export when a result is stale.
+- A story-only group of solvers gets every plain document (no puzzle document, no answer) and the accusation questions that cite a hidden clue. When as many of them prove a question as a pass needs, the verdict is `puzzles_not_needed`: players could skip the puzzles.
+- A packet shows what the sheet prints. A builder's solver text describes only printed material, with no words of a fixed language. A text that the material needs but does not print (a coordinate list) is the artifact's `needs_in_documents`, and a check makes sure that a document prints it.
+- Every check result stores a content hash of what it checked (`reports/verification.json`). The skill runs the panel again before export when a result is stale. A panel run gives solver tasks only to the stages that hold an item with no pass on its current content (`forge packets --all` runs every stage).
 
 **Rejected alternative:** a panel vote on every puzzle, with no builders. Same-model solvers make correlated mistakes, and LLMs solve ciphers that humans find hard while they fail at folds and overlays that humans find easy. The panel finds ambiguity; it does not measure human difficulty.
 
 ## Consequences
 
 - The catalog prefers buildable mechanics, and each catalog entry names its verification level.
-- Panel cost grows with stages times solvers, not with puzzles times solvers.
+- Panel cost grows with stages times solvers, not with puzzles times solvers, plus one story-only group. A run after a fix costs only the stages that changed.
 - A run can skip the panel (`create-game` input `panel: false`) when the user asks for speed; the final report says so. On a harness with no subagents, the panel tasks run one after another in the main context, so they are not isolated from the answers.

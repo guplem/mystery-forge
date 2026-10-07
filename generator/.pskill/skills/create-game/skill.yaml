@@ -385,12 +385,12 @@ blocks:
     description: Test the game with fresh solver subagents
     skill: solver-panel
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}"}
-    max_visits: 3
+    max_visits: 5
     on_max_visits: render
     next:
       - when: "{{ steps.panel.outputs.ok }}"
         to: render
-      - when: "{{ (history.panel_fix | length) < 2 }}"
+      - when: "{{ (history.panel_fix | length) < 3 }}"
         to: panel_fix
       - to: render
 
@@ -491,7 +491,7 @@ blocks:
         to: export
       - when: "{{ (steps.status.json.checks_stale | default([]) | length) > 0 and (history.game_check | length) < 5 }}"
         to: game_check
-      - when: "{{ inputs.panel and (history.panel | length) < 3 }}"
+      - when: "{{ inputs.panel and (history.panel | length) < 5 }}"
         to: panel
       - to: export_with_warnings
 

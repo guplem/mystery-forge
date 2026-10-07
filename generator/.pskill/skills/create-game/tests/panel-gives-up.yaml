@@ -1,4 +1,4 @@
-name: after two panel fixes the game renders with panel findings
+name: after three panel fixes the game renders with panel findings
 inputs:
   config: c.json
 scripts:
@@ -43,6 +43,7 @@ calls:
   - *id001
   - *id001
   - *id001
+  - *id001
   panel:
   - &id002
     status: succeeded
@@ -58,6 +59,7 @@ calls:
         files:
         - puzzles/P1.yaml
         findings_file: f.json
+  - *id002
   - *id002
   - *id002
 answers:
@@ -118,6 +120,7 @@ answers:
     - puzzles/P1.yaml
     summary: Tried.
   - *id003
+  - *id003
 expect:
   path:
   - doctor
@@ -137,6 +140,9 @@ expect:
   - illustrate
   - game_check
   - review_documents
+  - panel
+  - panel_fix
+  - game_check
   - panel
   - panel_fix
   - game_check

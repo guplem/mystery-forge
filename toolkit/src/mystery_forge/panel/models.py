@@ -8,7 +8,16 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-Verdict = Literal["pass", "ambiguous", "gold_suspect", "too_hard", "guessable", "trivial", "insufficient_solvers"]
+Verdict = Literal[
+    "pass",
+    "ambiguous",
+    "gold_suspect",
+    "too_hard",
+    "guessable",
+    "trivial",
+    "insufficient_solvers",
+    "puzzles_not_needed",
+]
 SolverStatus = Literal["done", "failed"]
 
 
@@ -115,4 +124,6 @@ class PanelReport(PanelModel):
     ok: bool
     puzzles: list[ItemVerdict]
     questions: list[ItemVerdict]
+    # The accusation questions again, judged by the story-only solvers: a pass means that they could not prove it.
+    story_only: list[ItemVerdict] = []
     invalid_solvers: list[InvalidSolver]
