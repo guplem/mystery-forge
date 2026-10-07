@@ -19,6 +19,7 @@ STORY_GROUP: str = "story"
 PLAN_GROUP: str = "plan"
 DOCUMENTS_GROUP: str = "documents"
 SETUP_FILES: frozenset[str] = frozenset({"config.json", "brief.json", "draw.json"})
+TOOLKIT_RULES: frozenset[str] = frozenset({"render.toolkit_overflow"})
 
 
 @dataclass(frozen=True)
@@ -101,7 +102,8 @@ def group_findings(findings: list[Finding], game_dir: Path) -> list[FixGroup]:
     owners: dict[str, str] = file_owners(game_dir)
     grouped: dict[str, list[Finding]] = {}
     for finding in findings:
-        name: str | None = group_name(finding.file, owners)
+        # A toolkit bug has no game file: no writer can fix it, so it goes to no fixer.
+        name: str | None = None if finding.rule in TOOLKIT_RULES else group_name(finding.file, owners)
         if name is not None:
             grouped.setdefault(name, []).append(finding)
     return [
