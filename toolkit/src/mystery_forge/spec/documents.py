@@ -87,8 +87,11 @@ def reference_value(
     kind: str, target: str, caption: str, owner_puzzle: str | None, context: ReferenceContext
 ) -> str | None:
     if kind == "artifact":
-        puzzle: str | None = target or owner_puzzle
-        return ARTIFACT_MARK.format(puzzle=puzzle) if puzzle in context.puzzle_ids else None
+        # `{{artifact:P2.key1}}` prints one part of the material; the graph check knows the part names.
+        puzzle, _, part = (target or owner_puzzle or "").partition(".")
+        if puzzle not in context.puzzle_ids:
+            return None
+        return ARTIFACT_MARK.format(puzzle=f"{puzzle}.{part}" if part else puzzle)
     if kind == "image":
         return IMAGE_MARK.format(image=target, caption=caption) if target in context.image_ids else None
     if kind == "doc":

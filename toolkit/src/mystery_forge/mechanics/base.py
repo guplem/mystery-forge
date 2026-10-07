@@ -33,6 +33,16 @@ class MechanicContext(BaseModel):
         return normalize_answer(self.answer, self.language)
 
 
+class ArtifactPart(BaseModel):
+    """A piece of the material that another document prints, such as one part of a key: `{{artifact:P2.key1}}`."""
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str
+    html: str
+    solver_text: str
+
+
 class Artifact(BaseModel):
     """The printable output of a mechanic."""
 
@@ -46,6 +56,8 @@ class Artifact(BaseModel):
     print_notes: tuple[str, ...] = ()
     # Texts that the material needs but does not print, such as a coordinate list: a document must print each one.
     needs_in_documents: tuple[str, ...] = ()
+    # Pieces that other documents print. Each one must sit in exactly one document that players hold in time.
+    parts: tuple[ArtifactPart, ...] = ()
 
 
 class RenderedArtifact(BaseModel):

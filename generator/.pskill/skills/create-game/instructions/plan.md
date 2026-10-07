@@ -18,6 +18,7 @@ Write these files with the Write tool (a long shell command fails on Windows).
 
 Design rules (the checks and a puzzle-design reviewer enforce them):
 - **Every puzzle has a job:** it opens a stage, or feeds the final puzzle, or reveals a hidden clue that the accusation needs. A puzzle with no job is cut.
+- **Keys on other props.** A symbol cipher for teens or adults splits its key (`key_parts`) over other props, so the puzzle owns one document per key part.
 - **One aha per puzzle.** Name it in `notes` in one sentence. The material shows what to solve and where to look, never how: the hints carry the method.
 - **Hiding that works.** The method must defeat `hidden_from` and not the reader that the hider writes for. Reject: a key printed next to the code; a lock whose inputs `hidden_from` already knows; a sender with no reason to encode; an ally who could simply tell the players. One friendly character authors at most 2 puzzles.
 - **Evidence, not confessions.** A puzzle reveals a time, a place, an object, or a number that players must connect; never the culprit's own statement of the act, and never the answer of an accusation question.
