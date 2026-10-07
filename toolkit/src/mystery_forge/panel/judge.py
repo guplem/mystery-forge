@@ -109,8 +109,10 @@ def judge_panel(
             if puzzle.code in solver.packet.codes
         ]
         guessable: bool = guesses.get(puzzle.code, "") in gold
-        # The first puzzle teaches how the game works, so it may state its method.
-        puzzles.append(judge_item(puzzle.code, puzzle.source.difficulty, attempts, gold, guessable, position > 0))
+        # The first puzzle teaches how the game works, so it may state its method; so may every puzzle for kids,
+        # because the design rules ask kids' games to state each step.
+        can_be_trivial: bool = position > 0 and game.config.audience != "kids"
+        puzzles.append(judge_item(puzzle.code, puzzle.source.difficulty, attempts, gold, guessable, can_be_trivial))
     players: list[ValidSolver] = [solver for solver in valid if solver.packet.stage != STORY_ONLY_STAGE]
     story_only: list[ValidSolver] = [solver for solver in valid if solver.packet.stage == STORY_ONLY_STAGE]
     story_only_questions: set[str] = {

@@ -461,3 +461,12 @@ def test_incomplete_comes_after_guessable_and_before_trivial(golden_game: Game, 
     assert verdict_of(judge_panel(golden_game, packets, results, None), "A2").verdict == "incomplete"
     guess = GuesserResult(guesses=[Guess(code="A2", answer="0726")])
     assert verdict_of(judge_panel(golden_game, packets, results, guess), "A2").verdict == "guessable"
+
+
+def test_a_kids_game_may_state_its_methods(golden_game: Game, packets: list[StagePacket]) -> None:
+    """The design rules ask kids' games to state each step, so a stated method is no flaw there."""
+    kids_game = golden_game.model_copy(update={"config": golden_game.config.model_copy(update={"audience": "kids"})})
+    results = full_panel()
+    for index in range(3):
+        results[index] = stage_a(f"a{index}", stated("A1"), stated("A2", aha="read the receipt"))
+    assert verdict_of(judge_panel(kids_game, packets, results, None), "A2").verdict == "pass"

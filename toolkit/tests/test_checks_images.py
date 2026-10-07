@@ -5,16 +5,18 @@ from mystery_forge.checks.images import MAX_IMAGE_BYTES, check_images
 from mystery_forge.game import Game
 
 SAFE_SVG: str = (
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><title>A round lamp</title>'
     '<circle cx="5" cy="5" r="4" fill="currentColor"/></svg>'
 )
+UNTITLED_SVG: str = '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="4"/></svg>'
 
 
-def with_images(images: dict[str, str], referenced: tuple[str, ...] = ("lamp",)) -> Game:
+def with_images(images: dict[str, str], referenced: tuple[str, ...] = ("lamp",), document: int = 0) -> Game:
     game = golden_game()
-    first = game.documents[0]
+    first = game.documents[document]
     marks = "".join(f"<p>⟦image:{image}|A caption⟧</p>" for image in referenced)
-    documents = [first.model_copy(update={"body_html": first.body_html + marks}), *game.documents[1:]]
+    documents = list(game.documents)
+    documents[document] = first.model_copy(update={"body_html": first.body_html + marks})
     return game.model_copy(update={"images": images, "documents": documents})
 
 
@@ -64,6 +66,15 @@ def test_an_unused_image_is_a_warning() -> None:
 def test_local_fragment_links_are_fine() -> None:
     svg = (
         '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
-        '<defs><path id="p" d="M0 0L1 1"/></defs><use xlink:href="#p"/><use href="#p"/></svg>'
+        '<title>Two lines</title><defs><path id="p" d="M0 0L1 1"/></defs><use xlink:href="#p"/><use href="#p"/></svg>'
     )
     assert check_images(with_images({"lamp": svg})) == []
+
+
+def test_an_image_without_a_title_is_a_warning_and_an_error_in_puzzle_material() -> None:
+    """Live game 6: the solver panel saw a rebus as "[Image]", so it could not test the puzzle."""
+    story_document = check_images(with_images({"lamp": UNTITLED_SVG}))
+    assert [(finding.rule, finding.severity) for finding in story_document] == [("images.no_title", "warning")]
+    puzzle_document = check_images(with_images({"lamp": UNTITLED_SVG}, document=1))
+    assert [(finding.rule, finding.severity) for finding in puzzle_document] == [("images.no_title", "error")]
+    assert puzzle_document[0].file == "images/lamp.svg"

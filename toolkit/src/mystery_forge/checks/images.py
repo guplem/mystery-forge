@@ -16,17 +16,27 @@ MAX_IMAGE_BYTES: Final[int] = 150_000
 FORBIDDEN_TAGS: Final[frozenset[str]] = frozenset({"script", "foreignobject", "iframe", "object", "embed"})
 LINK_ATTRIBUTES: Final[frozenset[str]] = frozenset({"href", "src"})
 IMAGE_MARK: Final[re.Pattern[str]] = re.compile(r"⟦image:([^|⟧]+)\|")
+TITLE_PATTERN: Final[re.Pattern[str]] = re.compile(r"<title[^>]*>\s*\S")
 
 
 def check_images(game: Game) -> list[Finding]:
     used: set[str] = {match for document in game.documents for match in IMAGE_MARK.findall(document.body_html)}
+    in_puzzles: set[str] = {
+        match
+        for document in game.documents
+        if document.meta.puzzle is not None
+        for match in IMAGE_MARK.findall(document.body_html)
+    }
     findings: list[Finding] = []
     for image_id, svg in sorted(game.images.items()):
         file: str = f"images/{image_id}.svg"
         problem: Finding | None = image_problem(svg, file)
         if problem is not None:
             findings.append(problem)
-        elif image_id not in used:
+            continue
+        if not TITLE_PATTERN.search(svg):
+            findings.append(title_finding(file, image_id in in_puzzles))
+        if image_id not in used:
             findings.append(
                 Finding(
                     severity="warning",
@@ -37,6 +47,19 @@ def check_images(game: Game) -> list[Finding]:
                 )
             )
     return findings
+
+
+def title_finding(file: str, in_puzzle: bool) -> Finding:
+    """The solver panel reads text only: an image without a title is invisible to it. In puzzle material that
+    breaks the test of the puzzle, so it is an error there."""
+    return Finding(
+        severity="error" if in_puzzle else "warning",
+        rule="images.no_title",
+        message="The image has no <title>, so the solver panel cannot see what it shows.",
+        file=file,
+        fix_hint="Add <title>...</title> as the first element inside <svg>: say in plain words what the picture "
+        'shows ("a red bed", "a butterfly on a leaf"), never the answer or the method.',
+    )
 
 
 def image_problem(svg: str, file: str) -> Finding | None:

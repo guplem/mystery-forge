@@ -16,6 +16,7 @@ Write `source/puzzles/{{ item.id }}.yaml` and the documents `source/documents/<i
 {% endif %}- **Answer variants.** `accepted` for spellings that also count (when the final puzzle uses this answer, only spellings with the same letters and digits), `near_misses` for likely wrong answers with a nudge message, and `decoys`: 3 plausible wrong answers with the same shape as the answer (the same number of digits; about the same number of letters), from the story world.
 - **Canary.** Set `canary` to `canary-{{ item.id | lower }}-` followed by six random letters.
 - **Meta and earlier answers.** When the puzzle depends on other puzzles, the material must make players use their answers, through a mechanism that they discover.
+- **Pictures.** When your puzzle needs a picture, draw it as `source/images/<id>.svg` and place it with `{{ '{{image:<id>}}' }}`. Start each SVG with `<title>` that says in plain words what the picture shows ("a red bed"). The solver panel reads only this title, so the checks require it in puzzle material. Never put the answer or the method in it.
 - **Document kinds:** use only a kind that `forge schema document` lists.
 
 Then run `uv run --project ../toolkit forge check --game {{ steps.setup.json.game_dir }} --scope full --no-write --only puzzles/{{ item.id }}.yaml{% for document in item.documents %},documents/{{ document }}.md{% endfor %}` and fix every error in YOUR files (other puzzles may not exist yet, so ignore findings about them). Your answer names your files and gives one line with no answer.

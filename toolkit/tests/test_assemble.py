@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from mystery_forge.assemble import assemble_game, game_salt, insert_solver_texts, puzzle_codes
+from mystery_forge.assemble import assemble_game, game_salt, image_text, insert_solver_texts, puzzle_codes
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument
 from mystery_forge.mechanics.base import (
@@ -215,3 +215,16 @@ def test_a_part_mark_gets_the_solver_text_of_the_part() -> None:
         meta=meta, file="documents/D1.md", body_html="", text="⟦artifact:P1⟧ and ⟦artifact:P1.key1⟧"
     )
     assert insert_solver_texts(document, {"P1": artifact}).text == "msg and Key: A = B"
+
+
+@pytest.mark.parametrize(
+    ("caption", "svg", "expected"),
+    [
+        ("The lamp room", "<svg><title>A brass lamp</title></svg>", "[Image: The lamp room. It shows: A brass lamp]"),
+        ("", "<svg><title> A  bed </title><rect/></svg>", "[Image. It shows: A bed]"),
+        ("The lamp room", "<svg></svg>", "[Image: The lamp room]"),
+        ("", "<svg></svg>", "[Image]"),
+    ],
+)
+def test_the_solver_text_of_an_image_holds_its_caption_and_its_title(caption: str, svg: str, expected: str) -> None:
+    assert image_text(caption, svg) == expected
