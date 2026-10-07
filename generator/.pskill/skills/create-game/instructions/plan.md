@@ -29,6 +29,7 @@ Design rules (the checks and a puzzle-design reviewer enforce them):
 - Parallel work: each stage offers about `brief.json` → `parallel_width` puzzles that people can solve at the same time.
 - Answers: specific, unambiguous, and not guessable from the premise or from the answer format. A word that is the theme of the game is a bad answer.
 - Every document has exactly one owner: one puzzle, or `story_documents`. Keep the document ids that `story.yaml` plain clues already use.
+- Difficulty: at least half of the puzzles reach the config difficulty (hard for an expert game). Never lower a puzzle's difficulty to fit a mechanic; pick a mechanic whose range fits.
 - Time: the catalog minutes of the puzzles plus the reading must fit the duration of the config.
 
 Then run `uv run --project ../toolkit forge check --game {{ steps.setup.json.game_dir }} --scope plan` and fix every error before you answer. Your answer is a summary with no answer and no twist.

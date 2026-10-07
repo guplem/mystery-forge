@@ -7,6 +7,7 @@ from test_checks_support import edit_puzzle, golden_game, golden_mechanics, rule
 
 from mystery_forge.checks.budget import (
     check_budget,
+    difficulty_drift,
     document_words,
     duration_severity,
     estimate_game_minutes,
@@ -91,3 +92,32 @@ def test_the_reading_budget_of_every_brief_fits_its_share_of_the_play_time() -> 
             [], given["players"], expected["parallel_width"], "adults", 0, expected["reading_words"]
         )
         assert round(reading * 100) <= 35 * given["duration_minutes"], vector["name"]
+
+
+@pytest.mark.parametrize(
+    ("difficulties", "wanted", "drift"),
+    [
+        (["easy", "easy", "easy"], "easy", False),
+        (["easy", "medium", "medium"], "hard", True),
+        (["easy", "hard", "hard"], "hard", False),
+        (["easy", "hard"], "hard", False),
+        (["medium", "hard", "hard", "hard"], "expert", False),
+        (["medium", "medium", "hard"], "expert", True),
+        ([], "hard", False),
+    ],
+)
+def test_difficulty_drift_needs_half_of_the_puzzles_at_the_game_difficulty(
+    difficulties: list[str], wanted: str, drift: bool
+) -> None:
+    """Live game 5 asked for "hard" and planned easy, medium, medium: it played in 40 of its 60 minutes."""
+    assert difficulty_drift(difficulties, wanted) is drift
+
+
+def test_the_game_warns_when_its_puzzles_drift_below_the_config_difficulty() -> None:
+    hard_game: Game = golden_game().model_copy(
+        update={"config": golden_game().config.model_copy(update={"difficulty": "hard"})}
+    )
+    findings = check_budget(hard_game, golden_mechanics())
+    drift = [finding for finding in findings if finding.rule == "budget.difficulty_drift"]
+    assert [finding.severity for finding in drift] == ["warning"]
+    assert "0 of 3" in drift[0].message

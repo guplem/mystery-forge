@@ -17,7 +17,12 @@ from mystery_forge.assemble import load_brief, load_config
 from mystery_forge.brief import Brief
 from mystery_forge.catalog.loader import mechanics_by_id
 from mystery_forge.catalog.models import Mechanic
-from mystery_forge.checks.budget import duration_severity, estimate_play_minutes
+from mystery_forge.checks.budget import (
+    difficulty_drift,
+    duration_severity,
+    estimate_play_minutes,
+    required_difficulty,
+)
 from mystery_forge.checks.game_index import code_order_key
 from mystery_forge.checks.graph import (
     PuzzleNode,
@@ -462,6 +467,16 @@ def check_budget(plan: Plan, config: GameConfig, brief: Brief) -> list[Finding]:
         stage_count=brief.stage_count,
         reading_words=brief.reading_words,
     )
+    if difficulty_drift([puzzle.difficulty for puzzle in plan.puzzles], config.difficulty):
+        findings.append(
+            plan_finding(
+                "plan.difficulty_drift",
+                f"Fewer than half of the planned puzzles are {required_difficulty(config.difficulty)} or harder, but "
+                f"the game is {config.difficulty}.",
+                "Raise difficulties, or pick mechanics whose range reaches it (`forge catalog show <id>`). Never "
+                "lower a puzzle's difficulty to fit a mechanic.",
+            )
+        )
     target: int = config.duration_minutes
     severity: Severity | None = duration_severity(estimate, target)
     if severity is not None:

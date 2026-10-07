@@ -23,6 +23,9 @@ DURATION_ERROR_OVER: Final[float] = 0.2
 DURATION_ERROR_UNDER: Final[float] = 0.3
 READING_WARNING_SHARE: Final[float] = 0.3
 PUZZLE_COUNT_TOLERANCE: Final[int] = 2
+DIFFICULTY_ORDER: Final[tuple[str, ...]] = ("easy", "medium", "hard", "expert")
+# Few mechanics reach "expert", so an expert game counts its hard puzzles too.
+HIGHEST_REQUIRED_DIFFICULTY: Final[str] = "hard"
 
 
 def estimate_play_minutes(
@@ -54,7 +57,45 @@ def duration_severity(estimate: float, wanted: int) -> Severity | None:
 
 
 def check_budget(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
-    return [*duration_findings(game, mechanics), *reading_findings(game), *puzzle_count_findings(game)]
+    return [
+        *duration_findings(game, mechanics),
+        *reading_findings(game),
+        *puzzle_count_findings(game),
+        *difficulty_findings(game),
+    ]
+
+
+def required_difficulty(wanted: str) -> str:
+    return DIFFICULTY_ORDER[min(DIFFICULTY_ORDER.index(wanted), DIFFICULTY_ORDER.index(HIGHEST_REQUIRED_DIFFICULTY))]
+
+
+def difficulty_drift(difficulties: Sequence[str], wanted: str) -> bool:
+    """True when fewer than half of the puzzles reach the game's difficulty: the game plays easier and shorter."""
+    floor: int = DIFFICULTY_ORDER.index(required_difficulty(wanted))
+    at_level: int = sum(1 for difficulty in difficulties if DIFFICULTY_ORDER.index(difficulty) >= floor)
+    return 2 * at_level < len(difficulties)
+
+
+def difficulty_findings(game: Game) -> list[Finding]:
+    """A warning only: a fixer could raise the labels without changing the puzzles, and the plan check already
+    stops a plan that drifts."""
+    difficulties: list[str] = [puzzle.source.difficulty for puzzle in game.puzzles]
+    if not difficulty_drift(difficulties, game.config.difficulty):
+        return []
+    level: str = required_difficulty(game.config.difficulty)
+    at_level: int = sum(
+        1 for difficulty in difficulties if DIFFICULTY_ORDER.index(difficulty) >= DIFFICULTY_ORDER.index(level)
+    )
+    return [
+        Finding(
+            severity="warning",
+            rule="budget.difficulty_drift",
+            message=f"Only {at_level} of {len(difficulties)} puzzles are {level} or harder, but the game is "
+            f"{game.config.difficulty}.",
+            fix_hint="Make the easiest puzzles harder in substance (less signposting, one more step), not only in "
+            "their difficulty label.",
+        )
+    ]
 
 
 def document_words(game: Game) -> int:

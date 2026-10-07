@@ -363,3 +363,13 @@ def test_stale_titles_need_a_valid_plan_and_a_changed_title(game_dir: Path) -> N
     assert stale_title_findings(game_dir, game) == []
     (game_dir / "source" / "plan.yaml").unlink()
     assert stale_title_findings(game_dir, game) == []
+
+
+def test_a_plan_below_the_config_difficulty_is_an_error(game_dir: Path) -> None:
+    config_path = game_dir / "source" / "config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["difficulty"] = "hard"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    findings = [finding for finding in check(game_dir) if finding.rule == "plan.difficulty_drift"]
+    assert [finding.severity for finding in findings] == ["error"]
+    assert "hard" in findings[0].message
