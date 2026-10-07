@@ -7,7 +7,7 @@
     "names": []
   },
   "host": "self_running",
-  "duration_minutes": 30,
+  "duration_minutes": 40,
   "difficulty": "easy",
   "language": "en",
   "theme": {
@@ -18,7 +18,7 @@
   "content": {
     "death_allowed": true,
     "scary_level": "mild",
-    "reading_load": "medium"
+    "reading_load": "light"
   },
   "personalization": {
     "host_name": "",

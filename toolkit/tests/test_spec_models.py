@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
+from mystery_forge.spec.models import Clue, DocumentMeta, Flow, Puzzle, Story
 
 
 def minimal_story() -> dict[str, Any]:
@@ -117,6 +117,28 @@ def test_story_clue_ids_are_unique() -> None:
     ]
     with pytest.raises(ValidationError, match="flour"):
         Story.model_validate(data)
+
+
+def test_a_plain_clue_quotes_a_document_and_is_not_hidden() -> None:
+    clue = Clue.model_validate({"id": "flour", "document": "D2", "quote": "flour"})
+    assert clue.hidden is False
+    assert clue.revealed_by is None
+    with pytest.raises(ValidationError, match="needs a document"):
+        Clue.model_validate({"id": "flour", "quote": "flour"})
+    with pytest.raises(ValidationError, match="revealed_by"):
+        Clue.model_validate({"id": "flour", "document": "D2", "quote": "flour", "revealed_by": "P1"})
+
+
+def test_a_hidden_clue_has_no_document_and_may_wait_for_its_revealing_puzzle() -> None:
+    waiting = Clue.model_validate({"id": "came-by-boat", "hidden": "true", "quote": "The thief came by boat."})
+    assert waiting.document is None
+    assert waiting.revealed_by is None
+    revealed = Clue.model_validate(
+        {"id": "came-by-boat", "hidden": "true", "quote": "The thief came by boat.", "revealed_by": "P3"}
+    )
+    assert revealed.revealed_by == "P3"
+    with pytest.raises(ValidationError, match="no document"):
+        Clue.model_validate({"id": "came-by-boat", "hidden": "true", "document": "D4", "quote": "By boat."})
 
 
 def test_accusation_question_correct_option_must_exist_and_options_must_be_unique() -> None:

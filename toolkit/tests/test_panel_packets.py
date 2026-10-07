@@ -12,6 +12,7 @@ from mystery_forge.panel.packets import (
     build_guesser_packet,
     build_stage_packets,
     canaries,
+    stage_index,
 )
 
 
@@ -142,3 +143,13 @@ def test_the_guesser_packet_holds_only_the_premise_and_the_formats(golden_game: 
 
 def test_canaries_map_each_code_to_its_canary(golden_game: Game) -> None:
     assert canaries(golden_game) == {"A1": "canary-golden-p1", "A2": "canary-golden-p2", "B1": "canary-golden-p3"}
+
+
+def test_an_unknown_stage_sorts_after_every_flow_stage(golden_game: Game) -> None:
+    assert stage_index(golden_game, "A") == 0
+    assert stage_index(golden_game, "Z") == len(golden_game.flow.stages)
+    stray = golden_game.puzzles[0].model_copy(
+        update={"source": golden_game.puzzles[0].source.model_copy(update={"stage": "Z"})}
+    )
+    game = golden_game.model_copy(update={"puzzles": [stray, *golden_game.puzzles[1:]]})
+    assert build_stage_packets(game)[0].codes == ["A2"]

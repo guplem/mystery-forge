@@ -11,10 +11,9 @@ from pathlib import Path
 from typing import Final
 
 from mystery_forge.paths import safe_folder_name, unique_folder
-from mystery_forge.render.manual import COMPANION_FILE
+from mystery_forge.render.manual import COMPANION_FILE, SPOILER_FOLDER
 
 APP_FOLDER: Final[str] = "Mystery Forge"
-SPOILER_FOLDER: Final[str] = "HOST ONLY - spoilers"
 REQUIRED_FILES: Final[tuple[str, ...]] = ("1 - START HERE (manual).pdf", "2 - PRINT THIS (game materials).pdf")
 SPOILER_FILES: Final[tuple[str, ...]] = ("3 - Hints.pdf", "4 - Solutions.pdf")
 

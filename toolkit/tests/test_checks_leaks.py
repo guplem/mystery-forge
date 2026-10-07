@@ -5,6 +5,7 @@ from test_checks_support import (
     edit_puzzle,
     edit_story,
     golden_game,
+    only_rule,
     rules,
 )
 
@@ -110,3 +111,25 @@ def test_the_intro_and_the_opening_texts_up_to_the_stage_count() -> None:
     assert [(finding.file, finding.path, "P3" in finding.message) for finding in findings] == [
         ("flow.yaml", "stages.1.opening_text", True)
     ]
+
+
+def test_a_hidden_clue_written_out_before_its_puzzle_is_a_warning() -> None:
+    boat: str = "The THIEF crossed to the rock at low tide, and carried the lens back to a boat!"
+    findings = only_rule(check_leaks(with_text(golden_game(), "D5", boat)), "leaks.hidden_clue_in_text")
+    assert len(findings) == 1
+    assert (findings[0].file, findings[0].severity) == ("documents/D5.md", "warning")
+    assert "came-by-boat" in findings[0].message and "P3" in findings[0].message
+    debt: str = "The collector offered to forget the debt of Felix in exchange for a lighthouse lens."
+    assert rules(check_leaks(with_text(golden_game(), "D1", debt))) == ["leaks.hidden_clue_in_text"]
+    assert check_leaks(with_text(golden_game(), "D4", debt)) == []
+
+
+def test_a_hidden_clue_without_a_known_revealing_puzzle_is_left_to_the_ledger() -> None:
+    clues = [
+        clue.model_copy(update={"revealed_by": "P9"}) if clue.hidden else clue for clue in golden_game().story.clues
+    ]
+    boat: str = "The thief crossed to the rock at low tide and carried the lens back to a boat."
+    game: Game = with_text(edit_story(golden_game(), clues=clues), "D1", boat)
+    assert only_rule(check_leaks(game), "leaks.hidden_clue_in_text") == []
+    unknown_stage: Game = with_text(edit_puzzle(golden_game(), "P3", stage="F"), "D1", boat)
+    assert only_rule(check_leaks(unknown_stage), "leaks.hidden_clue_in_text") == []

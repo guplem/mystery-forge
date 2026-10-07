@@ -11,6 +11,7 @@ from typing import Final
 from mystery_forge.config import Paper
 from mystery_forge.game import AssembledPuzzle, Game
 from mystery_forge.i18n import text
+from mystery_forge.render.internal_ids import printed_ids
 from mystery_forge.render.layout import SAFE_HEIGHT_MM, Tightness, tightness
 from mystery_forge.render.sheets import Sheet
 
@@ -54,7 +55,13 @@ def puzzle_cards(game: Game, puzzle: AssembledPuzzle) -> list[HintCard]:
     language: str = game.config.language
     source = puzzle.source
     cards: list[HintCard] = [
-        HintCard(puzzle.code, source.title, text(language, "hint_label", level=str(hint.level)), hint.text, False)
+        HintCard(
+            puzzle.code,
+            source.title,
+            text(language, "hint_label", level=str(hint.level)),
+            printed_ids(game, hint.text),
+            False,
+        )
         for hint in source.hints
     ]
     cards.append(HintCard(puzzle.code, source.title, text(language, "answer_label"), source.answer, True))

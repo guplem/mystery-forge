@@ -11,6 +11,7 @@ from typing import Any, Literal
 from markupsafe import escape
 from pydantic import BaseModel, Field
 
+from mystery_forge import i18n
 from mystery_forge.answers import normalize_answer
 from mystery_forge.mechanics.base import (
     Artifact,
@@ -240,7 +241,7 @@ def build_cut_strips(params: CutStripsParams, context: MechanicContext) -> Artif
     return Artifact(
         html=f'<div class="mf-cut-strips mf-cut-strips-{params.orientation}">{"".join(strip_parts)}</div>',
         solver_text="\n".join(solver_lines),
-        print_notes=("Cut along the dashed lines to separate the strips.",),
+        print_notes=(i18n.text(context.language, "print_cut_strips"),),
     )
 
 

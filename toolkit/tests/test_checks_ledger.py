@@ -138,3 +138,20 @@ def test_a_hint_that_points_outside_the_solution_is_a_warning() -> None:
     outside = only_rule(findings, "ledger.hint_outside_solution")
     assert [(finding.path, finding.severity) for finding in outside] == [("hints.0.points_to", "warning")]
     assert "receipt-lines" in outside[0].message
+
+
+def test_a_hidden_clue_has_no_quote_to_find_but_needs_an_existing_revealing_puzzle() -> None:
+    assert only_rule(check_ledger(golden_game(), golden_mechanics()), "ledger.quote_not_found") == []
+    clues: list[Clue] = list(golden_game().story.clues)
+    assert clues[4].hidden and clues[5].hidden
+    clues[4] = clues[4].model_copy(update={"revealed_by": None})
+    clues[5] = clues[5].model_copy(update={"revealed_by": "P9"})
+    findings = only_rule(
+        check_ledger(edit_story(golden_game(), clues=clues), golden_mechanics()), "ledger.hidden_clue_unrevealed"
+    )
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("story.yaml", "clues.4.revealed_by", "error"),
+        ("story.yaml", "clues.5.revealed_by", "error"),
+    ]
+    assert "no puzzle" in findings[0].message
+    assert "P9" in findings[1].message

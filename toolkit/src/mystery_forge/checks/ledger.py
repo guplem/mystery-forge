@@ -1,7 +1,8 @@
 """The evidence ledger: every clue quote is word for word in its document, and every citation names a real clue.
 
 The solver panel and the solutions trust the clues, so a quote that the document does not contain, or a clue that
-players only get after the puzzle, breaks the proof that the puzzle is fair.
+players only get after the puzzle, breaks the proof that the puzzle is fair. A hidden clue has no document: a puzzle
+reveals it, so that puzzle must exist.
 """
 
 from collections.abc import Mapping
@@ -13,6 +14,7 @@ from mystery_forge.checks.game_index import (
     ClueEntry,
     clue_entries,
     documents_by_id,
+    puzzles_by_id,
     stage_positions,
 )
 from mystery_forge.findings import Finding, Severity
@@ -35,6 +37,7 @@ def check_ledger(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]
     return [
         *duplicate_clue_findings(entries),
         *quote_findings(game, entries),
+        *hidden_clue_findings(game, entries),
         *clue_reference_findings(game, {entry.clue.id for entry in entries}),
         *solution_findings(game, mechanics),
         *hint_ladder_findings(game),
@@ -71,6 +74,8 @@ def quote_findings(game: Game, entries: list[ClueEntry]) -> list[Finding]:
     positions: dict[str, int] = stage_positions(game)
     findings: list[Finding] = []
     for entry in entries:
+        if entry.clue.hidden or entry.clue.document is None:
+            continue
         document: AssembledDocument | None = documents.get(entry.clue.document)
         if document is None:
             findings.append(
@@ -111,6 +116,29 @@ def quote_findings(game: Game, entries: list[ClueEntry]) -> list[Finding]:
                     fix_hint="Quote a document of the puzzle's stage or an earlier stage, or move the document.",
                 )
             )
+    return findings
+
+
+def hidden_clue_findings(game: Game, entries: list[ClueEntry]) -> list[Finding]:
+    puzzle_ids: list[str] = list(puzzles_by_id(game))
+    findings: list[Finding] = []
+    for entry in entries:
+        revealed_by: str | None = entry.clue.revealed_by
+        if not entry.clue.hidden or revealed_by in puzzle_ids:
+            continue
+        problem: str = "no puzzle reveals it" if revealed_by is None else f"{revealed_by} does not exist"
+        findings.append(
+            Finding(
+                severity="error",
+                rule="ledger.hidden_clue_unrevealed",
+                message=f"The hidden clue '{entry.clue.id}' is in no document, and {problem}, so players never "
+                "learn it.",
+                file=entry.file,
+                path=f"{entry.path}.revealed_by",
+                fix_hint=f"Set revealed_by to the id of the puzzle whose answer reveals this fact: "
+                f"{', '.join(puzzle_ids)}.",
+            )
+        )
     return findings
 
 

@@ -50,8 +50,3 @@ def all_implementations() -> dict[str, MechanicImplementation[Any]]:
                 id=mechanic.id, params_model=PanelOnlyParams, build=build_nothing
             )
     return implementations
-
-
-def implementation_for(mechanic_id: str) -> MechanicImplementation[Any] | None:
-    """Return the implementation of a mechanic, or None when the catalog lists it but no code builds it."""
-    return all_implementations().get(mechanic_id)

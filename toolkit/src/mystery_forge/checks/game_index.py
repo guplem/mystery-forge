@@ -1,5 +1,6 @@
 """Lookups that several checks share: models by id, stage positions, every clue with its file, and squashed text."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Final
 
@@ -53,14 +54,21 @@ def documents_by_id(game: Game) -> dict[str, AssembledDocument]:
     return {document.meta.id: document for document in game.documents}
 
 
+def id_number(puzzle_id: str) -> int:
+    return int(puzzle_id[1:])
+
+
+def code_order_key(positions: Mapping[str, int], stage: str, puzzle_id: str) -> tuple[int, int]:
+    """Sort key of the order in which players meet the puzzles (A1, A2, B1): stage order, then id number.
+
+    The codes number the puzzles of each stage by id number, so the plan, which has no codes yet, sorts the same way.
+    """
+    return positions.get(stage, len(positions)), id_number(puzzle_id)
+
+
 def puzzles_in_code_order(game: Game) -> list[AssembledPuzzle]:
-    """Sort the puzzles the way players meet them: by stage, then by the number of their code (A1, A2, B1)."""
     positions: dict[str, int] = stage_positions(game)
-
-    def order(puzzle: AssembledPuzzle) -> tuple[int, int]:
-        return positions.get(puzzle.source.stage, len(positions)), int(puzzle.code[1:])
-
-    return sorted(game.puzzles, key=order)
+    return sorted(game.puzzles, key=lambda puzzle: code_order_key(positions, puzzle.source.stage, puzzle.source.id))
 
 
 def clue_entries(game: Game) -> list[ClueEntry]:

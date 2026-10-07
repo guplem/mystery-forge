@@ -19,7 +19,9 @@ from mystery_forge.verification import (
     record_checks,
     record_panel,
     save_ledger,
+    stale_check_codes,
     stale_codes,
+    stale_panel_codes,
 )
 
 HASHES: dict[str, str] = {"A1": "h1", "B1": "h2", "deduction": "h3"}
@@ -122,6 +124,8 @@ def test_a_missing_or_broken_ledger_loads_empty(tmp_path: Path) -> None:
     path.parent.mkdir()
     path.write_text("{not json", encoding="utf-8")
     assert load_ledger(path) == VerificationLedger()
+    path.write_bytes(b"{\xff}")
+    assert load_ledger(path) == VerificationLedger()
 
 
 def test_a_saved_ledger_loads_back(tmp_path: Path) -> None:
@@ -134,10 +138,10 @@ def test_a_saved_ledger_loads_back(tmp_path: Path) -> None:
 
 def test_record_checks_keeps_the_hash_of_the_last_pass() -> None:
     ledger = record_checks(VerificationLedger(), HASHES, ["A1", "B1"])
-    assert ledger.entries["A1"] == LedgerEntry(checks_hash="h1", checks_passed=True, checks_pass_hash="h1")
-    assert ledger.entries["deduction"] == LedgerEntry(checks_hash="h3", checks_passed=False)
+    assert ledger.entries["A1"] == LedgerEntry(checks_hash="h1", checks_pass_hash="h1")
+    assert ledger.entries["deduction"] == LedgerEntry(checks_hash="h3")
     ledger = record_checks(ledger, {**HASHES, "B1": "h2b"}, ["A1"])
-    assert ledger.entries["B1"] == LedgerEntry(checks_hash="h2b", checks_passed=False, checks_pass_hash="h2")
+    assert ledger.entries["B1"] == LedgerEntry(checks_hash="h2b", checks_pass_hash="h2")
 
 
 def test_record_panel_stores_the_verdicts_and_merges_the_questions() -> None:
@@ -163,6 +167,13 @@ def test_stale_codes_need_a_pass_on_the_current_hash() -> None:
     ledger = record_panel(ledger, HASHES, report([item("A1", "pass"), item("B1", "pass")], [item("who", "pass")]))
     assert stale_codes(ledger, HASHES) == []
     assert stale_codes(ledger, {**HASHES, "B1": "new"}) == ["B1"]
+
+
+def test_stale_checks_and_stale_panel_codes_are_listed_apart() -> None:
+    ledger = record_checks(VerificationLedger(), HASHES, ["A1", "B1"])
+    ledger = record_panel(ledger, HASHES, report([item("A1", "pass")], []))
+    assert stale_check_codes(ledger, HASHES) == ["deduction"]
+    assert stale_panel_codes(ledger, HASHES) == ["B1", "deduction"]
 
 
 def test_export_blockers_name_failing_and_stale_codes() -> None:

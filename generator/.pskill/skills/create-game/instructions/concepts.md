@@ -14,4 +14,4 @@ Write `{{ steps.setup.json.game_dir }}/source/concepts.yaml` with a list `concep
 - `why_fun`: one line on why a group will enjoy it.
 
 Make the three concepts really different from each other: in tone, in structure, and in what the players do.
-Return only the teasers (titles and teasers, in order) and a summary. Never put the pitch or a twist in your answer.
+Return only the teasers (titles and teasers, in order), a summary, and the concept that you recommend with one spoiler-free reason. Never put the pitch or a twist in your answer. Write the file with the Write tool (a long shell command fails on Windows).

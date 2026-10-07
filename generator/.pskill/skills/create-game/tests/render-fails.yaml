@@ -1,4 +1,4 @@
-name: the render keeps failing after two fixes
+name: the render keeps failing after three fixes
 inputs:
   config: c.json
 scripts:
@@ -19,8 +19,9 @@ scripts:
   render:
   - &id001
     exit_code: 0
-    stdout: '{"ok": false, "previews_dir": "p", "fix_groups": [{"name": "D3 overflow", "files": ["documents/D3.md"], "findings_file":
-      "games/g/reports/fix-render-D3.json"}]}'
+    stdout: '{"ok": false, "report": "games/g/reports/render.json", "previews_dir": "p", "fix_groups": [{"name": "D3 overflow",
+      "files": ["documents/D3.md"], "findings_file": "games/g/reports/fix-render-D3.json"}]}'
+  - *id001
   - *id001
   - *id001
   status:
@@ -65,6 +66,8 @@ answers:
     - title: Title 3
       teaser: Teaser 3.
     summary: Three tones.
+    recommended: second
+    recommended_reason: It fits a family table best.
   pick_concept:
   - choice: second
     rationale: The user said so.
@@ -75,6 +78,10 @@ answers:
   - findings: []
   plan:
   - summary: Eight puzzles, six actions.
+  review_plan:
+  - findings: []
+  review_documents:
+  - findings: []
   write_story_documents:
   - documents:
     - documents/D1.md
@@ -101,6 +108,7 @@ answers:
     - documents/D3.md
     summary: Tried.
   - *id003
+  - *id003
 expect:
   path:
   - doctor
@@ -113,12 +121,16 @@ expect:
   - review_story
   - plan
   - plan_check
+  - review_plan
   - write_story_documents
   - writer_tasks
   - write_puzzles
   - illustrate
   - game_check
+  - review_documents
   - panel
+  - render
+  - render_fix
   - render
   - render_fix
   - render

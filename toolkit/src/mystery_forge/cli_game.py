@@ -6,15 +6,27 @@ output stream, prints one JSON object, and returns the exit code.
 
 import argparse
 import json
+import shutil
 import sys
+import tempfile
 from pathlib import Path
-from typing import Any, Final, TextIO
+from typing import Any, Final, Self, TextIO
+
+from playwright.sync_api import Error as PlaywrightError
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, model_validator
 
 from mystery_forge.assemble import AssemblyResult, assemble_game
 from mystery_forge.checks.runner import run_checks
-from mystery_forge.cli_output import capped_findings, emit, write_report
-from mystery_forge.export import ExportError, export_game, output_root
-from mystery_forge.findings import Finding, count_errors, findings_to_json
+from mystery_forge.cli_output import (
+    BROWSER_FIX,
+    OutputOptions,
+    capped_findings,
+    emit,
+    input_problem,
+    optional_report,
+)
+from mystery_forge.export import ExportError, ExportResult, export_game, output_root
+from mystery_forge.findings import Finding, count_errors
 from mystery_forge.fix_groups import (
     DOCUMENTS_GROUP,
     file_owners,
@@ -25,18 +37,28 @@ from mystery_forge.fix_groups import (
 from mystery_forge.game import Game
 from mystery_forge.mechanics.registry import all_implementations
 from mystery_forge.panel.judge import judge_panel, report_summary
-from mystery_forge.panel.models import GuesserResult, ItemVerdict, PanelReport, SolverResult
+from mystery_forge.panel.models import (
+    AccusationChoice,
+    GuesserResult,
+    ItemVerdict,
+    PanelReport,
+    SolverAnswer,
+    SolverResult,
+    SolverStatus,
+)
 from mystery_forge.panel.packets import StagePacket, build_guesser_packet, build_stage_packets
 from mystery_forge.paths import SystemFolders
 from mystery_forge.plan import PLAN_FILE, Plan, check_plan_folder
 from mystery_forge.render.companion_data import build_companion_html
-from mystery_forge.render.game_renderer import RenderReport, render_game
+from mystery_forge.render.game_renderer import PREVIEW_FOLDER, RenderReport, render_game
 from mystery_forge.render.manual import COMPANION_FILE
-from mystery_forge.render.pdf import open_sheet_browser
+from mystery_forge.render.pdf import BrowserNotFoundError, open_sheet_browser
 from mystery_forge.render_checks import check_rendered
 from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
 from mystery_forge.story_checks import check_story_folder
 from mystery_forge.verification import (
+    DEDUCTION_KEY,
+    VerificationLedger,
     export_blockers,
     game_hashes,
     ledger_path,
@@ -44,12 +66,15 @@ from mystery_forge.verification import (
     record_checks,
     record_panel,
     save_ledger,
+    stale_check_codes,
     stale_codes,
+    stale_panel_codes,
 )
 
 RENDER_FOLDER: Final[str] = "render"
 PANEL_FOLDER: Final[str] = "panel"
-PREVIEW_FOLDER: Final[str] = "previews"
+PACKETS_FILE: Final[str] = "packets.json"
+TRUE_WORDS: Final[frozenset[str]] = frozenset({"true", "1", "yes"})
 SOLVER_PERSONAS: Final[tuple[str, ...]] = (
     "Read every document slowly and literally. Trust only what is written.",
     "Think laterally. Look for hidden patterns, odd details, and wordplay.",
@@ -60,35 +85,88 @@ SOLVER_PERSONAS: Final[tuple[str, ...]] = (
 KIDS_PERSONA: Final[str] = "Play like a bright 10-year-old: you know the alphabet and simple sums, not trivia."
 
 
-def assemble_or_report(game_dir: Path, output: TextIO, label: str) -> Game | None:
+class SolverTask(BaseModel):
+    """One solver task as `forge packets` printed it. The judge needs only its name and its stage."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    stage: str
+
+
+class SolverOutput(BaseModel):
+    """The output of one solver subagent. pskill may add its own fields next to these, so extra fields are ignored."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    answers: list[SolverAnswer] = []
+    accusation: list[AccusationChoice] = []
+    status: SolverStatus = "done"
+
+
+class JudgeInput(BaseModel):
+    """The JSON that the judge reads on stdin: the tasks, one result per task in the same order, and the guess."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    solver_tasks: list[SolverTask]
+    solver_results: list[SolverOutput]
+    guesser_result: GuesserResult | None = None
+
+    @field_validator("guesser_result", mode="before")
+    @classmethod
+    def empty_guess_is_none(cls, value: object) -> object:
+        return value if value else None
+
+    @model_validator(mode="after")
+    def one_result_per_task(self) -> Self:
+        if len(self.solver_tasks) != len(self.solver_results):
+            raise ValueError(f"{len(self.solver_tasks)} solver tasks but {len(self.solver_results)} solver results")
+        return self
+
+
+def output_options(arguments: argparse.Namespace) -> OutputOptions:
+    return OutputOptions(only=arguments.only, write=not arguments.no_write)
+
+
+def flag_is_true(text: str) -> bool:
+    """Read a true/false flag. pskill prints Python booleans, so "True" and "False" count too."""
+    return text.strip().lower() in TRUE_WORDS
+
+
+def assemble_or_report(game_dir: Path, output: TextIO, label: str, options: OutputOptions | None = None) -> Game | None:
     """Assemble the game. Print an `ok: false` result with fix groups when it has errors."""
+    chosen: OutputOptions = options if options is not None else OutputOptions()
     result: AssemblyResult = assemble_game(game_dir)
     if result.game is not None and count_errors(result.findings) == 0:
         return result.game
-    groups = write_fix_groups(group_findings(result.findings, game_dir), game_dir, label)
-    report: Path = write_report(game_dir, label, {"findings": findings_to_json(result.findings)})
-    emit(output, {"ok": False, "report": str(report), "fix_groups": groups, **capped_findings(result.findings)})
+    findings: list[Finding] = chosen.selected(result.findings)
+    groups: list[dict[str, Any]] = write_fix_groups(group_findings(findings, game_dir), game_dir, label, chosen.write)
+    report: str | None = optional_report(game_dir, label, findings, chosen)
+    emit(output, {"ok": False, "report": report, "fix_groups": groups, **capped_findings(findings)})
     return None
 
 
 def command_check(arguments: argparse.Namespace, output: TextIO) -> int:
     game_dir: Path = Path(arguments.game)
     scope: str = arguments.scope
-    findings: list[Finding]
+    options: OutputOptions = output_options(arguments)
+    all_findings: list[Finding]
     if scope == "story":
-        findings = check_story_folder(game_dir)
+        all_findings = check_story_folder(game_dir)
     elif scope == "plan":
-        findings = check_plan_folder(game_dir, frozenset(all_implementations()))
+        all_findings = check_plan_folder(game_dir, frozenset(all_implementations()))
     else:
-        findings = full_check(game_dir)
-    groups = write_fix_groups(group_findings(findings, game_dir), game_dir, scope)
-    report: Path = write_report(game_dir, f"check-{scope}", {"findings": findings_to_json(findings)})
+        all_findings = full_check(game_dir, options.write)
+    findings: list[Finding] = options.selected(all_findings)
+    groups: list[dict[str, Any]] = write_fix_groups(group_findings(findings, game_dir), game_dir, scope, options.write)
+    report: str | None = optional_report(game_dir, f"check-{scope}", findings, options)
     emit(
         output,
         {
             "ok": count_errors(findings) == 0,
             "scope": scope,
-            "report": str(report),
+            "report": report,
             "fix_groups": groups,
             **capped_findings(findings),
         },
@@ -96,18 +174,20 @@ def command_check(arguments: argparse.Namespace, output: TextIO) -> int:
     return 0
 
 
-def full_check(game_dir: Path) -> list[Finding]:
-    """Assemble and run every game check. Record the result in the verification ledger."""
+def full_check(game_dir: Path, write: bool = True) -> list[Finding]:
+    """Assemble and run every game check. Record a passing run in the verification ledger."""
     result: AssemblyResult = assemble_game(game_dir)
     findings: list[Finding] = list(result.findings)
     if result.game is None:
         return findings
-    (game_dir / "game.json").write_text(result.game.model_dump_json(indent=2), encoding="utf-8")
+    if write:
+        (game_dir / "game.json").write_text(result.game.model_dump_json(indent=2), encoding="utf-8")
     findings.extend(run_checks(result.game))
-    hashes: dict[str, str] = game_hashes(result.game)
-    passing: list[str] = list(hashes) if count_errors(findings) == 0 else []
-    path: Path = ledger_path(game_dir)
-    save_ledger(path, record_checks(load_ledger(path), hashes, passing))
+    # A run with errors records nothing: the codes keep their last pass, which no longer matches, so they stay stale.
+    if write and count_errors(findings) == 0:
+        hashes: dict[str, str] = game_hashes(result.game)
+        path: Path = ledger_path(game_dir)
+        save_ledger(path, record_checks(load_ledger(path), hashes, hashes))
     return findings
 
 
@@ -141,7 +221,7 @@ def command_packets(arguments: argparse.Namespace, output: TextIO) -> int:
     folder: Path = game_dir / "reports" / PANEL_FOLDER
     folder.mkdir(parents=True, exist_ok=True)
     packets: list[StagePacket] = build_stage_packets(game)
-    (folder / "packets.json").write_text(
+    (folder / PACKETS_FILE).write_text(
         json.dumps([packet.model_dump() for packet in packets], ensure_ascii=False, indent=2), encoding="utf-8"
     )
     personas: list[str] = list(SOLVER_PERSONAS)
@@ -168,24 +248,82 @@ def command_packets(arguments: argparse.Namespace, output: TextIO) -> int:
     return 0
 
 
+def emit_judge_problem(output: TextIO, finding: Finding) -> int:
+    """Print a judge result that judged nothing, in the shape that the solver-panel skill reads."""
+    emit(
+        output,
+        {
+            "ok": False,
+            "message": finding.message,
+            "failing": [finding.message],
+            "failing_items": [],
+            "report": "",
+            **capped_findings([finding]),
+        },
+    )
+    return 0
+
+
+def saved_packet_hashes(path: Path) -> list[str] | None:
+    """Return the sha256 of each packet that `forge packets` wrote, or None when the file is missing or broken."""
+    if not path.is_file():
+        return None
+    try:
+        return [StagePacket.model_validate(item).sha256 for item in json.loads(path.read_text(encoding="utf-8"))]
+    except (ValueError, TypeError):
+        return None
+
+
 def command_judge(arguments: argparse.Namespace, output: TextIO) -> int:
     game_dir: Path = Path(arguments.game)
-    payload: dict[str, Any] = json.loads(sys.stdin.read() if arguments.input is None else arguments.input)
+    raw_input: str = sys.stdin.read() if arguments.input is None else arguments.input
+    try:
+        judge_input: JudgeInput = JudgeInput.model_validate_json(raw_input)
+    except ValidationError as error:
+        first: str = str(error.errors()[0]["msg"])
+        return emit_judge_problem(
+            output,
+            input_problem(
+                "judge.input",
+                f"The judge input is not valid: {first}.",
+                "Pass {solver_tasks, solver_results, guesser_result} as JSON, with one result per task.",
+            ),
+        )
     game: Game | None = assemble_or_report(game_dir, output, "judge")
     if game is None:
         return 0
     folder: Path = game_dir / "reports" / PANEL_FOLDER
-    packets: list[StagePacket] = [
-        StagePacket.model_validate(item) for item in json.loads((folder / "packets.json").read_text(encoding="utf-8"))
-    ]
+    saved_hashes: list[str] | None = saved_packet_hashes(folder / PACKETS_FILE)
+    if saved_hashes is None:
+        return emit_judge_problem(
+            output,
+            input_problem(
+                "judge.no_packets",
+                f"The panel folder has no readable {PACKETS_FILE}: run forge packets first.",
+                "Run the solver panel from its first step.",
+            ),
+        )
+    packets: list[StagePacket] = build_stage_packets(game)
+    if [packet.sha256 for packet in packets] != saved_hashes:
+        return emit_judge_problem(
+            output,
+            input_problem(
+                "judge.stale_packets",
+                "The game changed after the solvers got their packets: the packets are stale, run the panel again.",
+                "Run the solver panel again on the current game.",
+            ),
+        )
     results: list[SolverResult] = [
-        solver_result(task, result)
-        for task, result in zip(payload["solver_tasks"], payload["solver_results"], strict=True)
+        SolverResult(
+            solver=task.name,
+            stage=task.stage,
+            answers=result.answers,
+            accusation=result.accusation,
+            status=result.status,
+        )
+        for task, result in zip(judge_input.solver_tasks, judge_input.solver_results, strict=True)
     ]
-    guesser: GuesserResult | None = (
-        GuesserResult.model_validate(payload["guesser_result"]) if payload.get("guesser_result") else None
-    )
-    report: PanelReport = judge_panel(game, packets, results, guesser)
+    report: PanelReport = judge_panel(game, packets, results, judge_input.guesser_result)
     report_file: Path = folder / "panel.json"
     report_file.write_text(report.model_dump_json(indent=2), encoding="utf-8")
     path: Path = ledger_path(game_dir)
@@ -206,46 +344,56 @@ def command_judge(arguments: argparse.Namespace, output: TextIO) -> int:
     return 0
 
 
-def solver_result(task: dict[str, Any], result: dict[str, Any]) -> SolverResult:
-    return SolverResult(
-        solver=str(task["name"]),
-        stage=str(task["stage"]),
-        answers=result.get("answers", []),
-        accusation=result.get("accusation", []),
-        status=result.get("status", "done"),
-    )
-
-
 def failing_panel_items(
     game: Game, game_dir: Path, report: PanelReport, results: list[SolverResult]
 ) -> list[dict[str, Any]]:
-    """One fix task per failing puzzle or question, with its own findings file of solver notes."""
+    """One fix task per failing puzzle, plus one "deduction" task for all failing accusation questions.
+
+    The questions share story.yaml, so one fixer takes them all: two fixers that edit one file in parallel lose
+    each other's changes.
+    """
     owners: dict[str, str] = file_owners(game_dir)
     puzzle_ids: dict[str, str] = {puzzle.code: puzzle.source.id for puzzle in game.puzzles}
-    items: list[dict[str, Any]] = []
-    for verdict in [*report.puzzles, *report.questions]:
-        if verdict.verdict == "pass":
-            continue
-        puzzle_id: str | None = puzzle_ids.get(verdict.code)
-        files: list[str] = (
-            group_files(puzzle_id, owners)
-            if puzzle_id is not None
-            else ["story.yaml", *group_files(DOCUMENTS_GROUP, owners)]
+    items: list[dict[str, Any]] = [
+        panel_item(
+            game_dir,
+            verdict.code,
+            f"{verdict.code} {verdict.verdict}",
+            verdict,
+            group_files(puzzle_ids[verdict.code], owners),
+            panel_item_notes(verdict, results),
         )
-        findings_file: Path = game_dir / "reports" / f"fix-panel-{verdict.code}.json"
-        findings_file.write_text(
-            json.dumps(panel_item_notes(verdict, results), ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        for verdict in report.puzzles
+        if verdict.verdict != "pass"
+    ]
+    failing_questions: list[ItemVerdict] = [verdict for verdict in report.questions if verdict.verdict != "pass"]
+    if failing_questions:
         items.append(
-            {
-                "name": f"{verdict.code} {verdict.verdict}",
-                "code": verdict.code,
-                "verdict": verdict.verdict,
-                "files": files,
-                "findings_file": str(findings_file),
-            }
+            panel_item(
+                game_dir,
+                DEDUCTION_KEY,
+                DEDUCTION_KEY,
+                failing_questions[0],
+                ["story.yaml", *group_files(DOCUMENTS_GROUP, owners)],
+                {"questions": [panel_item_notes(verdict, results) for verdict in failing_questions]},
+            )
         )
     return items
+
+
+def panel_item(
+    game_dir: Path, code: str, name: str, verdict: ItemVerdict, files: list[str], notes: dict[str, Any]
+) -> dict[str, Any]:
+    """Write the solver notes of one fix task to its own findings file, and return the task item."""
+    findings_file: Path = game_dir / "reports" / f"fix-panel-{code}.json"
+    findings_file.write_text(json.dumps(notes, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {
+        "name": name,
+        "code": code,
+        "verdict": verdict.verdict,
+        "files": files,
+        "findings_file": str(findings_file),
+    }
 
 
 def panel_item_notes(verdict: ItemVerdict, results: list[SolverResult]) -> dict[str, Any]:
@@ -269,45 +417,72 @@ def command_status(arguments: argparse.Namespace, output: TextIO) -> int:
     game: Game | None = assemble_or_report(game_dir, output, "status")
     if game is None:
         return 0
-    panel_required: bool = arguments.panel.lower() in ("true", "1", "yes")
+    panel_required: bool = flag_is_true(arguments.panel)
     hashes: dict[str, str] = game_hashes(game)
-    ledger = load_ledger(ledger_path(game_dir))
+    ledger: VerificationLedger = load_ledger(ledger_path(game_dir))
     blockers: list[Finding] = export_blockers(ledger, hashes, panel_required)
     emit(
         output,
-        {"ok": not blockers, "stale": stale_codes(ledger, hashes, panel_required), **capped_findings(blockers)},
+        {
+            "ok": not blockers,
+            "stale": stale_codes(ledger, hashes, panel_required),
+            "checks_stale": stale_check_codes(ledger, hashes),
+            "panel_stale": stale_panel_codes(ledger, hashes) if panel_required else [],
+            **capped_findings(blockers),
+        },
     )
     return 0
 
 
 def command_render(arguments: argparse.Namespace, output: TextIO) -> int:
     game_dir: Path = Path(arguments.game)
-    game: Game | None = assemble_or_report(game_dir, output, "render")
+    options: OutputOptions = output_options(arguments)
+    game: Game | None = assemble_or_report(game_dir, output, "render", options)
     if game is None:
         return 0
-    render_dir: Path = game_dir / RENDER_FOLDER
-    if arguments.html_only:
-        report: RenderReport = render_game(game, render_dir, None)
-    else:
-        with open_sheet_browser() as browser:
-            report = render_game(game, render_dir, browser)
+    if options.write:
+        return render_and_report(game, game_dir, game_dir / RENDER_FOLDER, arguments.html_only, options, output)
+    # --no-write still renders, so the checks can read the pages, but into a folder that it deletes afterwards.
+    scratch: Path = Path(tempfile.mkdtemp(prefix="forge-render-"))
+    try:
+        return render_and_report(game, game_dir, scratch, arguments.html_only, options, output)
+    finally:
+        shutil.rmtree(scratch, ignore_errors=True)
+
+
+def render_and_report(
+    game: Game, game_dir: Path, render_dir: Path, html_only: bool, options: OutputOptions, output: TextIO
+) -> int:
+    report: RenderReport
+    try:
+        if html_only:
+            report = render_game(game, render_dir, None)
+        else:
+            with open_sheet_browser() as browser:
+                report = render_game(game, render_dir, browser)
+    except (BrowserNotFoundError, PlaywrightError) as error:
+        emit(output, {"ok": False, "message": str(error), "fix": BROWSER_FIX, "fix_groups": [], **capped_findings([])})
+        return 0
+    companion: Path = render_dir / COMPANION_FILE
     if game.config.assistance.companion_page:
-        (render_dir / COMPANION_FILE).write_text(build_companion_html(game), encoding="utf-8")
+        companion.write_text(build_companion_html(game), encoding="utf-8")
+    else:
+        # An earlier render may have written it; export copies whatever the folder holds.
+        companion.unlink(missing_ok=True)
     # Without a browser nothing was read back from the pages, so only the HTML was written and nothing can be checked.
-    rendered_findings: list[Finding] = (
-        [] if arguments.html_only else check_rendered(game, report, all_implementations())
+    rendered_findings: list[Finding] = [] if html_only else check_rendered(game, report, all_implementations())
+    findings: list[Finding] = options.selected([*report.findings, *rendered_findings])
+    groups: list[dict[str, Any]] = write_fix_groups(
+        group_findings(findings, game_dir), game_dir, "render", options.write
     )
-    findings: list[Finding] = [*report.findings, *rendered_findings]
-    groups = write_fix_groups(group_findings(findings, game_dir), game_dir, "render")
-    report_file: Path = write_report(game_dir, "render", {"findings": findings_to_json(findings)})
     emit(
         output,
         {
             "ok": count_errors(findings) == 0,
             "theme": report.theme,
             "sheets": {output_id: rendered.sheet_count for output_id, rendered in report.outputs.items()},
-            "previews_dir": str(render_dir / PREVIEW_FOLDER),
-            "report": str(report_file),
+            "previews_dir": str(render_dir / PREVIEW_FOLDER) if options.write else None,
+            "report": optional_report(game_dir, "render", findings, options),
             "fix_groups": groups,
             **capped_findings(findings),
         },
@@ -320,11 +495,18 @@ def command_export(arguments: argparse.Namespace, output: TextIO, folders: Syste
     game: Game | None = assemble_or_report(game_dir, output, "export")
     if game is None:
         return 0
+    blockers: list[Finding] = export_blockers(
+        load_ledger(ledger_path(game_dir)), game_hashes(game), flag_is_true(arguments.panel)
+    )
+    if blockers and not arguments.force:
+        message: str = "The verification blocks the export: some checks or panel results are missing or failing."
+        emit(output, {"ok": False, "message": message, **capped_findings(blockers)})
+        return 0
     root: Path = Path(arguments.to) if arguments.to else output_root(game.config.output.folder, folders.desktop)
     try:
-        result = export_game(game_dir / RENDER_FOLDER, root, game.story.title)
+        result: ExportResult = export_game(game_dir / RENDER_FOLDER, root, game.story.title)
     except ExportError as error:
         emit(output, {"ok": False, "message": str(error)})
         return 0
-    emit(output, {"ok": True, "folder": str(result.folder), "files": result.files})
+    emit(output, {"ok": True, "folder": str(result.folder), "files": result.files, "blockers_ignored": len(blockers)})
     return 0

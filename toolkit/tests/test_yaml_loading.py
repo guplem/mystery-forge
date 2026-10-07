@@ -1,6 +1,8 @@
+from pathlib import Path
+
 import pytest
 
-from mystery_forge.yaml_loading import YamlLoadError, parse_yaml_text, split_front_matter
+from mystery_forge.yaml_loading import YamlLoadError, parse_yaml_text, read_source_text, split_front_matter
 
 
 def test_every_scalar_stays_text_except_null() -> None:
@@ -79,3 +81,23 @@ def test_split_front_matter_accepts_windows_line_endings() -> None:
     assert header == "id: D1\n"
     assert body == "Text\n"
     assert body_line == 4
+
+
+def test_a_control_character_is_a_load_error_not_a_crash() -> None:
+    with pytest.raises(YamlLoadError) as raised:
+        parse_yaml_text("title: a\x07b\n", "bell.yaml")
+    assert raised.value.line is None
+    assert "bell.yaml" in str(raised.value)
+
+
+def test_split_front_matter_ignores_a_leading_byte_order_mark() -> None:
+    header, body, body_line = split_front_matter("\ufeff---\nid: D1\n---\nText\n")
+    assert header == "id: D1\n"
+    assert body == "Text\n"
+    assert body_line == 4
+
+
+def test_read_source_text_drops_a_byte_order_mark(tmp_path: Path) -> None:
+    path = tmp_path / "story.yaml"
+    path.write_bytes(b"\xef\xbb\xbftitle: x\n")
+    assert read_source_text(path) == "title: x\n"

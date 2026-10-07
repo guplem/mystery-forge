@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from mystery_forge.export import SPOILER_FOLDER, ExportError, export_game, output_root
+from mystery_forge.export import ExportError, export_game, output_root
+from mystery_forge.render.manual import SPOILER_FOLDER
 
 
 def make_render(folder: Path, companion: bool = True) -> Path:
@@ -23,7 +24,7 @@ def make_render(folder: Path, companion: bool = True) -> Path:
 def test_export_copies_the_player_files_and_hides_the_spoilers(tmp_path: Path) -> None:
     render_dir = make_render(tmp_path / "render")
     result = export_game(render_dir, tmp_path / "out", 'The Lens: "Gull Rock"?')
-    assert result.folder == tmp_path / "out" / "The Lens Gull Rock"
+    assert result.folder == tmp_path / "out" / "The Lens - Gull Rock"
     assert result.files == [
         "1 - START HERE (manual).pdf",
         "2 - PRINT THIS (game materials).pdf",

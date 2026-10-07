@@ -137,3 +137,75 @@ def test_a_kids_story_without_violence_passes_the_audience_check(game_dir: Path)
     config["audience"] = "kids"
     config_path.write_text(json.dumps(config), encoding="utf-8")
     assert "story.audience" not in rules(check_story_folder(game_dir))
+
+
+def set_kids_config(game_dir: Path, language: str) -> None:
+    config_path = game_dir / "source" / "config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["audience"] = "kids"
+    config["language"] = language
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("language", "sentence"),
+    [
+        ("en", "She sang by the totem while Mordecai skilled the tuerca."),
+        ("es", "Ajustó la tuerca y cantó con Mordecai."),
+        ("de", "Das Totem stand neben Mordecai."),
+        ("fr", "Il a chanté avec Mordecai près du totem."),
+    ],
+)
+def test_harmless_words_do_not_trip_the_death_filter(game_dir: Path, language: str, sentence: str) -> None:
+    set_kids_config(game_dir, language)
+    data = story_data(game_dir)
+    data["truth"] = data["truth"] + " " + sentence
+    save_story(game_dir, data)
+    assert "story.audience" not in rules(check_story_folder(game_dir))
+
+
+@pytest.mark.parametrize(
+    ("language", "sentence"),
+    [
+        ("en", "The keeper was dead."),
+        ("es", "Encontraron sangre en el suelo."),
+        ("ca", "Hi havia sang a terra."),
+        ("fr", "Il y avait du sang partout."),
+        ("de", "Der Wärter war tot."),
+        ("it", "Il guardiano era morto."),
+        ("pt", "O guarda estava morto."),
+    ],
+)
+def test_the_death_filter_uses_the_words_of_the_game_language(game_dir: Path, language: str, sentence: str) -> None:
+    set_kids_config(game_dir, language)
+    data = story_data(game_dir)
+    data["truth"] = data["truth"] + " " + sentence
+    save_story(game_dir, data)
+    assert "story.audience" in rules(check_story_folder(game_dir))
+
+
+def test_every_config_language_has_death_words() -> None:
+    from mystery_forge.config import CONFIG_SCHEMA_PATH
+    from mystery_forge.story_checks import DEATH_WORDS
+
+    schema = json.loads(CONFIG_SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert set(schema["properties"]["language"]["enum"]) == set(DEATH_WORDS)
+
+
+def test_the_intro_length_message_states_the_real_range(game_dir: Path) -> None:
+    data = story_data(game_dir)
+    data["intro"] = "Too short."
+    save_story(game_dir, data)
+    message = next(f.message for f in check_story_folder(game_dir) if f.rule == "story.intro_length")
+    assert "60 to 200" in message
+
+
+def test_a_case_file_story_with_too_few_hidden_clues_gets_a_warning(game_dir: Path) -> None:
+    data = story_data(game_dir)
+    data["clues"] = [clue for clue in data["clues"] if not clue.get("hidden")]
+    for question in data["deduction"]["questions"]:
+        question["proven_by"] = [clue for clue in question["proven_by"] if any(c["id"] == clue for c in data["clues"])]
+        if not question["proven_by"]:
+            question["proven_by"] = [data["clues"][0]["id"]]
+    save_story(game_dir, data)
+    assert "deduction.few_hidden_clues" in rules(check_story_folder(game_dir), "warning")

@@ -2,7 +2,8 @@
 
 The rules come from `adr/0004-verification-strategy.md`. A solve counts only when every evidence quote is in the packet
 that the solver got, so a solver that guesses right does not pass a puzzle. Same-model solvers make correlated
-mistakes, so a wrong answer that two solvers share is a real signal of a second answer, not noise.
+mistakes, so a wrong answer that two solvers share is a real signal of a second answer, not noise. A puzzle whose
+material prints its own method is no puzzle: when half of the solvers that solved it say so, it is trivial.
 """
 
 import json
@@ -33,7 +34,7 @@ MIN_SOLVERS: Final[int] = 3
 FULL_PANEL: Final[int] = 5
 # Verified solves that a pass needs: (with 3 or 4 valid solvers, with 5 or more).
 REQUIRED_SOLVES: Final[dict[Difficulty, tuple[int, int]]] = {
-    "easy": (3, 4),
+    "easy": (2, 3),
     "medium": (2, 3),
     "hard": (1, 2),
     "expert": (1, 2),
@@ -60,6 +61,8 @@ class Attempt:
     reasoning: str
     # Each candidate with its comparable answer.
     candidates: tuple[tuple[str, Candidate], ...]
+    all_steps_stated: bool = False
+    aha: str = ""
 
 
 @dataclass(frozen=True)
@@ -90,7 +93,7 @@ def judge_panel(
     if guesser_result is not None:
         guesses = {guess.code: normalize_answer(guess.answer, game.config.language) for guess in guesser_result.guesses}
     puzzles: list[ItemVerdict] = []
-    for puzzle in ordered_puzzles(game):
+    for position, puzzle in enumerate(ordered_puzzles(game)):
         gold: frozenset[str] = frozenset(puzzle.accepted_normalized)
         attempts: list[Attempt] = [
             puzzle_attempt(solver, puzzle.code, gold, game.config.language)
@@ -98,7 +101,8 @@ def judge_panel(
             if puzzle.code in solver.packet.codes
         ]
         guessable: bool = guesses.get(puzzle.code, "") in gold
-        puzzles.append(judge_item(puzzle.code, puzzle.source.difficulty, attempts, gold, guessable))
+        # The first puzzle teaches how the game works, so it may state its method.
+        puzzles.append(judge_item(puzzle.code, puzzle.source.difficulty, attempts, gold, guessable, position > 0))
     questions: list[ItemVerdict] = []
     if game.story.deduction is not None:
         for question in game.story.deduction.questions:
@@ -106,7 +110,9 @@ def judge_panel(
                 question_attempt(solver, question) for solver in valid if question.id in solver.packet.questions
             ]
             gold = frozenset({question.correct.casefold()})
-            questions.append(judge_item(question.id, QUESTION_DIFFICULTY, attempts, gold, guessable=False))
+            questions.append(
+                judge_item(question.id, QUESTION_DIFFICULTY, attempts, gold, guessable=False, can_be_trivial=False)
+            )
     ok: bool = all(item.verdict == "pass" for item in [*puzzles, *questions])
     return PanelReport(ok=ok, puzzles=puzzles, questions=questions, invalid_solvers=invalid)
 
@@ -162,6 +168,8 @@ def puzzle_attempt(solver: ValidSolver, code: str, gold: frozenset[str], languag
         stuck=answer.stuck or not normalized,
         reasoning=answer.reasoning,
         candidates=tuple((normalize_answer(candidate.answer, language), candidate) for candidate in answer.candidates),
+        all_steps_stated=answer.all_steps_stated,
+        aha=answer.aha,
     )
 
 
@@ -190,10 +198,17 @@ def required_solves(difficulty: Difficulty, solvers: int) -> int | None:
 
 
 def judge_item(
-    code: str, difficulty: Difficulty, attempts: list[Attempt], gold: frozenset[str], guessable: bool
+    code: str,
+    difficulty: Difficulty,
+    attempts: list[Attempt],
+    gold: frozenset[str],
+    guessable: bool,
+    can_be_trivial: bool,
 ) -> ItemVerdict:
     required: int | None = required_solves(difficulty, len(attempts))
-    solves: int = sum(1 for attempt in attempts if attempt.correct and attempt.verified)
+    solved: list[Attempt] = [attempt for attempt in attempts if attempt.correct and attempt.verified]
+    solves: int = len(solved)
+    stated: list[Attempt] = [attempt for attempt in solved if attempt.all_steps_stated]
     wrong_attempts: list[Attempt] = [attempt for attempt in attempts if attempt.normalized and not attempt.correct]
     wrong: list[AnswerCount] = answer_counts(wrong_attempts)
     alternatives: list[Alternative] = find_alternatives(attempts, wrong_attempts, gold)
@@ -213,6 +228,9 @@ def judge_item(
         verdict, notes = "ambiguous", []
     elif guessable:
         verdict, notes = "guessable", ["The guesser found the answer without the documents."]
+    elif can_be_trivial and stated and 2 * len(stated) >= solves:
+        verdict = "trivial"
+        notes = [f"{attempt.solver}: the material states every step; aha: {attempt.aha}" for attempt in stated]
     elif solves < required:
         verdict = "too_hard"
         notes = [attempt_note(attempt) for attempt in attempts if not (attempt.correct and attempt.verified)]
@@ -228,6 +246,7 @@ def judge_item(
         wrong=wrong,
         alternatives=alternatives,
         guessable=guessable,
+        steps_stated=len(stated),
         notes=notes,
     )
 
@@ -324,6 +343,8 @@ def item_reason(item: ItemVerdict) -> str:
         return f"ambiguous: other answers fit: {listed}"
     if item.verdict == "guessable":
         return "guessable: the guesser found it without the documents"
+    if item.verdict == "trivial":
+        return f"trivial: {item.steps_stated} of {item.solves_verified} solvers say the material states every step"
     return f"too hard: {item.solves_verified} verified solves of {item.solvers}, needs {item.required}"
 
 

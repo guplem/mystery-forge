@@ -5,6 +5,7 @@ images, and the report carries what the checks need from the DOM: the overflow f
 sheet, and each artifact as the browser drew it (for the round-trip decode of `adr/0004-verification-strategy.md`).
 """
 
+import shutil
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
@@ -24,7 +25,13 @@ from mystery_forge.render.pdf import (
     overflowing_sheets,
     rendered_artifacts,
 )
-from mystery_forge.render.sheets import OutputId, OutputPlan, number_sheets, number_sheets_by_stage
+from mystery_forge.render.sheets import (
+    OUTPUT_FILES,
+    OutputId,
+    OutputPlan,
+    number_sheets,
+    number_sheets_by_stage,
+)
 from mystery_forge.render.solutions import solution_sheets
 from mystery_forge.render.themes import StyleSettings, style_settings
 from mystery_forge.spec.models import VisualStyle
@@ -101,6 +108,14 @@ def preview_paths(out_dir: Path, plan: OutputPlan) -> list[Path]:
     return [out_dir / PREVIEW_FOLDER / f"{plan.id}-{index}.png" for index in range(1, len(plan.sheets) + 1)]
 
 
+def remove_stale_outputs(out_dir: Path) -> None:
+    """Delete the previews and the output files of an earlier render, so that a shorter render leaves no old page."""
+    shutil.rmtree(out_dir / PREVIEW_FOLDER, ignore_errors=True)
+    for files in OUTPUT_FILES.values():
+        (out_dir / files.html).unlink(missing_ok=True)
+        (out_dir / files.pdf).unlink(missing_ok=True)
+
+
 def render_game(
     game: Game, out_dir: Path, browser: SheetBrowser | None, theme_override: VisualStyle | None = None
 ) -> RenderReport:
@@ -111,6 +126,7 @@ def render_game(
     """
     settings: StyleSettings = style_settings(game, theme_override)
     out_dir.mkdir(parents=True, exist_ok=True)
+    remove_stale_outputs(out_dir)
     levels: dict[str, int] = {}
     printed: dict[OutputId, tuple[str, PageProbe]] = {}
     pass_number: int = 0

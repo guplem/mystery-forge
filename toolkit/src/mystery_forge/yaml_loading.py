@@ -7,7 +7,8 @@ error messages can point an agent at the exact line to fix.
 """
 
 from dataclasses import dataclass
-from typing import Any
+from pathlib import Path
+from typing import Any, Final
 
 import yaml
 
@@ -15,6 +16,8 @@ type YamlPath = tuple[str | int, ...]
 
 NULL_TAG: str = "tag:yaml.org,2002:null"
 NULL_SPELLINGS: frozenset[str] = frozenset({"null", "Null", "NULL", "~", ""})
+# Windows editors may start a UTF-8 file with this mark. It is not text, and it hides a first line `---`.
+BYTE_ORDER_MARK: Final[str] = "\ufeff"
 
 
 class YamlLoadError(Exception):
@@ -54,6 +57,9 @@ def parse_yaml_text(text: str, source: str) -> YamlDocument:
     except yaml.MarkedYAMLError as error:
         line: int | None = error.problem_mark.line + 1 if error.problem_mark is not None else None
         raise YamlLoadError(source, f"invalid YAML: {error.problem}", line) from error
+    except yaml.YAMLError as error:
+        # A reader error (a control character, for example) carries no mark.
+        raise YamlLoadError(source, f"invalid YAML: {error}", None) from error
     lines: dict[YamlPath, int] = {}
     if root is None:
         return YamlDocument(data=None, lines=lines)
@@ -89,7 +95,7 @@ def split_front_matter(text: str) -> tuple[str | None, str, int]:
 
     The front matter sits between a first line `---` and the next line `---`. A file without it has no header.
     """
-    normalized: str = text.replace("\r\n", "\n")
+    normalized: str = text.removeprefix(BYTE_ORDER_MARK).replace("\r\n", "\n")
     all_lines: list[str] = normalized.split("\n")
     if not all_lines or all_lines[0].strip() != "---":
         return None, normalized, 1
@@ -99,3 +105,8 @@ def split_front_matter(text: str) -> tuple[str | None, str, int]:
             body: str = "\n".join(all_lines[index + 1 :])
             return header, body, index + 2
     raise YamlLoadError("front matter", "the front matter has no closing '---' line", 1)
+
+
+def read_source_text(path: Path) -> str:
+    """Read a source file as UTF-8 without its byte order mark. Raise `UnicodeDecodeError` for other bytes."""
+    return path.read_text(encoding="utf-8-sig")

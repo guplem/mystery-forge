@@ -423,19 +423,8 @@ body.mode-low-ink .puzzle-badge strong {
 }
 .cover-warning {
   margin: 0 0 4mm;
-  display: flex;
-  align-items: center;
-  gap: 6mm;
   max-width: 140mm;
-  text-align: left;
   font-size: 10pt;
-}
-.cover-warning p {
-  margin: 0;
-}
-.cover-warning .mf-stamp {
-  flex: none;
-  font-size: 17pt;
 }
 .warning-box {
   margin: 8mm 0 6mm;
@@ -1960,6 +1949,28 @@ body.mode-low-ink .mf-artifact .mf-mask td.mf-mask-hole {
   display: block;
   white-space: pre;
 }
+/* Vertical strips stand side by side as columns, so the sorted strips read row by row. */
+.mf-cut-strips-vertical {
+  flex-direction: row;
+  justify-content: center;
+}
+/* Every vertical strip gets the same width, so neither its width nor its dots row hints at its place. */
+.mf-cut-strips-vertical .mf-strip {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 24mm;
+  flex-direction: column;
+  gap: 1.5mm;
+  margin: 0 -0.15mm;
+  padding: 3mm 1.5mm;
+}
+.mf-cut-strips-vertical .mf-strip-dots {
+  word-break: break-all;
+  text-align: center;
+  line-height: 1.1;
+  /* Two rows of dots on every strip keep the text rows of all strips level. */
+  min-height: 2.2em;
+}
 .mf-timeline {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -2031,13 +2042,6 @@ body.mode-low-ink .mf-artifact .mf-mask td.mf-mask-hole {
   font-size: 8pt;
   font-weight: 400;
   color: var(--ink-soft);
-}
-.result-reveals {
-  margin: 1mm 0 0;
-  font-style: italic;
-}
-.result-action {
-  margin: 1.5mm 0 0;
 }
 
 /* ---------- Accusation form ---------- */
@@ -2530,6 +2534,22 @@ body.mode-low-ink .step-number {
 }
 .manual-checklist .check-box {
   margin-top: 0.4mm;
+}
+.manual-box {
+  margin: 2mm 0 3mm;
+  padding: 2.5mm 5mm;
+  border: 0.5mm solid var(--accent);
+  border-radius: var(--radius);
+  font-size: 9.5pt;
+}
+.manual-box-title {
+  margin: 0 0 1mm;
+  font: 700 11pt var(--font-heading);
+  color: var(--accent);
+}
+.manual-box ul {
+  margin: 0;
+  padding-left: 5mm;
 }
 .read-aloud-quote {
   margin: 2mm 0 3mm;

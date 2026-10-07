@@ -237,3 +237,33 @@ def test_setup_accepts_the_word_defaults_as_the_config(
     assert code == 0
     assert result["ok"] is True
     assert result["config_file"] is None
+
+
+def test_setup_skips_a_broken_draw_of_an_earlier_crashed_setup(
+    tmp_path: Path, folders: SystemFolders, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    write_config(folders.downloads, generation={"seed": 5})
+    games = tmp_path / "games"
+    for name, text in (("crashed", "{not json"), ("odd", '{"settings": [1]}'), ("empty", "{}")):
+        (games / name / "source").mkdir(parents=True)
+        (games / name / "source" / "draw.json").write_text(text, encoding="utf-8")
+    code, result = run(["setup", "--games-dir", str(games)], monkeypatch, folders)
+    assert code == 0
+    assert result["ok"] is True
+
+
+def test_main_reads_stdin_as_utf8(monkeypatch: pytest.MonkeyPatch) -> None:
+    stdin = io.TextIOWrapper(io.BytesIO(), encoding="cp1252")
+    monkeypatch.setattr("sys.stdin", stdin)
+    assert cli.main(["schema", "flow"], io.StringIO()) == 0
+    assert stdin.encoding == "utf-8"
+
+
+def test_a_crash_inside_a_verb_is_one_json_line_with_exit_2(monkeypatch: pytest.MonkeyPatch) -> None:
+    def explode(*arguments: Any) -> Any:
+        raise KeyError("lost")
+
+    monkeypatch.setattr(cli, "assemble_game", explode)
+    code, result = run(["assemble", "--game", "nowhere"], monkeypatch)
+    assert code == 2
+    assert result == {"ok": False, "message": "KeyError: 'lost'"}

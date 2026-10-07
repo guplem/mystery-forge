@@ -9,6 +9,7 @@ from mystery_forge.render.pdf import (
     BrowserNotFoundError,
     PageProbe,
     SheetMeasurement,
+    describe_element,
     launch_first_available,
     overflow_findings,
     overflowing_sheets,
@@ -16,13 +17,18 @@ from mystery_forge.render.pdf import (
 )
 
 
-def box(**values: float) -> BoxMeasurement:
+def box(bottom_element: str = "", right_element: str = "", **values: float) -> BoxMeasurement:
     sizes: dict[str, float] = {"scroll_height": 100, "client_height": 100, "scroll_width": 50, "client_width": 50}
     sizes.update(values)
-    return BoxMeasurement(name="prop", **sizes)
+    return BoxMeasurement(name="prop", bottom_element=bottom_element, right_element=right_element, **sizes)
 
 
-def sheet(boxes: list[BoxMeasurement] | None = None, escaped: int = 0, scroll_height: float = 1000) -> SheetMeasurement:
+def sheet(
+    boxes: list[BoxMeasurement] | None = None,
+    escaped: int = 0,
+    scroll_height: float = 1000,
+    escaped_element: str = "",
+) -> SheetMeasurement:
     return SheetMeasurement(
         scroll_height=scroll_height,
         client_height=1000,
@@ -30,6 +36,9 @@ def sheet(boxes: list[BoxMeasurement] | None = None, escaped: int = 0, scroll_he
         client_width=700,
         boxes=boxes or [],
         escaped=escaped,
+        escaped_distance=12.4,
+        escaped_element=escaped_element,
+        escaped_edge="right",
         text="",
     )
 
@@ -72,8 +81,8 @@ def test_document_overflow_goes_to_the_writer_and_toolkit_overflow_to_nobody() -
         artifacts=[],
     )
     assert overflowing_sheets(probe) == [
-        (1, ["the box 'sheet' overflows"]),
-        (2, ["the box 'prop' overflows"]),
+        (1, ["the sheet: content 200 px too tall"]),
+        (2, ["the box 'prop': the content reaches 30 px past the bottom edge"]),
         (3, ["2 element(s) reach outside the sheet"]),
     ]
     findings = overflow_findings(probe, "materials.html", [None, "documents/D2.md", None])
@@ -86,6 +95,32 @@ def test_document_overflow_goes_to_the_writer_and_toolkit_overflow_to_nobody() -
     assert findings[0].fix_hint is not None and "pagebreak" in findings[0].fix_hint
     assert findings[1].fix_hint is not None and "toolkit bug" in findings[1].fix_hint
     assert "2 element(s) reach outside the sheet" in findings[2].message
+
+
+def test_an_overflow_says_how_much_and_what_overflows() -> None:
+    tall = box(bottom_element="div.mf-handwriting", scroll_height=220)
+    wide = box(right_element="p", scroll_width=60, overflow_right=7.2)
+    reaching = box(bottom_element="div.safe.doc-area", right_element="div.mf-handwriting", overflow_right=7.4)
+    probe = PageProbe(sheets=[sheet(boxes=[tall, wide, reaching], escaped=1, escaped_element="span")], artifacts=[])
+    assert overflowing_sheets(probe) == [
+        (
+            0,
+            [
+                "the box 'prop': content 120 px too tall; the first part past the edge is a handwriting block",
+                "the box 'prop': content 10 px too wide; the first part past the edge is a <p> element",
+                "the box 'prop': a handwriting block reaches 7 px past the right edge",
+                "1 element(s) reach outside the sheet; the farthest, a <span> element, reaches 12 px past the "
+                "right edge",
+            ],
+        )
+    ]
+
+
+def test_describe_element_names_the_part_that_a_fixer_must_shorten() -> None:
+    assert describe_element("div.mf-handwriting.big") == "a handwriting block"
+    assert describe_element("div.police-report") == "a police report block"
+    assert describe_element("p") == "a <p> element"
+    assert describe_element("") == "the content"
 
 
 def test_rendered_artifacts_keep_the_first_copy_of_each_puzzle() -> None:

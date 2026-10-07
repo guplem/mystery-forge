@@ -119,6 +119,8 @@ blocks:
             title: {type: string}
             teaser: {type: string}
       summary: {type: string, description: "At most 3 lines: how the concepts differ."}
+      recommended: {type: string, enum: [first, second, third], description: "The concept that you would pick."}
+      recommended_reason: {type: string, description: "One spoiler-free line: why this concept fits the config best."}
     next:
       - when: "{{ steps.setup.json.summary.pick_concept == 'agent' or run.mode == 'autonomous' }}"
         to: pick_concept_agent
@@ -140,9 +142,9 @@ blocks:
     description: Pick the story concept that fits the config best
     decider: agent
     instruction: >-
-      Pick the concept that best fits the config (audience, tone, theme idea, player count) and that promises the most
-      surprising twist. Read `{{ steps.setup.json.game_dir }}/source/concepts.yaml` and
-      `{{ steps.setup.json.game_dir }}/source/config.json`. Do not show the concepts or their twists to the user.
+      The concept writer recommends the {{ steps.concepts.results[0].recommended }} concept:
+      {{ steps.concepts.results[0].recommended_reason }} Pick it unless a teaser clearly fits the config better. Do not
+      open the concept files: the person who runs the generator may play the game.
     choices:
       first: The first concept.
       second: The second concept.
@@ -227,10 +229,52 @@ blocks:
     description: Check the plan and fix its errors
     skill: game-check-loop
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: plan}
+    max_visits: 3
+    on_max_visits: failed
     next:
-      - when: "{{ steps.plan_check.outputs.ok }}"
-        to: write_story_documents
-      - to: failed
+      - when: "{{ not steps.plan_check.outputs.ok }}"
+        to: failed
+      - when: "{{ (history.review_plan | length) <= (history.revise_plan | length) }}"
+        to: review_plan
+      - to: write_story_documents
+
+  review_plan:
+    type: parallel
+    description: Review the puzzle design before anyone writes a puzzle
+    for_each:
+      - {name: puzzle design review}
+    task_name: "{{ item.name }}"
+    agent: puzzle-reviewer
+    instruction: instructions/review_plan.md
+    output:
+      findings:
+        type: array
+        description: "Your findings. An empty list when the plan is ready."
+        items:
+          type: object
+          properties:
+            severity: {type: string, enum: [required, suggestion]}
+            puzzle: {type: string}
+            problem: {type: string}
+            fix: {type: string}
+    next:
+      - when: >-
+          {{ (steps.review_plan.results[0].findings | selectattr('severity', 'equalto', 'required') | list | length) > 0
+          and (history.revise_plan | length) < 2 }}
+        to: revise_plan
+      - to: write_story_documents
+
+  revise_plan:
+    type: parallel
+    description: Revise the plan for the puzzle design findings
+    for_each:
+      - {name: plan revision}
+    task_name: "{{ item.name }}"
+    agent: puzzle-planner
+    instruction: instructions/revise_plan.md
+    output:
+      summary: {type: string, description: "At most 5 lines, with no answer: what you changed."}
+    next: plan_check
 
   write_story_documents:
     type: parallel
@@ -286,14 +330,55 @@ blocks:
     description: Assemble the game, run every check, and fix the errors
     skill: game-check-loop
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: full}
-    max_visits: 4
-    on_max_visits: render
+    max_visits: 6
+    on_max_visits: failed
     next:
       - when: "{{ not steps.game_check.outputs.ok }}"
         to: failed
+      - when: "{{ (history.review_documents | length) == 0 }}"
+        to: review_documents
       - when: "{{ not inputs.panel }}"
         to: render
       - to: panel
+
+  review_documents:
+    type: parallel
+    description: Read every document against the story bible
+    for_each:
+      - {name: document review}
+    task_name: "{{ item.name }}"
+    agent: story-reviewer
+    instruction: instructions/review_documents.md
+    output:
+      findings:
+        type: array
+        description: "Your findings. An empty list when the documents are ready."
+        items:
+          type: object
+          properties:
+            severity: {type: string, enum: [required, suggestion]}
+            document: {type: string}
+            problem: {type: string}
+            fix: {type: string}
+    next:
+      - when: "{{ (steps.review_documents.results[0].findings | selectattr('severity', 'equalto', 'required') | list | length) > 0 }}"
+        to: document_fix
+      - when: "{{ not inputs.panel }}"
+        to: render
+      - to: panel
+
+  document_fix:
+    type: parallel
+    description: Fix the required document findings
+    for_each:
+      - {name: document fix}
+    task_name: "{{ item.name }}"
+    agent: fixer
+    instruction: instructions/document_fix.md
+    output:
+      changed_files: {type: array, items: {type: string}, description: "The files that you changed."}
+      summary: {type: string, description: "At most 3 lines, with no answer."}
+    next: game_check
 
   panel:
     type: call
@@ -328,14 +413,16 @@ blocks:
     run: [uv, run, --project, ../toolkit, forge, render, --game, "{{ steps.setup.json.game_dir }}"]
     parse: json
     timeout_s: 900
-    max_visits: 4
-    on_max_visits: export
+    max_visits: 6
+    on_max_visits: failed
     next:
       - when: "{{ steps.render.json.ok and (history.visual_review | length) == 0 }}"
         to: visual_review
       - when: "{{ steps.render.json.ok }}"
         to: status
-      - when: "{{ (history.render_fix | length) < 2 }}"
+      - when: "{{ (steps.render.json.fix_groups | length) == 0 }}"
+        to: toolkit_bug
+      - when: "{{ (history.render_fix | length) < 3 }}"
         to: render_fix
       - to: failed
 
@@ -347,7 +434,10 @@ blocks:
     agent: fixer
     instruction: instructions/render_fix.md
     output:
-      status: {type: string, enum: [fixed, failed], description: "failed only when you could not change anything."}
+      status:
+        type: string
+        enum: [fixed, unfixable, failed]
+        description: "unfixable when the problem is not in your files (for example a toolkit page); say why in the summary."
       changed_files: {type: array, items: {type: string}, description: "The files that you changed."}
       summary: {type: string, description: "At most 3 lines."}
     next: render
@@ -392,20 +482,40 @@ blocks:
   status:
     type: script
     description: Check that no verification is older than the files it checked
-    run: [uv, run, --project, ../toolkit, forge, status, --game, "{{ steps.setup.json.game_dir }}"]
+    run: [uv, run, --project, ../toolkit, forge, status, --game, "{{ steps.setup.json.game_dir }}", --panel, "{{ inputs.panel }}"]
     parse: json
+    max_visits: 4
+    on_max_visits: export_with_warnings
     next:
-      - when: "{{ steps.status.json.ok or not inputs.panel or (history.panel | length) >= 3 }}"
+      - when: "{{ steps.status.json.ok }}"
         to: export
-      - to: panel
+      - when: "{{ (steps.status.json.checks_stale | default([]) | length) > 0 and (history.game_check | length) < 5 }}"
+        to: game_check
+      - when: "{{ inputs.panel and (history.panel | length) < 3 }}"
+        to: panel
+      - to: export_with_warnings
 
   export:
     type: script
     description: Copy the finished game to the output folder
-    run: [uv, run, --project, ../toolkit, forge, export, --game, "{{ steps.setup.json.game_dir }}"]
+    run: [uv, run, --project, ../toolkit, forge, export, --game, "{{ steps.setup.json.game_dir }}", --panel, "{{ inputs.panel }}"]
     parse: json
     retries: 0
-    next: done
+    next:
+      - when: "{{ steps.export.json.ok }}"
+        to: done
+      - to: export_with_warnings
+
+  export_with_warnings:
+    type: script
+    description: Copy the game to the output folder, although some verification is stale or failing
+    run: [uv, run, --project, ../toolkit, forge, export, --game, "{{ steps.setup.json.game_dir }}", --force]
+    parse: json
+    retries: 0
+    next:
+      - when: "{{ steps.export_with_warnings.json.ok }}"
+        to: done
+      - to: export_failed
 
   done:
     type: end
@@ -413,7 +523,7 @@ blocks:
     status: succeeded
     outputs:
       result: exported
-      folder: "{{ steps.export.json.folder }}"
+      folder: "{{ steps.export.json.folder | default(steps.export_with_warnings.json.folder | default('')) }}"
     report: instructions/report_done.md
 
   stopped:
@@ -422,6 +532,23 @@ blocks:
     status: cancelled
     outputs: {result: stopped}
     report: Tell the user that the run stopped, and why, in one or two sentences. Nothing was exported.
+
+  export_failed:
+    type: end
+    description: The game could not be copied to the output folder
+    status: failed
+    outputs: {result: failed}
+    report: >-
+      Tell the user that the game is finished in `{{ steps.setup.json.game_dir }}`, but the copy to the output folder
+      failed: {{ steps.export_with_warnings.json.message | default('see the export output') }}. Suggest a fix (a writable
+      folder, a free disk), then `uv run --project ../toolkit forge export --game {{ steps.setup.json.game_dir }} --force`.
+
+  toolkit_bug:
+    type: end
+    description: The game is written and checked, but a toolkit page does not render
+    status: failed
+    outputs: {result: failed}
+    report: instructions/report_toolkit_bug.md
 
   failed:
     type: end

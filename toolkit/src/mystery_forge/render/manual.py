@@ -17,6 +17,14 @@ from mystery_forge.render.sheets import OUTPUT_FILES, OutputId, Sheet, paginate
 
 # The companion page keeps this name from the render folder to the exported folder, so the manual can name it.
 COMPANION_FILE: str = "Game companion.html"
+# The export puts the hints and the solutions in this folder, so the manual names their real paths.
+SPOILER_FOLDER: Final[str] = "HOST ONLY - spoilers"
+SPOILER_OUTPUTS: Final[frozenset[OutputId]] = frozenset({"hints", "solutions"})
+PRINT_SETTING_KEYS: Final[tuple[str, ...]] = (
+    "manual_print_box_chrome",
+    "manual_print_box_edge",
+    "manual_print_box_acrobat",
+)
 
 MANUAL_GROUP: Final[str] = "manual"
 # Millimetres on the printed page, as `themes/base.css` sets them. The running header tops every page; the hero block
@@ -32,6 +40,8 @@ BLOCK_GAP_MM: Final[float] = 2.6
 READ_ALOUD_CHARS_PER_LINE: Final[int] = 92
 READ_ALOUD_LINE_MM: Final[float] = 6.2
 READ_ALOUD_FRAME_MM: Final[float] = 13
+BOX_FRAME_MM: Final[float] = 13
+BOX_CHARS_PER_LINE: Final[int] = 90
 TABLE_HEAD_MM: Final[float] = 13
 TABLE_LINE_MM: Final[float] = 4.9
 TABLE_ROW_PADDING_MM: Final[float] = 3.6
@@ -51,6 +61,15 @@ class ManualSection:
     checklist: list[str] = field(default_factory=list)
     table: TableData | None = None
     read_aloud: str = ""
+    # A framed box after the paragraphs: its title and its lines.
+    box_title: str = ""
+    box_lines: list[str] = field(default_factory=list)
+
+
+def output_path(output: OutputId) -> str:
+    """The path of an output PDF in the exported folder."""
+    name: str = OUTPUT_FILES[output].pdf
+    return f"{SPOILER_FOLDER}/{name}" if output in SPOILER_OUTPUTS else name
 
 
 def checklist_section(game: Game, page_counts: Mapping[OutputId, int]) -> ManualSection:
@@ -64,7 +83,7 @@ def checklist_section(game: Game, page_counts: Mapping[OutputId, int]) -> Manual
         "solutions": optional,
     }
     rows: list[list[str]] = [
-        [OUTPUT_FILES[output].pdf, str(count), printed[output]] for output, count in page_counts.items()
+        [output_path(output), str(count), printed[output]] for output, count in page_counts.items()
     ]
     if config.assistance.companion_page:
         rows.append([COMPANION_FILE, "-", text(language, "manual_print_companion_file")])
@@ -79,6 +98,8 @@ def checklist_section(game: Game, page_counts: Mapping[OutputId, int]) -> Manual
         heading=text(language, "manual_checklist_title"),
         paragraphs=paragraphs,
         table=TableData(headers=headers, rows=rows),
+        box_title=text(language, "manual_print_box_title"),
+        box_lines=[text(language, key) for key in PRINT_SETTING_KEYS],
     )
 
 
@@ -102,7 +123,9 @@ def needs_section(game: Game) -> ManualSection:
     ]
     if needs_cutting(game):
         items.append(text(language, "manual_need_scissors"))
-    if game.config.equipment.tape_or_glue:
+    if game.config.equipment.envelopes:
+        items.append(text(language, "manual_need_label_tape"))
+    elif game.config.equipment.tape_or_glue:
         items.append(text(language, "manual_need_tape"))
     return ManualSection(heading=text(language, "manual_need_title"), checklist=items)
 
@@ -203,7 +226,7 @@ def host_section(game: Game) -> ManualSection:
     )
 
 
-BlockKind = Literal["hero", "heading", "paragraph", "read_aloud", "table", "step", "checklist", "credit"]
+BlockKind = Literal["hero", "heading", "paragraph", "read_aloud", "box", "table", "step", "checklist", "credit"]
 
 
 @dataclass(frozen=True)
@@ -236,6 +259,9 @@ def block_height(block: ManualBlock) -> float:
         return FIXED_BLOCK_MM[block.kind]
     if block.kind == "read_aloud":
         return text_height(block.text, READ_ALOUD_CHARS_PER_LINE, READ_ALOUD_LINE_MM) + READ_ALOUD_FRAME_MM
+    if block.kind == "box":
+        lines: list[str] = [block.text, *block.items]
+        return BOX_FRAME_MM + sum(text_height(line, BOX_CHARS_PER_LINE, BODY_LINE_MM) for line in lines)
     if block.kind == "table":
         assert block.table is not None
         return TABLE_HEAD_MM + sum(table_row_height(row) for row in block.table.rows)
@@ -272,6 +298,8 @@ def section_blocks(section: ManualSection, budget: float) -> list[ManualBlock]:
         blocks.extend(text_blocks("paragraph", paragraph, budget))
     if section.read_aloud:
         blocks.extend(text_blocks("read_aloud", section.read_aloud, budget))
+    if section.box_lines:
+        blocks.append(ManualBlock(kind="box", text=section.box_title, items=section.box_lines))
     if section.table:
         blocks.extend(table_blocks(section.table, budget))
     for number, step in enumerate(section.steps, start=1):

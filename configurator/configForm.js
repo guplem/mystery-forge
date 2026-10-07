@@ -85,7 +85,8 @@
   };
   /** @type {Record<string, number>} */
   const RANGE_STEPS = { duration_minutes: 15 };
-  const ADVANCED_FIELDS = new Set(['generation.seed']);
+  const ADVANCED_FIELDS = new Set(['generation.quality', 'generation.seed']);
+  const LETTER_PAPER_REGIONS = ['us', 'ca'];
 
   /** What each audience preset changes, by dotted path. A choice that the preset does not name keeps its value. */
   /** @type {Record<string, Record<string, unknown>>} */
@@ -450,8 +451,19 @@
   }
 
   /**
+   * Return the paper size that suits a game language. Only English for a browser in the United States or Canada gets
+   * Letter; the rest of the world uses A4.
+   * @param {string} gameLanguage
+   * @param {readonly string[]} browserLanguages
+   * @returns {string}
+   */
+  function defaultPaper(gameLanguage, browserLanguages) {
+    const region = browserLanguages[0]?.toLowerCase().split('-')[1] ?? '';
+    return gameLanguage === 'en' && LETTER_PAPER_REGIONS.includes(region) ? 'Letter' : 'A4';
+  }
+
+  /**
    * Return the schema defaults, with the game language and the paper size taken from the browser languages.
-   * Only a US English browser gets Letter paper; the rest of the world uses A4.
    * @param {readonly string[]} browserLanguages
    * @returns {MysteryForgeGameConfig}
    */
@@ -465,10 +477,28 @@
     if (gameLanguage) {
       config = setFieldValue(config, 'language', gameLanguage);
     }
-    if (browserLanguages[0]?.toLowerCase() === 'en-us') {
-      config = setFieldValue(config, 'equipment.paper', 'Letter');
+    return setFieldValue(config, 'equipment.paper', defaultPaper(config.language, browserLanguages));
+  }
+
+  /**
+   * Let the game language follow a new page language, with the paper size that suits it. The game language counts as
+   * chosen by the user when it differs from the old page language, and a chosen game language stays. In the same way,
+   * a paper size that differs from the default of the old game language stays.
+   * @param {MysteryForgeGameConfig} config
+   * @param {string} oldUiLanguage
+   * @param {string} newUiLanguage
+   * @param {readonly string[]} browserLanguages
+   * @returns {{config: MysteryForgeGameConfig, followed: boolean}}
+   */
+  function followPageLanguage(config, oldUiLanguage, newUiLanguage, browserLanguages) {
+    if (config.language !== oldUiLanguage || oldUiLanguage === newUiLanguage) {
+      return { config, followed: false };
     }
-    return config;
+    let updated = setFieldValue(config, 'language', newUiLanguage);
+    if (config.equipment.paper === defaultPaper(oldUiLanguage, browserLanguages)) {
+      updated = setFieldValue(updated, 'equipment.paper', defaultPaper(newUiLanguage, browserLanguages));
+    }
+    return { config: updated, followed: true };
   }
 
   /**
@@ -565,6 +595,20 @@
       },
       { id: 'generation', label: text(language, 'estimate.generation'), value: generationTimeText(config, language) },
     ];
+  }
+
+  /**
+   * The short line of the phone bar: the puzzle count and the play time.
+   * @param {MysteryForgeGameConfig} config
+   * @param {string} language
+   * @returns {string}
+   */
+  function summaryBarText(config, language) {
+    const estimate = globalThis.MysteryForgeConfigEstimate.estimateFromConfig(config);
+    return text(language, 'summary.bar', {
+      puzzles: estimate.puzzle_count,
+      time: formatMinutes(config.duration_minutes),
+    });
   }
 
   /**
@@ -738,6 +782,7 @@
     AUDIENCE_PRESETS,
     buildFormModel,
     initialConfig,
+    followPageLanguage,
     getAtPath,
     setFieldValue,
     addListItem,
@@ -749,6 +794,7 @@
     showsSurpriseNote,
     formatMinutes,
     estimateItems,
+    summaryBarText,
     generationTimeText,
     configFileName,
     configFileText,

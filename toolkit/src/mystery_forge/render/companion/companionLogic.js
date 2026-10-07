@@ -5,6 +5,8 @@
 
 (function registerCompanionLogic() {
   const STATE_VERSION = 1;
+  // About five lines of the intro on a phone: a longer intro pushes the clock and the envelopes off the first screen.
+  const LONG_INTRO_CHARACTERS = 240;
 
   /** @returns {MysteryForgeCompanionState} */
   function freshState() {
@@ -365,6 +367,15 @@
     return template.replace(/\{(\w+)\}/g, (field, name) => (name in values ? String(values[name]) : field));
   }
 
+  /**
+   * Whether a phone folds the intro to its first lines, so that the clock and the envelopes come first.
+   * @param {string} intro
+   * @returns {boolean}
+   */
+  function isLongIntro(intro) {
+    return intro.length > LONG_INTRO_CHARACTERS;
+  }
+
   globalThis.MysteryForgeCompanionLogic = {
     freshState,
     storageKey,
@@ -390,5 +401,6 @@
     stateFromStorage,
     stateToStorage,
     fillText,
+    isLongIntro,
   };
 })();

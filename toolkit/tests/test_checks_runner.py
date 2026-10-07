@@ -6,7 +6,6 @@ from mystery_forge.game import Game
 
 GOLDEN_WARNINGS: list[tuple[str, str | None]] = [
     ("variety.cross_document", None),
-    ("budget.duration", None),
     ("ledger.hint_ladder_narrows", "puzzles/P1.yaml"),
     ("ledger.hint_ladder_narrows", "puzzles/P2.yaml"),
     ("variety.final_not_meta", "puzzles/P3.yaml"),

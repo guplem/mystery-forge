@@ -4,6 +4,14 @@ Make your own printable mystery game with an AI agent. You choose the players, t
 
 Every game is new: the story, the suspects, the puzzles, and the twist come from a random draw of story ingredients and a catalog of more than 90 puzzle types.
 
+![The configurator: you choose who plays, the length, the story, and the look](docs/images/configurator.png)
+
+| A printed page                                                       | The companion on a phone                                                                   |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| ![A newspaper page from a sample game](docs/images/printed-page.png) | ![The companion start screen, with the clock and the envelopes](docs/images/companion.png) |
+
+A finished sample game to print: see the latest GitHub release.
+
 ## What you get
 
 A folder on your Desktop (`Mystery Forge/<game title>`) with:
@@ -18,6 +26,8 @@ A folder on your Desktop (`Mystery Forge/<game title>`) with:
 
 ## What you need
 
+- **A paid Claude plan (Pro or Max), or Anthropic API credits.** Claude Code runs on it. Mystery Forge itself is free.
+- **Time and usage.** One game takes about 1 to 2 hours. It uses a large part of one usage window (the amount of use that your plan allows in a few hours). With API credits, you pay for that use.
 - **[uv](https://docs.astral.sh/uv/getting-started/installation/)**, a small tool that installs Python and the rest by itself.
 - **[Claude Code](https://claude.com/claude-code)**, the AI agent that writes the game.
 - **Google Chrome or Microsoft Edge**, to print the PDFs. (Without them, the agent can install a small browser for you.)
@@ -26,14 +36,38 @@ A folder on your Desktop (`Mystery Forge/<game title>`) with:
 ## Make a game
 
 1. **Configure.** Open `configurator/index.html` with a double-click. It opens in your browser, with no internet needed. Pick who plays, how long, the story mood, what you can print, and so on. Click **Download config**: your browser saves a `.mystery-config.json` file in your Downloads folder.
-2. **Generate.** Open Claude Code in the `generator` folder of this repository (in a terminal: `cd generator`, then `claude`). The first time, Claude Code asks whether you trust the folder: say yes, so that its settings and hooks load. Say: **"create a game"**. The agent finds the newest config in your Downloads folder, shows you a summary, and asks you to pick one of three story teasers. After that it asks nothing more, so you can leave. A game takes from 30 minutes to about 2 hours, and it uses a large part of an AI usage window.
+2. **Generate.** Open Claude Code in the `generator` folder of this repository (see [Never used a terminal?](#never-used-a-terminal) below). The first time, Claude Code asks whether you trust the folder: say yes, so that its settings and hooks load. Say: **"create a game"**. The agent finds the newest config in your Downloads folder, shows you a summary, and asks you to pick one of three story teasers. After that it asks nothing more, so you can leave. A game takes about 1 to 2 hours, and it uses a large part of an AI usage window.
 3. **Print and play.** Open `1 - START HERE (manual).pdf` and follow its printing checklist.
 
 To change a finished game ("make puzzle B2 easier", "print it in black and white"), ask the agent in the same `generator` folder. If a generation stops halfway (for example at a usage limit), open Claude Code in `generator` again and say "continue".
 
+## Never used a terminal?
+
+A terminal is a window where you type commands. You need it to install the tools once and to start Claude Code. The install pages of [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Claude Code](https://claude.com/claude-code) each give one command: paste it into the terminal and press Enter.
+
+**Windows**
+
+1. Open File Explorer and go to the `generator` folder inside the Mystery Forge folder.
+2. Click the address bar at the top, type `cmd`, and press Enter. A black window opens in that folder.
+3. Type `claude` and press Enter.
+
+**macOS**
+
+1. Open Finder and find the `generator` folder inside the Mystery Forge folder.
+2. Right-click the folder and choose **New Terminal at Folder**. (It can be under **Services**.)
+3. Type `claude` and press Enter.
+
+Then, on both systems:
+
+1. Claude Code asks whether you trust the folder. Say yes.
+2. Type **create a game** and press Enter.
+
 ## Printing tips
 
-- Print at **100% (actual size)**, single-sided. "Fit to page" breaks grids and cut-out pieces.
+- Print at **100% (actual size)**, single-sided. "Fit to page" breaks grids and cut-out pieces. Where to find the setting:
+  - **Chrome**: in the Print window, click **More settings**. Under **Scale**, choose **Actual size**.
+  - **Edge**: in the Print window, click **More settings**. Under **Scale**, choose **Actual size**.
+  - **Adobe Acrobat Reader**: in the Print window, under **Page Sizing & Handling**, click **Actual size**.
 - A black-and-white printer is fine: choose it in the configurator, and the game uses patterns instead of colors.
 - Split the printed stack at each **STOP** page without reading the pages, and put each part in its own envelope (or fold it and clip it).
 

@@ -3,11 +3,11 @@
 The planner decides the puzzles before anyone writes them: the mechanic, the stage, the answer, the dependencies, and
 which documents each writer owns. Writers then work in parallel, so one document must have exactly one owner. The
 checks here run on the plan alone, before the expensive writing starts, and catch the structural mistakes early.
+The graph, variety, and budget rules call the same pure functions as the whole-game checks in `checks/`, so a plan
+that passes does not fail the same rule later.
 """
 
-from collections import Counter
 from collections.abc import Callable
-from itertools import pairwise
 from pathlib import Path
 
 from pydantic import Field
@@ -16,9 +16,25 @@ from mystery_forge.assemble import load_brief, load_config
 from mystery_forge.brief import Brief
 from mystery_forge.catalog.loader import mechanics_by_id
 from mystery_forge.catalog.models import Mechanic
+from mystery_forge.checks.budget import duration_severity, estimate_play_minutes
+from mystery_forge.checks.game_index import code_order_key
+from mystery_forge.checks.graph import (
+    PuzzleNode,
+    dependency_issues,
+    dependency_loops,
+    final_puzzle_issue,
+    stage_opener_issues,
+)
+from mystery_forge.checks.variety import (
+    MechanicUse,
+    lookup_cipher_ids,
+    missing_player_actions,
+    overused_mechanics,
+    same_action_pairs,
+)
 from mystery_forge.config import GameConfig
 from mystery_forge.draw import mechanic_fits
-from mystery_forge.findings import Finding
+from mystery_forge.findings import Finding, Severity
 from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
 from mystery_forge.spec.models import (
     Difficulty,
@@ -31,13 +47,10 @@ from mystery_forge.spec.models import (
     StageId,
     Story,
     Text,
+    find_duplicates,
 )
 
 PLAN_FILE: str = "plan.yaml"
-MAX_LOOKUP_CIPHERS: int = 2
-MAX_SAME_MECHANIC: int = 2
-MIN_PLAYER_ACTIONS: int = 4
-MINUTES_PER_STAGE: float = 5.0
 
 
 class PlannedPuzzle(SourceModel):
@@ -49,6 +62,8 @@ class PlannedPuzzle(SourceModel):
     depends_on: list[PuzzleId] = Field(default_factory=list)
     answer: ShortText
     in_world_reason: Text
+    # Who the hiding defeats in the story, such as "the crew". A hiding that defeats nobody has no reason to exist.
+    hidden_from: Text
     reveals: Text
     # The documents that this puzzle's writer writes. The puzzle's material lives in one of them.
     documents: list[DocumentId] = Field(min_length=1)
@@ -91,8 +106,9 @@ def check_plan_folder(game_dir: Path, implemented_builders: frozenset[str]) -> l
         lambda: check_ids(plan),
         lambda: check_mechanics(plan, config, implemented_builders),
         lambda: check_graph(plan, flow),
+        lambda: check_jobs(plan, flow, story),
         lambda: check_documents(plan, flow, story),
-        lambda: check_variety(plan),
+        lambda: check_variety(plan, flow),
         lambda: check_budget(plan, config, brief),
     ]
     for run_check in checks:
@@ -100,27 +116,23 @@ def check_plan_folder(game_dir: Path, implemented_builders: frozenset[str]) -> l
     return findings
 
 
-def plan_finding(rule: str, message: str, fix_hint: str, severity: str = "error") -> Finding:
-    return Finding(
-        severity="error" if severity == "error" else "warning",
-        rule=rule,
-        message=message,
-        file=PLAN_FILE,
-        fix_hint=fix_hint,
-    )
+def plan_finding(rule: str, message: str, fix_hint: str, severity: Severity = "error") -> Finding:
+    return Finding(severity=severity, rule=rule, message=message, file=PLAN_FILE, fix_hint=fix_hint)
 
 
-def duplicates(values: list[str]) -> list[str]:
-    return sorted(value for value, count in Counter(values).items() if count > 1)
+def plan_nodes(plan: Plan) -> list[PuzzleNode]:
+    return [
+        PuzzleNode(id=puzzle.id, stage=puzzle.stage, depends_on=tuple(puzzle.depends_on)) for puzzle in plan.puzzles
+    ]
 
 
 def check_ids(plan: Plan) -> list[Finding]:
     findings: list[Finding] = []
-    for puzzle_id in duplicates([puzzle.id for puzzle in plan.puzzles]):
+    for puzzle_id in find_duplicates([puzzle.id for puzzle in plan.puzzles]):
         findings.append(plan_finding("plan.duplicate_puzzle", f"Two puzzles use the id {puzzle_id}.", "Renumber one."))
     owned: list[str] = [document for puzzle in plan.puzzles for document in puzzle.documents]
     owned += [document.id for document in plan.story_documents]
-    for document_id in duplicates(owned):
+    for document_id in find_duplicates(owned):
         findings.append(
             plan_finding(
                 "plan.duplicate_document",
@@ -165,88 +177,90 @@ def check_mechanics(plan: Plan, config: GameConfig, implemented_builders: frozen
 
 
 def check_graph(plan: Plan, flow: Flow) -> list[Finding]:
-    findings: list[Finding] = []
-    stage_order: dict[str, int] = {stage.id: index for index, stage in enumerate(flow.stages)}
-    puzzles: dict[str, PlannedPuzzle] = {puzzle.id: puzzle for puzzle in plan.puzzles}
-    for puzzle in plan.puzzles:
-        if puzzle.stage not in stage_order:
+    stage_ids: list[str] = [stage.id for stage in flow.stages]
+    nodes: list[PuzzleNode] = plan_nodes(plan)
+    findings: list[Finding] = [
+        plan_finding(
+            "plan.stage_unknown",
+            f"{puzzle.id}: stage {puzzle.stage} is not in flow.yaml.",
+            "Use a stage id from flow.yaml, or add the stage.",
+        )
+        for puzzle in plan.puzzles
+        if puzzle.stage not in stage_ids
+    ]
+    for issue in dependency_issues(nodes, stage_ids):
+        if issue.kind == "unknown":
             findings.append(
                 plan_finding(
-                    "plan.stage_unknown",
-                    f"{puzzle.id}: stage {puzzle.stage} is not in flow.yaml.",
-                    "Use a stage id from flow.yaml, or add the stage.",
+                    "plan.dependency_unknown",
+                    f"{issue.puzzle_id} depends on {issue.dependency_id}, which is not planned.",
+                    "Remove the dependency or plan the puzzle.",
                 )
             )
-            continue
-        for dependency in puzzle.depends_on:
-            if dependency not in puzzles:
-                findings.append(
-                    plan_finding(
-                        "plan.dependency_unknown",
-                        f"{puzzle.id} depends on {dependency}, which is not planned.",
-                        "Remove the dependency or plan the puzzle.",
-                    )
+        else:
+            findings.append(
+                plan_finding(
+                    "plan.dependency_later_stage",
+                    f"{issue.puzzle_id} depends on {issue.dependency_id}, which sits in a later stage.",
+                    "A puzzle can only need answers from its own stage or earlier stages.",
                 )
-            elif stage_order.get(puzzles[dependency].stage, 99) > stage_order[puzzle.stage]:
-                findings.append(
-                    plan_finding(
-                        "plan.dependency_later_stage",
-                        f"{puzzle.id} depends on {dependency}, which sits in a later stage.",
-                        "A puzzle can only need answers from its own stage or earlier stages.",
-                    )
-                )
-    if has_cycle(puzzles):
-        findings.append(
-            plan_finding(
-                "plan.dependency_cycle",
-                "The puzzle dependencies form a cycle.",
-                "Remove a dependency so that some puzzle in the loop can be solved first.",
             )
+    findings.extend(
+        plan_finding(
+            "plan.dependency_cycle",
+            f"The puzzles {', '.join(loop)} depend on each other in a cycle.",
+            "Remove a dependency so that some puzzle in the loop can be solved first.",
         )
-    findings.extend(check_stage_openers(flow, puzzles, stage_order))
-    final: str | None = flow.final_puzzle
-    if final is not None and (final not in puzzles or puzzles[final].stage != flow.stages[-1].id):
+        for loop in dependency_loops(nodes)
+    )
+    findings.extend(
+        plan_finding(
+            "plan.stage_opener",
+            f"Stage {flow.stages[index].id} must open with a planned puzzle of an earlier stage, not "
+            f"{flow.stages[index].opens_with}.",
+            "Set opens_with to a puzzle of an earlier stage.",
+        )
+        for index, _ in stage_opener_issues(flow.stages, nodes)
+    )
+    if final_puzzle_issue(flow, nodes) is not None:
         findings.append(
             plan_finding(
                 "plan.final_puzzle",
-                f"The final puzzle {final} must be a planned puzzle of the last stage.",
+                f"The final puzzle {flow.final_puzzle} must be a planned puzzle of the last stage.",
                 "Point final_puzzle in flow.yaml at a puzzle of the last stage.",
             )
         )
     return findings
 
 
-def check_stage_openers(flow: Flow, puzzles: dict[str, PlannedPuzzle], stage_order: dict[str, int]) -> list[Finding]:
-    findings: list[Finding] = []
-    for index, stage in enumerate(flow.stages[1:], start=1):
-        opener: PlannedPuzzle | None = puzzles.get(stage.opens_with)
-        if opener is None or stage_order.get(opener.stage, 99) >= index:
-            findings.append(
-                plan_finding(
-                    "plan.stage_opener",
-                    f"Stage {stage.id} must open with a planned puzzle of an earlier stage, not {stage.opens_with}.",
-                    "Set opens_with to a puzzle of an earlier stage.",
-                )
-            )
+def check_jobs(plan: Plan, flow: Flow, story: Story) -> list[Finding]:
+    """Every hidden story clue needs a planned puzzle that reveals it, and every puzzle needs a job."""
+    planned: set[str] = {puzzle.id for puzzle in plan.puzzles}
+    revealers: set[str] = {clue.revealed_by or "" for clue in story.clues if clue.hidden}
+    findings: list[Finding] = [
+        plan_finding(
+            "plan.hidden_clue_unplanned",
+            f"The hidden story clue '{clue.id}' is revealed by {clue.revealed_by or 'no puzzle'}, which is not a "
+            "planned puzzle.",
+            "Set revealed_by of the clue in story.yaml to the planned puzzle whose answer reveals the fact.",
+        )
+        for clue in story.clues
+        if clue.hidden and clue.revealed_by not in planned
+    ]
+    needed: set[str] = {dependency for puzzle in plan.puzzles for dependency in puzzle.depends_on}
+    openers: set[str] = {stage.opens_with for stage in flow.stages}
+    findings.extend(
+        plan_finding(
+            "plan.dead_end",
+            f"{puzzle.id} has no job: no puzzle depends on it, no stage opens with it, it is not the final "
+            "puzzle, and it reveals no hidden clue.",
+            "Give the puzzle a job: let it open a stage, feed the final puzzle, or reveal a hidden clue of "
+            "story.yaml (revealed_by). Otherwise remove it.",
+        )
+        for puzzle in plan.puzzles
+        if puzzle.id not in needed | openers | revealers | {flow.final_puzzle or ""}
+    )
     return findings
-
-
-def has_cycle(puzzles: dict[str, PlannedPuzzle]) -> bool:
-    visiting: set[str] = set()
-    done: set[str] = set()
-
-    def visit(puzzle_id: str) -> bool:
-        if puzzle_id in done or puzzle_id not in puzzles:
-            return False
-        if puzzle_id in visiting:
-            return True
-        visiting.add(puzzle_id)
-        found: bool = any(visit(dependency) for dependency in puzzles[puzzle_id].depends_on)
-        visiting.discard(puzzle_id)
-        done.add(puzzle_id)
-        return found
-
-    return any(visit(puzzle_id) for puzzle_id in puzzles)
 
 
 def check_documents(plan: Plan, flow: Flow, story: Story) -> list[Finding]:
@@ -267,7 +281,7 @@ def check_documents(plan: Plan, flow: Flow, story: Story) -> list[Finding]:
                 )
             )
     for clue in story.clues:
-        if clue.document not in document_stages:
+        if clue.document is not None and clue.document not in document_stages:
             findings.append(
                 plan_finding(
                     "plan.clue_document",
@@ -289,57 +303,55 @@ def check_documents(plan: Plan, flow: Flow, story: Story) -> list[Finding]:
     return findings
 
 
-def check_variety(plan: Plan) -> list[Finding]:
+def check_variety(plan: Plan, flow: Flow) -> list[Finding]:
     catalog: dict[str, Mechanic] = mechanics_by_id()
-    known: list[PlannedPuzzle] = [puzzle for puzzle in plan.puzzles if puzzle.mechanic in catalog]
+    positions: dict[str, int] = {stage.id: index for index, stage in enumerate(flow.stages)}
+    ordered: list[PlannedPuzzle] = sorted(
+        plan.puzzles, key=lambda puzzle: code_order_key(positions, puzzle.stage, puzzle.id)
+    )
+    uses: list[MechanicUse] = [
+        (puzzle.id, catalog[puzzle.mechanic]) for puzzle in ordered if puzzle.mechanic in catalog
+    ]
     findings: list[Finding] = []
-    lookup_ciphers: int = sum(1 for puzzle in known if catalog[puzzle.mechanic].lookup_cipher)
-    if lookup_ciphers > MAX_LOOKUP_CIPHERS:
+    lookups: list[str] = lookup_cipher_ids(uses)
+    if lookups:
         findings.append(
             plan_finding(
                 "plan.lookup_ciphers",
-                f"The plan has {lookup_ciphers} lookup ciphers; the most is 2.",
+                f"The plan has {len(lookups)} lookup ciphers ({', '.join(lookups)}); the most is 2.",
                 "Replace a cipher with a puzzle of another player action.",
             )
         )
-    for mechanic_id in sorted(set(duplicates([puzzle.mechanic for puzzle in known]))):
-        if sum(1 for puzzle in known if puzzle.mechanic == mechanic_id) > MAX_SAME_MECHANIC:
-            findings.append(
-                plan_finding(
-                    "plan.same_mechanic",
-                    f"More than 2 puzzles use '{mechanic_id}'.",
-                    "Swap one for another candidate.",
-                    "warning",
-                )
-            )
-    actions: list[str] = [catalog[puzzle.mechanic].player_action for puzzle in known]
-    if len(set(actions)) < min(MIN_PLAYER_ACTIONS, len(known)):
+    findings.extend(
+        plan_finding(
+            "plan.same_mechanic",
+            f"{count} puzzles use '{mechanic_id}'; the most is 2.",
+            "Swap one for another candidate.",
+            "warning",
+        )
+        for mechanic_id, count in overused_mechanics(uses).items()
+    )
+    wanted: int | None = missing_player_actions(uses, len(plan.puzzles))
+    if wanted is not None:
         findings.append(
             plan_finding(
                 "plan.few_actions",
-                f"The puzzles use only {len(set(actions))} player actions.",
+                f"The puzzles use only {len({mechanic.player_action for _, mechanic in uses})} player actions; the "
+                f"plan needs {wanted}.",
                 "Mix decoding, searching, logic, wordplay, arithmetic, spatial, and deduction.",
                 "warning",
             )
         )
-    if any(first == second for first, second in pairwise(actions)):
-        findings.append(
-            plan_finding(
-                "plan.same_action_in_a_row",
-                "Two puzzles in a row ask players to do the same thing.",
-                "Reorder the puzzles or change one mechanic.",
-                "warning",
-            )
+    findings.extend(
+        plan_finding(
+            "plan.same_action_in_a_row",
+            f"{puzzle_id} asks players to do the same thing as {previous_id}, the puzzle before it in code order.",
+            "Reorder the puzzles or change one mechanic.",
+            "warning",
         )
+        for previous_id, puzzle_id in same_action_pairs(uses)
+    )
     return findings
-
-
-def plan_minutes(puzzle_minutes: list[float], brief: Brief, audience: str) -> float:
-    """Estimate the playing time: catalog minutes, faster for bigger groups, slower solo and for kids."""
-    speedup: float = 1 + 0.6 * (brief.parallel_width - 1)
-    solo_factor: float = 1.25 if brief.players == 1 else 1.0
-    kids_factor: float = 1.4 if audience == "kids" else 1.0
-    return sum(puzzle_minutes) / speedup * solo_factor * kids_factor + MINUTES_PER_STAGE * brief.stage_count
 
 
 def check_budget(plan: Plan, config: GameConfig, brief: Brief) -> list[Finding]:
@@ -354,16 +366,22 @@ def check_budget(plan: Plan, config: GameConfig, brief: Brief) -> list[Finding]:
                 "warning",
             )
         )
-    minutes: list[float] = [
-        float(getattr(catalog[puzzle.mechanic].minutes, puzzle.difficulty))
-        for puzzle in plan.puzzles
-        if puzzle.mechanic in catalog
-    ]
-    estimate: float = plan_minutes(minutes, brief, config.audience)
+    # The documents do not exist yet, so the estimate reads the whole reading budget of the brief.
+    estimate: float = estimate_play_minutes(
+        puzzle_minutes=[
+            catalog[puzzle.mechanic].minutes.for_level(puzzle.difficulty)
+            for puzzle in plan.puzzles
+            if puzzle.mechanic in catalog
+        ],
+        players=brief.players,
+        parallel_width=brief.parallel_width,
+        audience=config.audience,
+        stage_count=brief.stage_count,
+        reading_words=brief.reading_words,
+    )
     target: int = config.duration_minutes
-    ratio: float = estimate / target
-    if not 0.75 <= ratio <= 1.25:
-        severity: str = "error" if not 0.5 <= ratio <= 1.5 else "warning"
+    severity: Severity | None = duration_severity(estimate, target)
+    if severity is not None:
         findings.append(
             plan_finding(
                 "plan.budget",

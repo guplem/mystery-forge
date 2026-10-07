@@ -29,6 +29,12 @@ SheetRole = Literal[
 ]
 
 
+# A last page filled below this share of the budget is a remainder that a slight stretch of the other pages may absorb.
+REMAINDER_SHARE: Final[float] = 0.25
+# The budget factors to try, smallest first, so the pages get only as full as they must.
+REMAINDER_STRETCHES: Final[tuple[float, ...]] = (1.05, 1.1, 1.15)
+
+
 @dataclass(frozen=True)
 class OutputFiles:
     html: str
@@ -68,16 +74,12 @@ class OutputPlan:
         return OUTPUT_FILES[self.id]
 
 
-def paginate[Item](
+def fill_pages[Item](
     items: Sequence[Item],
     cost: Callable[[Item], float],
     budget: float,
-    keep_with_next: Callable[[Item], bool] = lambda _: False,
+    keep_with_next: Callable[[Item], bool],
 ) -> list[list[Item]]:
-    """Group items into pages whose total cost stays within the budget. An item bigger than the budget gets a page.
-
-    An item that must stay with the next one (a heading) never ends a page: it moves to the next page with it.
-    """
     pages: list[list[Item]] = []
     current: list[Item] = []
     used: float = 0
@@ -95,6 +97,28 @@ def paginate[Item](
         used += item_cost
     if current:
         pages.append(current)
+    return pages
+
+
+def paginate[Item](
+    items: Sequence[Item],
+    cost: Callable[[Item], float],
+    budget: float,
+    keep_with_next: Callable[[Item], bool] = lambda _: False,
+) -> list[list[Item]]:
+    """Group items into pages whose total cost stays within the budget. An item bigger than the budget gets a page.
+
+    An item that must stay with the next one (a heading) never ends a page: it moves to the next page with it.
+    A last page that holds only a tiny remainder wastes a sheet: when slightly fuller pages hold every item on one
+    page less, those pages win. The browser loop gives the group less room again if a fuller page overflows.
+    """
+    pages: list[list[Item]] = fill_pages(items, cost, budget, keep_with_next)
+    if len(pages) < 2 or sum(cost(item) for item in pages[-1]) >= budget * REMAINDER_SHARE:
+        return pages
+    for stretch in REMAINDER_STRETCHES:
+        fuller: list[list[Item]] = fill_pages(items, cost, budget * stretch, keep_with_next)
+        if len(fuller) < len(pages):
+            return fuller
     return pages
 
 

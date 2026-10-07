@@ -35,7 +35,7 @@ class CheckFamily:
 
 
 CHECK_FAMILIES: Final[tuple[CheckFamily, ...]] = (
-    CheckFamily("graph", lambda game, _: check_graph(game)),
+    CheckFamily("graph", check_graph),
     CheckFamily("ledger", check_ledger),
     CheckFamily("leaks", lambda game, _: check_leaks(game)),
     CheckFamily("hints", lambda game, _: check_hints(game)),

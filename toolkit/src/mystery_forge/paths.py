@@ -12,7 +12,8 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-CONFIG_FILE_SUFFIX: str = ".mystery-config.json"
+# A browser names a second download "x.mystery-config (1).json" (Chrome, Edge) or "x.mystery-config(1).json" (Firefox).
+CONFIG_FILE_NAME: re.Pattern[str] = re.compile(r"\.mystery-config(?: ?\(\d+\))?\.json$")
 MAX_FOLDER_NAME: int = 60
 MAX_SLUG: int = 48
 FORBIDDEN_CHARACTERS: re.Pattern[str] = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
@@ -95,7 +96,9 @@ def read_windows_known_folder(name: str) -> str | None:  # pragma: no cover - a 
 
 def safe_folder_name(title: str) -> str:
     """Turn a game title into a folder name that works on Windows, macOS, and Linux."""
-    cleaned: str = FORBIDDEN_CHARACTERS.sub(lambda match: " " if match.group(0) in "\t\n\r" else "", title)
+    # The forbidden characters include ":", so keep a subtitle break visible: "Tape Seven - The Clock".
+    dashed: str = title.replace(": ", " - ").replace(":", "-")
+    cleaned: str = FORBIDDEN_CHARACTERS.sub(lambda match: " " if match.group(0) in "\t\n\r" else "", dashed)
     collapsed: str = " ".join(cleaned.split())
     if len(collapsed) > MAX_FOLDER_NAME:
         cut: str = collapsed[:MAX_FOLDER_NAME]
@@ -129,7 +132,7 @@ def newest_config_file(folder: Path) -> Path | None:
     """Return the newest `*.mystery-config.json` file in a folder (usually Downloads), or None."""
     if not folder.is_dir():
         return None
-    configs: list[Path] = [path for path in folder.iterdir() if path.name.endswith(CONFIG_FILE_SUFFIX)]
+    configs: list[Path] = [path for path in folder.iterdir() if CONFIG_FILE_NAME.search(path.name)]
     if not configs:
         return None
     return max(configs, key=lambda path: path.stat().st_mtime)

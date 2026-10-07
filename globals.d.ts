@@ -197,6 +197,12 @@ interface MysteryForgeConfigFormApi {
   AUDIENCE_PRESETS: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
   buildFormModel(language: string): MysteryForgeFormSection[];
   initialConfig(browserLanguages: readonly string[]): MysteryForgeGameConfig;
+  followPageLanguage(
+    config: MysteryForgeGameConfig,
+    oldUiLanguage: string,
+    newUiLanguage: string,
+    browserLanguages: readonly string[],
+  ): { config: MysteryForgeGameConfig; followed: boolean };
   getAtPath(config: MysteryForgeGameConfig, path: string): unknown;
   setFieldValue(config: MysteryForgeGameConfig, path: string, rawValue: unknown): MysteryForgeGameConfig;
   addListItem(config: MysteryForgeGameConfig, path: string, text: string): MysteryForgeGameConfig;
@@ -212,6 +218,7 @@ interface MysteryForgeConfigFormApi {
   showsSurpriseNote(config: MysteryForgeGameConfig): boolean;
   formatMinutes(minutes: number): string;
   estimateItems(config: MysteryForgeGameConfig, language: string): MysteryForgeEstimateItem[];
+  summaryBarText(config: MysteryForgeGameConfig, language: string): string;
   generationTimeText(config: MysteryForgeGameConfig, language: string): string;
   configFileName(config: MysteryForgeGameConfig, today?: Date): string;
   configFileText(config: MysteryForgeGameConfig): string;
@@ -346,6 +353,7 @@ interface MysteryForgeCompanionLogicApi {
   stateFromStorage(text: string | null): MysteryForgeCompanionState;
   stateToStorage(state: MysteryForgeCompanionState): string;
   fillText(template: string, values: Record<string, string | number>): string;
+  isLongIntro(intro: string): boolean;
 }
 
 declare var MysteryForgeCompanionLogic: MysteryForgeCompanionLogicApi;

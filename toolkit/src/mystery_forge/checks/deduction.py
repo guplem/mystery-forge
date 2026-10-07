@@ -1,13 +1,28 @@
 """The deduction: a culprit among the suspects, a way to rule out every innocent suspect, and proofs in the documents.
 
 A case is fair only when players can name the culprit from the evidence alone. A suspect with no exclusion clue fits
-the evidence as well as the culprit does, so the accusation becomes a guess.
+the evidence as well as the culprit does, so the accusation becomes a guess. The puzzles must matter too: when every
+proof is in a plain document, players can skip the puzzles and still accuse, so the proofs must cite hidden clues
+that only a solved puzzle reveals.
 """
 
-from mystery_forge.checks.game_index import STORY_FILE, ClueEntry, clues_by_id, documents_by_id, stage_positions
+from typing import Final
+
+from mystery_forge.checks.game_index import (
+    STORY_FILE,
+    ClueEntry,
+    clues_by_id,
+    documents_by_id,
+    puzzles_by_id,
+    stage_positions,
+)
+from mystery_forge.config import GameConfig
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument, Game
-from mystery_forge.spec.models import AccusationQuestion, Character, Deduction
+from mystery_forge.spec.models import AccusationQuestion, Character, Deduction, Story
+
+MIN_PUZZLE_PROVEN_QUESTIONS: Final[int] = 2
+MIN_HIDDEN_CLUES: Final[int] = 2
 
 
 def check_deduction(game: Game) -> list[Finding]:
@@ -19,6 +34,7 @@ def check_deduction(game: Game) -> list[Finding]:
         *exclusion_findings(game, deduction),
         *proof_findings(game, deduction),
         *who_question_findings(game, deduction),
+        *puzzle_proof_findings(game, deduction),
     ]
 
 
@@ -115,7 +131,8 @@ def proof_findings(game: Game, deduction: Deduction) -> list[Finding]:
     for path, clue_ids in citations:
         for position, clue_id in enumerate(clue_ids):
             entry: ClueEntry | None = clues.get(clue_id)
-            if entry is None:
+            # A hidden clue is in no document: the ledger checks that a puzzle reveals it.
+            if entry is None or entry.clue.document is None:
                 continue
             document: AssembledDocument | None = documents.get(entry.clue.document)
             if document is not None and document.meta.stage in positions:
@@ -156,5 +173,51 @@ def who_question_findings(game: Game, deduction: Deduction) -> list[Finding]:
             file=STORY_FILE,
             path="deduction.questions",
             fix_hint="Add a question such as 'Who did it?' with one option per suspect that names the suspect.",
+        )
+    ]
+
+
+def puzzle_proof_findings(game: Game, deduction: Deduction) -> list[Finding]:
+    """Report a deduction that players can prove without the puzzles: too few questions cite a revealed clue."""
+    clues: dict[str, ClueEntry] = clues_by_id(game)
+    puzzle_ids: set[str] = set(puzzles_by_id(game))
+    revealed: set[str] = {
+        clue_id for clue_id, entry in clues.items() if entry.clue.hidden and entry.clue.revealed_by in puzzle_ids
+    }
+    needed: int = min(MIN_PUZZLE_PROVEN_QUESTIONS, len(deduction.questions))
+    proven: int = sum(1 for question in deduction.questions if revealed.intersection(question.proven_by))
+    if proven >= needed:
+        return []
+    return [
+        Finding(
+            severity="error",
+            rule="deduction.puzzles_not_needed",
+            message=f"Only {proven} of {len(deduction.questions)} accusation questions cite a hidden clue that a "
+            f"puzzle reveals; at least {needed} must, or players can accuse without solving the puzzles.",
+            file=STORY_FILE,
+            path="deduction.questions",
+            fix_hint="Add a hidden clue (hidden: true, revealed_by: <puzzle id>) whose quote states the fact that "
+            "the puzzle reveals, and cite it in proven_by of the question.",
+        )
+    ]
+
+
+def hidden_clue_count_findings(story: Story, config: GameConfig) -> list[Finding]:
+    """Warn when a case-file story has too few hidden clues for the puzzles to carry the deduction."""
+    if config.format == "envelopes":
+        return []
+    hidden: int = sum(1 for clue in story.clues if clue.hidden)
+    if hidden >= MIN_HIDDEN_CLUES:
+        return []
+    return [
+        Finding(
+            severity="warning",
+            rule="deduction.few_hidden_clues",
+            message=f"The story has {hidden} hidden clues; a case needs at least {MIN_HIDDEN_CLUES}, so that the "
+            "accusation needs puzzle answers.",
+            file=STORY_FILE,
+            path="clues",
+            fix_hint="Add hidden clues (hidden: true, no document): facts in plain words that a puzzle reveals, such "
+            "as a time, a place, an object, or a number. Cite them in the proofs of the accusation questions.",
         )
     ]

@@ -19,6 +19,8 @@ When a run already exists (the user says "continue"), run `uv run .pskill/pskill
 - **Never invent a mechanic.** Use only the mechanics that `forge catalog list --implemented` shows.
 - **Never write puzzle material that a builder can build.** For a built mechanic, write the answer and the params; the toolkit builds the cipher, the grid, or the maze.
 - **Never change the toolkit or the skills** (`../toolkit/`, `.pskill/`) to make a game pass a check. Fix the game files instead. A real toolkit bug goes to the user as a short note at the end.
+- **Never read the toolkit's source code** to learn what a check wants. The finding messages, `forge catalog rules`, and `forge schema` say everything that you need.
+- **Never run a shell command longer than about 5,000 characters.** On Windows it fails or gets cut. Write files with the Write tool, and submit a long pskill answer from a file: `uv run .pskill/pskill.py submit <run> < answer.yaml`.
 
 ## The toolkit
 

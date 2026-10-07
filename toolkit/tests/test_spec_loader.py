@@ -166,6 +166,33 @@ def test_unknown_and_missing_fields_get_specific_fix_hints(game_dir: Path) -> No
     assert hints["schema.missing"] == "Add this required field."
 
 
+def test_a_control_character_in_a_file_is_a_syntax_finding(game_dir: Path) -> None:
+    (game_dir / "source" / "flow.yaml").write_text("format_version: 1\x07\n", encoding="utf-8")
+    source, findings = load_game_source(game_dir)
+    assert source.flow is None
+    assert rules(findings) == ["yaml.syntax"]
+    assert findings[0].file == "flow.yaml"
+
+
+@pytest.mark.parametrize("file", ["story.yaml", "puzzles/P1.yaml", "documents/D1.md", "images/lamp.svg"])
+def test_a_file_that_is_not_utf8_is_an_encoding_finding(game_dir: Path, file: str) -> None:
+    path = game_dir / "source" / file
+    path.parent.mkdir(exist_ok=True)
+    path.write_bytes(b"title: Caf\xe9\n")
+    _, findings = load_game_source(game_dir)
+    assert rules(findings) == ["source.encoding"]
+    assert findings[0].file == file
+
+
+def test_a_byte_order_mark_before_the_front_matter_is_fine(game_dir: Path) -> None:
+    path = game_dir / "source" / "documents" / "D1.md"
+    path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
+    story = game_dir / "source" / "story.yaml"
+    story.write_bytes(b"\xef\xbb\xbf" + story.read_bytes())
+    _, findings = load_game_source(game_dir)
+    assert findings == []
+
+
 def test_a_puzzle_file_without_a_numbered_name_is_reported(game_dir: Path) -> None:
     source_dir = game_dir / "source" / "puzzles"
     (source_dir / "P3.yaml").rename(source_dir / "notes.yaml")

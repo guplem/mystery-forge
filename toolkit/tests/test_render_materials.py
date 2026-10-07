@@ -1,9 +1,12 @@
 from test_render_support import configured, golden_game, showcase_game, with_story
 
+from mystery_forge.catalog.loader import mechanics_by_id
+from mystery_forge.checks.budget import estimate_game_minutes
 from mystery_forge.game import Game
 from mystery_forge.mechanics.base import Artifact
 from mystery_forge.render.materials import (
     AccusationContent,
+    CoverContent,
     DetectiveNotesContent,
     DocumentPage,
     EnvelopeLabelsContent,
@@ -219,18 +222,81 @@ def test_a_long_accusation_form_continues_with_its_numbers() -> None:
     assert all(page.total_points == 80 for page in pages)
 
 
-def test_a_result_paragraph_taller_than_a_column_goes_on_in_a_second_part() -> None:
+def test_a_near_miss_message_taller_than_a_column_goes_on_in_a_second_part() -> None:
     game = golden_game()
     puzzles = list(game.puzzles)
-    reveals: str = "The keeper hid the keys in the boathouse under a loose board. " * 60
-    puzzles[0] = puzzles[0].model_copy(update={"source": puzzles[0].source.model_copy(update={"reveals": reveals})})
+    message: str = "Look again at the foot of the logbook page and count the steps back. " * 60
+    misses = [NearMiss(answer="yxlxqeorpb", message=message)]
+    puzzles[0] = puzzles[0].model_copy(update={"source": puzzles[0].source.model_copy(update={"near_misses": misses})})
     sheets = materials_sheets(game.model_copy(update={"puzzles": puzzles}))
     paragraphs = [
         item for sheet in sheets if isinstance(sheet.content, ResultsPage) for item in sheet.content.paragraphs
     ]
-    parts = [item for item in paragraphs if item.reveals and item.reveals in reveals]
+    parts = [item for item in paragraphs if item.outcome == "near_miss"]
     assert len(parts) > 1
     assert len({part.number for part in parts}) == 1
     assert [part.continued for part in parts] == [False] + [True] * (len(parts) - 1)
-    assert parts[0].message.startswith("Correct!") and parts[1].message == ""
-    assert parts[-1].action == "Open Envelope B now." and parts[0].action == ""
+    assert all(part.message in message for part in parts)
+
+
+def test_correct_result_paragraphs_carry_no_story_text() -> None:
+    game = golden_game()
+    paragraphs = [
+        item
+        for sheet in materials_sheets(game)
+        if isinstance(sheet.content, ResultsPage)
+        for item in sheet.content.paragraphs
+    ]
+    correct = [item.message for item in paragraphs if item.outcome == "correct"]
+    assert correct and all(message.startswith("Correct!") for message in correct)
+    assert not any(puzzle.source.reveals in message for puzzle in game.puzzles for message in correct)
+
+
+def cut_out_game(cut: bool) -> Game:
+    game = golden_game()
+    puzzles = list(game.puzzles)
+    strips = Artifact(html="<div>strips</div>", solver_text="x", print_notes=("Cut the strips apart.",))
+    puzzles[0] = puzzles[0].model_copy(update={"artifact": strips})
+    documents = list(game.documents)
+    for index in (1, 2):
+        meta = documents[index].meta
+        documents[index] = documents[index].model_copy(
+            update={"meta": meta.model_copy(update={"print": meta.print.model_copy(update={"cut": cut})})}
+        )
+    return game.model_copy(update={"puzzles": puzzles, "documents": documents})
+
+
+def test_only_the_cut_out_gets_cut_lines_never_the_whole_page_around_it() -> None:
+    pages = document_pages(materials_sheets(cut_out_game(cut=True)))
+    logbook = next(page for page in pages if page.document_id == "D2")
+    receipt = next(page for page in pages if page.document_id == "D3")
+    assert not logbook.cut
+    assert "Cut the strips apart." in logbook.html
+    assert receipt.cut
+
+
+def test_the_cover_shows_the_estimated_play_time_rounded_to_five_minutes() -> None:
+    cover = next(sheet.content for sheet in materials_sheets(golden_game()) if isinstance(sheet.content, CoverContent))
+    assert cover.minutes % 5 == 0
+    assert cover.minutes == 5 * round(estimate_game_minutes(golden_game(), mechanics_by_id()) / 5)
+
+
+def test_four_usual_accusation_questions_share_one_page() -> None:
+    options = [
+        AccusationOption(id=f"o{number}", text=f"Rudy Platt, the producer of show {number}") for number in range(4)
+    ]
+    questions = [
+        AccusationQuestion(
+            id=f"q{number}",
+            prompt="Who plans to make the robots miss their train today?",
+            options=options,
+            correct="o1",
+            points=20,
+            proven_by=["wet-boots"],
+        )
+        for number in range(4)
+    ]
+    deduction = golden_game().story.deduction
+    assert deduction is not None
+    game = with_story(golden_game(), deduction=deduction.model_copy(update={"questions": questions}))
+    assert [sheet.role for sheet in materials_sheets(game)].count("accusation") == 1

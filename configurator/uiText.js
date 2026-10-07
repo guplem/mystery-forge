@@ -79,7 +79,7 @@
     'section.help.intro': 'Ways for the players to get unstuck without spoilers.',
     'section.generation.title': 'Generation',
     'section.generation.intro': 'How the agent works while it builds your game.',
-    'section.advanced.title': 'Advanced',
+    'section.advanced.title': 'For experts',
 
     'form.optional': 'Optional',
     'form.decrease': 'Fewer',
@@ -101,6 +101,7 @@
 
     'summary.title': 'Your game',
     'summary.note': 'Estimates. The agent adjusts them to the story.',
+    'summary.bar': '{puzzles} puzzles · {time}',
     'estimate.puzzles': 'Puzzles',
     'estimate.envelopes': 'Envelopes',
     'estimate.chapters': 'Chapters',
@@ -149,6 +150,8 @@
     'status.reset': 'All choices are back to the start.',
     'status.draft_restored': 'Your last draft is back.',
     'status.preset_applied': 'Set up for {audience}. You can change any choice below.',
+    'note.language_followed':
+      'The game follows the page language. Game language: {language}. Paper: {paper}. You can change both below.',
 
     'error.json': 'The file is not valid JSON text.',
     'error.whole_file': 'The file',
@@ -161,17 +164,27 @@
     'error.maxLength': '{field}: the text must have {limit} characters or fewer.',
     'error.maxItems': '{field}: the list must have {limit} items or fewer.',
 
-    'prompt.title': 'Prompt for your agent',
-    'prompt.help': 'Select this text and paste it into Claude Code.',
+    'prompt.title': 'Other agent apps',
+    'prompt.help': 'Do you use another agent app instead of Claude Code? Copy this prompt and paste it there.',
     'prompt.intro': 'Create a printable mystery game with Mystery Forge.',
     'prompt.run_skill':
       'Run the create-game skill with the config below. Treat it as the config file {fileName}. Do not change it.',
     'prompt.questions': 'Ask me only the questions that the skill asks.',
 
     'next.title': 'Next steps',
-    'next.step1': 'Install uv (a tool that runs Python programs) and Claude Code. You do this only once.',
-    'next.step2': 'Open Claude Code in the generator folder of Mystery Forge.',
-    'next.step3': 'Paste the prompt, or say: create a game with {fileName}',
+    'next.install':
+      'Install uv (a small tool that runs Python programs) and Claude Code (the AI agent that writes the game). You do this only once.',
+    'next.link_uv': 'Install uv',
+    'next.link_claude': 'Install Claude Code',
+    'next.open': 'Open the "generator" folder of this project in Claude Code:',
+    'next.windows_label': 'Windows:',
+    'next.windows':
+      'in File Explorer, open the folder. Type cmd in the address bar and press Enter. Then type claude and press Enter.',
+    'next.mac_label': 'macOS:',
+    'next.mac':
+      'in Finder, right-click the folder and choose New Terminal at Folder (under Services). Then type claude and press Enter.',
+    'next.trust': 'When Claude Code asks if you trust the folder, say yes.',
+    'next.say': 'Type "create a game". The agent finds {fileName} in your Downloads folder.',
     'next.note':
       'The run takes {time}. Stay for the first questions. Once you pick the story concept, you can walk away.',
 
@@ -401,11 +414,11 @@
     'field.generation.label': 'Generation',
     'field.generation.help': 'How the agent works.',
     'field.generation.quality.label': 'Quality',
-    'field.generation.quality.help': 'More checks make better puzzles but take longer.',
+    'field.generation.quality.help': 'Best takes longer, but fewer puzzles come out broken.',
     'enum.generation.quality.fast.label': 'Fast',
-    'enum.generation.quality.fast.help': 'Fewer checks. Good for a quick test.',
+    'enum.generation.quality.fast.help': 'Faster, with fewer checks. Good for a quick test.',
     'enum.generation.quality.best.label': 'Best',
-    'enum.generation.quality.best.help': 'More test players check each puzzle.',
+    'enum.generation.quality.best.help': 'Fewer broken puzzles: more AI test players try each puzzle.',
     'field.generation.pick_concept.label': 'Story concept',
     'field.generation.pick_concept.help': 'The agent first writes a few story concepts.',
     'enum.generation.pick_concept.ask.label': 'Let me choose',
@@ -456,7 +469,7 @@
     'section.help.intro': 'Formas de desatascarse sin destripar nada.',
     'section.generation.title': 'Generación',
     'section.generation.intro': 'Cómo trabaja el agente mientras crea tu juego.',
-    'section.advanced.title': 'Avanzado',
+    'section.advanced.title': 'Para expertos',
 
     'form.optional': 'Opcional',
     'form.decrease': 'Menos',
@@ -478,6 +491,7 @@
 
     'summary.title': 'Tu juego',
     'summary.note': 'Son estimaciones. El agente las ajusta a la historia.',
+    'summary.bar': '{puzzles} enigmas · {time}',
     'estimate.puzzles': 'Enigmas',
     'estimate.envelopes': 'Sobres',
     'estimate.chapters': 'Capítulos',
@@ -529,6 +543,8 @@
     'status.reset': 'Todas las opciones han vuelto al principio.',
     'status.draft_restored': 'Hemos recuperado tu último borrador.',
     'status.preset_applied': 'Preparado para «{audience}». Puedes cambiar cualquier opción abajo.',
+    'note.language_followed':
+      'El juego sigue el idioma de la página. Idioma del juego: {language}. Papel: {paper}. Puedes cambiar los dos abajo.',
 
     'error.json': 'El archivo no contiene un texto JSON válido.',
     'error.whole_file': 'El archivo',
@@ -541,17 +557,27 @@
     'error.maxLength': '{field}: el texto debe tener {limit} caracteres o menos.',
     'error.maxItems': '{field}: la lista debe tener {limit} elementos o menos.',
 
-    'prompt.title': 'Instrucción para tu agente',
-    'prompt.help': 'Selecciona este texto y pégalo en Claude Code.',
+    'prompt.title': 'Otras apps de agentes',
+    'prompt.help': '¿Usas otra app de agentes en lugar de Claude Code? Copia esta instrucción y pégala allí.',
     'prompt.intro': 'Crea un juego de misterio para imprimir con Mystery Forge.',
     'prompt.run_skill':
       'Ejecuta la skill create-game con la configuración de abajo. Trátala como el archivo de configuración {fileName}. No la cambies.',
     'prompt.questions': 'Pregúntame solo lo que pregunte la skill.',
 
     'next.title': 'Siguientes pasos',
-    'next.step1': 'Instala uv (una herramienta que ejecuta programas de Python) y Claude Code. Solo se hace una vez.',
-    'next.step2': 'Abre Claude Code en la carpeta generator de Mystery Forge.',
-    'next.step3': 'Pega la instrucción o di: crea un juego con {fileName}',
+    'next.install':
+      'Instala uv (una pequeña herramienta que ejecuta programas de Python) y Claude Code (el agente de IA que escribe el juego). Solo se hace una vez.',
+    'next.link_uv': 'Instalar uv',
+    'next.link_claude': 'Instalar Claude Code',
+    'next.open': 'Abre la carpeta «generator» de este proyecto en Claude Code:',
+    'next.windows_label': 'Windows:',
+    'next.windows':
+      'en el Explorador de archivos, abre la carpeta. Escribe cmd en la barra de direcciones y pulsa Intro. Después escribe claude y pulsa Intro.',
+    'next.mac_label': 'macOS:',
+    'next.mac':
+      'en el Finder, haz clic derecho en la carpeta y elige «Nuevo terminal en la carpeta» (en Servicios). Después escribe claude y pulsa Intro.',
+    'next.trust': 'Cuando Claude Code pregunte si confías en la carpeta, di que sí.',
+    'next.say': 'Escribe «crea un juego». El agente encuentra {fileName} en tu carpeta de Descargas.',
     'next.note':
       'El proceso tarda {time}. Quédate para las primeras preguntas. Cuando elijas el concepto de la historia, ya puedes irte.',
 
@@ -783,11 +809,11 @@
     'field.generation.label': 'Generación',
     'field.generation.help': 'Cómo trabaja el agente.',
     'field.generation.quality.label': 'Calidad',
-    'field.generation.quality.help': 'Más comprobaciones dan mejores enigmas, pero tardan más.',
+    'field.generation.quality.help': 'La mejor tarda más, pero salen menos enigmas rotos.',
     'enum.generation.quality.fast.label': 'Rápida',
-    'enum.generation.quality.fast.help': 'Menos comprobaciones. Ideal para una prueba rápida.',
+    'enum.generation.quality.fast.help': 'Más rápida, con menos comprobaciones. Ideal para una prueba rápida.',
     'enum.generation.quality.best.label': 'La mejor',
-    'enum.generation.quality.best.help': 'Más jugadores de prueba revisan cada enigma.',
+    'enum.generation.quality.best.help': 'Menos enigmas rotos: más jugadores de prueba con IA intentan cada enigma.',
     'field.generation.pick_concept.label': 'Concepto de la historia',
     'field.generation.pick_concept.help': 'Primero el agente escribe varios conceptos de historia.',
     'enum.generation.pick_concept.ask.label': 'Quiero elegir',

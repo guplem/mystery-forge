@@ -31,6 +31,7 @@
     accuseIncomplete: false,
     /** @type {ConfirmRequest | null} */
     confirm: null,
+    introOpen: false,
   };
 
   /** @returns {MysteryForgeCompanionState} */
@@ -296,6 +297,27 @@
     return el('details', { className: 'help paper' }, [el('summary', { text: ui('tab_help') }), steps]);
   }
 
+  // A phone folds a long intro (companion.css), so that the clock and the envelopes fit on the first screen.
+  function renderIntro() {
+    const folded = logic.isLongIntro(data.intro) && !session.introOpen;
+    const more = folded
+      ? button(
+          ui('intro_more'),
+          'button button-link intro-more',
+          () => {
+            session.introOpen = true;
+            render();
+          },
+          { id: 'intro-more' },
+        )
+      : null;
+    return el('section', { className: `paper intro${folded ? ' is-folded' : ''}`, attrs: { id: 'intro' } }, [
+      el('p', { className: 'paper-kicker', text: ui('read_aloud') }),
+      el('p', { className: 'intro-text', text: data.intro }),
+      more,
+    ]);
+  }
+
   function renderStart() {
     const reset = button(ui('reset'), 'button button-link', () =>
       askConfirm({
@@ -319,10 +341,7 @@
       ]),
       storageWorks ? null : el('p', { className: 'notice', text: ui('storage_off'), attrs: { id: 'storage-off' } }),
       renderEnding(),
-      el('section', { className: 'paper intro', attrs: { id: 'intro' } }, [
-        el('p', { className: 'paper-kicker', text: ui('read_aloud') }),
-        el('p', { className: 'intro-text', text: data.intro }),
-      ]),
+      renderIntro(),
       renderTimerCard(),
       renderEnvelopes(),
       renderHelp(),

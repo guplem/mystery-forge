@@ -109,6 +109,8 @@
    */
   function setConfig(config) {
     state.config = config;
+    // The note tells of the last page language switch; a later change makes it out of date.
+    byId('language-note').hidden = true;
     state.fieldSyncers.forEach((sync) => sync());
     refreshSummary();
     scheduleSave();
@@ -602,11 +604,19 @@
    * @returns {void}
    */
   function setUiLanguage(language) {
+    const follow = form.followPageLanguage(state.config, state.uiLanguage, language, browserLanguages);
+    state.config = follow.config;
     state.uiLanguage = language;
     renderStaticTexts();
     renderForm();
     refreshSummary();
     scheduleSave();
+    const note = byId('language-note');
+    note.hidden = !follow.followed;
+    note.textContent = t('note.language_followed', {
+      language: t(`enum.language.${state.config.language}.label`),
+      paper: t(`enum.equipment.paper.${state.config.equipment.paper}.label`),
+    });
   }
 
   // ---------------------------------------------------------------- summary panel
@@ -621,8 +631,7 @@
         ]),
       ),
     );
-    const [puzzles, , , playTime] = items;
-    byId('mobile-summary-numbers').textContent = `${puzzles?.value} ${puzzles?.label} · ${playTime?.value}`;
+    byId('mobile-summary-numbers').textContent = form.summaryBarText(state.config, state.uiLanguage);
 
     const warnings = form.configWarnings(state.config);
     byId('warning-list').replaceChildren(
@@ -651,7 +660,7 @@
     );
 
     /** @type {HTMLTextAreaElement} */ (byId('prompt-text')).value = form.buildPrompt(state.config, state.uiLanguage);
-    byId('next-step-3').textContent = t('next.step3', { fileName: form.configFileName(state.config) });
+    byId('next-step-say').textContent = t('next.say', { fileName: form.configFileName(state.config) });
     byId('next-note').textContent = t('next.note', {
       time: form.generationTimeText(state.config, state.uiLanguage),
     });
@@ -710,10 +719,8 @@
     );
   }
 
-  function showNextSteps() {
-    const nextSteps = byId('next-steps');
-    nextSteps.hidden = false;
-    nextSteps.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  function scrollToNextSteps() {
+    byId('next-steps').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   // ---------------------------------------------------------------- actions
@@ -729,13 +736,12 @@
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
     byId('load-errors').replaceChildren();
     showStatus(t('status.downloaded', { fileName }), 'success');
-    showNextSteps();
+    scrollToNextSteps();
   }
 
   async function copyPrompt() {
     const promptText = /** @type {HTMLTextAreaElement} */ (byId('prompt-text'));
     /** @type {HTMLDetailsElement} */ (byId('prompt-panel')).open = true;
-    showNextSteps();
     try {
       await navigator.clipboard.writeText(promptText.value);
       showStatus(t('status.copied'), 'success');

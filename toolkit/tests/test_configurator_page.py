@@ -6,13 +6,14 @@ Firefox is installed. When it is missing the Firefox tests skip, unless MYSTERY_
 
 import json
 import os
+import re
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import pytest
-from playwright.sync_api import Browser, ConsoleMessage, FilePayload, Page, Playwright, sync_playwright
+from playwright.sync_api import Browser, ConsoleMessage, FilePayload, Page, Playwright, ViewportSize, sync_playwright
 from playwright.sync_api import Error as PlaywrightError
 
 from mystery_forge.config import normalize_config
@@ -74,8 +75,10 @@ def browser(request: pytest.FixtureRequest, playwright_instance: Playwright) -> 
     launched.close()
 
 
-def open_page(browser: Browser, locale: str = "en-US", init_script: str = "") -> OpenedPage:
-    context = browser.new_context(accept_downloads=True, locale=locale)
+def open_page(
+    browser: Browser, locale: str = "en-US", init_script: str = "", viewport: ViewportSize | None = None
+) -> OpenedPage:
+    context = browser.new_context(accept_downloads=True, locale=locale, viewport=viewport)
     if init_script:
         context.add_init_script(init_script)
     page: Page = context.new_page()
@@ -128,6 +131,7 @@ def test_the_page_loads_in_english_with_no_console_error(opened: OpenedPage) -> 
 
 def test_the_language_switch_changes_the_labels(opened: OpenedPage) -> None:
     page: Page = opened.page
+    assert not page.is_visible("#language-note")
     page.click('[data-ui-language="es"]')
     assert page.inner_text("#section-players-title") == "Quién juega"
     assert page.inner_text("#download-config") == "Descargar configuración"
@@ -136,6 +140,78 @@ def test_the_language_switch_changes_the_labels(opened: OpenedPage) -> None:
     page.click('[data-ui-language="en"]')
     assert page.inner_text("#section-players-title") == "Who is playing"
     assert opened.errors == []
+
+
+def test_the_game_language_and_the_paper_follow_the_page_language(opened: OpenedPage) -> None:
+    page: Page = opened.page
+    assert page.is_checked("#input-equipment-paper-Letter")
+    page.click('[data-ui-language="es"]')
+    assert page.input_value("#input-language") == "es"
+    assert page.is_checked("#input-equipment-paper-A4")
+    assert page.is_visible("#language-note")
+    assert "Idioma del juego: Español. Papel: A4." in page.inner_text("#language-note")
+    page.click('[data-ui-language="en"]')
+    assert page.input_value("#input-language") == "en"
+    assert page.is_checked("#input-equipment-paper-Letter")
+    page.select_option("#input-language", "de")
+    assert not page.is_visible("#language-note")
+
+
+def test_a_game_language_that_the_user_chose_stays(opened: OpenedPage) -> None:
+    page: Page = opened.page
+    page.select_option("#input-language", "fr")
+    page.click('[data-ui-language="es"]')
+    assert page.input_value("#input-language") == "fr"
+    assert page.is_checked("#input-equipment-paper-Letter")
+    assert not page.is_visible("#language-note")
+
+
+def test_the_expert_options_are_folded(opened: OpenedPage) -> None:
+    page: Page = opened.page
+    assert not page.is_visible("#input-generation-quality-best")
+    assert not page.is_visible("#input-generation-seed")
+    page.click("#advanced-generation > summary")
+    assert page.is_visible("#input-generation-seed")
+    assert "about" in page.inner_text('[data-quality-time="best"]')
+
+
+def test_the_next_steps_show_before_the_download(opened: OpenedPage) -> None:
+    page: Page = opened.page
+    next_steps: str = page.inner_text("#next-steps")
+    assert page.is_visible("#next-steps")
+    assert "create a game" in next_steps
+    assert "Windows:" in next_steps
+    assert "macOS:" in next_steps
+    assert page.get_attribute("#next-steps a >> nth=0", "href") == (
+        "https://docs.astral.sh/uv/getting-started/installation/"
+    )
+    assert page.get_attribute("#next-steps a >> nth=1", "href") == "https://claude.com/claude-code"
+    assert not page.is_visible("#copy-prompt")
+
+
+def count_text_lines(page: Page, selector: str) -> int:
+    lines: int = page.evaluate(
+        """(selector) => {
+          const range = document.createRange();
+          range.selectNodeContents(document.querySelector(selector));
+          return new Set([...range.getClientRects()].map((rect) => Math.round(rect.top))).size;
+        }""",
+        selector,
+    )
+    return lines
+
+
+@pytest.mark.parametrize("viewport", [ViewportSize(width=1366, height=900), ViewportSize(width=390, height=844)])
+def test_the_spanish_actions_fit_on_one_line(browser: Browser, viewport: ViewportSize) -> None:
+    spanish = open_page(browser, locale="es-ES", viewport=viewport)
+    try:
+        page: Page = spanish.page
+        page.click("#prompt-panel > summary")
+        for selector in ("#download-config span", ".file-button span", "#reset-config span", "#copy-prompt span"):
+            assert count_text_lines(page, selector) == 1, selector
+        assert re.fullmatch(r"\d+ enigmas · 1 h 30 min", page.inner_text("#mobile-summary-numbers"))
+    finally:
+        spanish.page.context.close()
 
 
 def test_a_spanish_browser_opens_the_page_in_spanish_with_a4_paper(browser: Browser) -> None:
@@ -252,6 +328,7 @@ def test_the_prompt_is_in_a_text_box_after_copy(opened: OpenedPage) -> None:
     if opened.browser_name == "chromium":
         page.context.grant_permissions(["clipboard-read", "clipboard-write"])
     page.fill("#input-theme-idea", "Cake heist")
+    page.click("#prompt-panel > summary")
     page.click("#copy-prompt")
     page.wait_for_selector("#status-message .icon")
     prompt: str = page.input_value("#prompt-text")

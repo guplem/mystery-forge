@@ -40,7 +40,7 @@ def test_the_data_has_the_framing_texts_of_the_story(golden_game: Game) -> None:
     assert data["intro"] == golden_game.story.intro
     assert data["language"] == "en"
     assert data["salt"] == golden_game.salt
-    assert data["duration_minutes"] == 30
+    assert data["duration_minutes"] == golden_game.config.duration_minutes
     assert data["panel_verified"] is True
     assert data["final_puzzle"] == "B1"
 

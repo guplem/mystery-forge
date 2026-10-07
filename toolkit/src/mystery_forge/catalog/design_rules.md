@@ -16,9 +16,12 @@ Read these rules before you plan a story or a puzzle. They make a game fair, var
 - **Stage 1** has 2 easy puzzles that players solve in under 5 minutes each. The first puzzle also teaches how the answer check works.
 - **The middle stages** rise in difficulty and change the kind of puzzle each time. Open a stage with the mid-game twist.
 - **The last stage** has one hard climax, then a meta puzzle or the final accusation that uses earlier answers.
+- **The meta puzzle** combines the earlier answers by a mechanism that players discover, never a spelled-out formula. It uses an answer from every earlier envelope.
 - **Parallel width:** give each stage at least (players / 2) puzzles that players can solve at the same time, so nobody waits.
 - **Reuse documents.** One document that feeds 2 or 3 puzzles feels designed. Make at least 40% of the puzzles combine 2 or more documents.
-- **Every puzzle has an in-world reason.** Say why this thing is hidden this way ("the smuggler coded his telegrams").
+- **Every puzzle has an in-world reason.** Say why this thing is hidden this way ("the smuggler coded his telegrams"), and from whom.
+- **Every puzzle has a job:** it opens a stage, feeds the meta puzzle, or reveals a hidden clue. A puzzle without a job is decoration.
+- **One friendly character authors at most 2 puzzles.** Spread the puzzles over several in-world authors.
 - **Every solve gives story**, such as a paragraph, a new document, or a new envelope, not only a code.
 - **Model the game as a graph.** Each puzzle needs answers or items from earlier puzzles. No cycles. Every puzzle is reachable. Every item is used.
 
@@ -69,7 +72,7 @@ Baseline minutes per puzzle for a group of 3 or 4 adults. The catalog gives a va
 
 - **The title is a hint.** Write "Bird Watching" for a bird ring code, never "Puzzle 4".
 - **Confirmation:** partial results must look right, such as real words or a clear pattern. Players then know that they are on track.
-- **State the last step when players cannot guess it.** For example, "read the shaded letters". Do this always for kids and families.
+- **State the extraction step (which letters, which order), never the decoding method.** For example, "read the shaded letters". Do this always for kids and families.
 - **Match the method to the story object.** A lock log becomes a code-breaker puzzle. A train timetable becomes an alibi check.
 - **Never over-explain.** The material must not describe the full method. The hints do that.
 - **Never put the answer in a title, flavor text, or caption.** Code scans for it, also reversed and with spaces.
@@ -118,6 +121,7 @@ Every puzzle has 3 hints and a separate answer card.
 - **Hold the truth first.** The story file holds the timeline (who, where, when), the objects, the relations, and the crime (who, how, why).
 - **Means, motive, opportunity.** Every suspect has at least 1 of the 3, so nobody is out at a glance. Innocent suspects each have a strong motive. Only the culprit has all 3, plus a lock clue: a fact that only the culprit could know or do.
 - **Exclusion clue.** Each innocent suspect has one: an alibi from 2 independent sources, or a physical impossibility.
+- **Puzzles reveal evidence.** A puzzle reveals evidence (a time, a place, an object, a number), never the culprit's own confession or an accusation answer. Players still reason from the evidence to the accusation.
 - **Two-clue rule.** Each critical fact appears in 2 independent documents, in case players miss one. The lock clue may appear once.
 - **Planned lies only.** Each lie has a liar and a document that contradicts it. The prose must add no other contradiction.
 - **Nobody is in two places at once** by accident. State all travel and transfer times.

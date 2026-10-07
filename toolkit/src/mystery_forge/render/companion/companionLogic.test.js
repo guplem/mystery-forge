@@ -311,3 +311,9 @@ test('correctOptionId gives null when no option matches the stored hash', () => 
   const broken = { questions: data.deduction ? [{ ...data.deduction.questions[0], correct_hash: 'x' }] : [] };
   assert.equal(logic.correctOptionId({ ...data, deduction: /** @type {any} */ (broken) }, 'who'), null);
 });
+
+test('isLongIntro is true only for an intro too long to read in a glance on a phone', () => {
+  assert.equal(logic.isLongIntro('Read me aloud.'), false);
+  assert.equal(logic.isLongIntro('x'.repeat(240)), false);
+  assert.equal(logic.isLongIntro('x'.repeat(241)), true);
+});

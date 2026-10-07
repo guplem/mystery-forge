@@ -102,6 +102,8 @@ test('buildFormModel derives each widget, its limits, and its options from the s
   assert.equal(fields.get('content.death_allowed')?.widget, 'toggle');
   assert.equal(fields.get('generation.seed')?.widget, 'number');
   assert.equal(fields.get('generation.seed')?.advanced, true);
+  assert.equal(fields.get('generation.quality')?.advanced, true);
+  assert.equal(fields.get('generation.pick_concept')?.advanced, false);
   assert.equal(fields.get('players.count')?.widget, 'stepper');
   assert.deepEqual(
     [
@@ -143,7 +145,33 @@ test('initialConfig takes the game language and the paper size from the browser 
   assert.equal(configForm.initialConfig(['ja-JP', 'fr']).language, 'fr');
   assert.equal(configForm.initialConfig(['ja-JP']).language, 'en');
   assert.equal(configForm.initialConfig(['en-US']).equipment.paper, 'Letter');
+  assert.equal(configForm.initialConfig(['en-CA']).equipment.paper, 'Letter');
   assert.equal(configForm.initialConfig(['en-GB', 'en-US']).equipment.paper, 'A4');
+  assert.equal(configForm.initialConfig(['es-US']).equipment.paper, 'A4');
+  assert.equal(configForm.initialConfig(['fr-CA']).equipment.paper, 'A4');
+});
+
+test('followPageLanguage moves the game language and the default paper size to the new page language', () => {
+  const usEnglish = configForm.initialConfig(['en-US']);
+  const spanish = configForm.followPageLanguage(usEnglish, 'en', 'es', ['en-US']);
+  assert.equal(spanish.followed, true);
+  assert.equal(spanish.config.language, 'es');
+  assert.equal(spanish.config.equipment.paper, 'A4');
+  assert.equal(usEnglish.language, 'en');
+  const english = configForm.followPageLanguage(spanish.config, 'es', 'en', ['en-US']);
+  assert.deepEqual(english, { config: usEnglish, followed: true });
+});
+
+test('followPageLanguage keeps a game language and a paper size that the user chose', () => {
+  const french = configWith({ language: 'fr' });
+  assert.deepEqual(configForm.followPageLanguage(french, 'en', 'es', []), { config: french, followed: false });
+  const letter = configForm.followPageLanguage(configWith({ 'equipment.paper': 'Letter' }), 'en', 'es', ['en-GB']);
+  assert.equal(letter.config.language, 'es');
+  assert.equal(letter.config.equipment.paper, 'Letter');
+  assert.deepEqual(configForm.followPageLanguage(defaults(), 'en', 'en', []), {
+    config: defaults(),
+    followed: false,
+  });
 });
 
 test('setFieldValue returns a new config and coerces the raw value to the schema type and limits', () => {
@@ -324,6 +352,12 @@ test('estimateItems shows the estimate, with envelopes or chapters by format, an
   const roundedGeneration = Math.round(estimate.generation_minutes / 10) * 10;
   assert.equal(items[4]?.value, `about ${configForm.formatMinutes(roundedGeneration)}`);
   assert.equal(configForm.estimateItems(configWith({ format: 'case_file' }), 'es')[1]?.label, 'Capítulos');
+});
+
+test('summaryBarText gives the puzzle count and the play time in the casing of the page language', () => {
+  const puzzles = globalThis.MysteryForgeConfigEstimate.estimateFromConfig(defaults()).puzzle_count;
+  assert.equal(configForm.summaryBarText(defaults(), 'es'), `${puzzles} enigmas · 1 h 30 min`);
+  assert.equal(configForm.summaryBarText(defaults(), 'en'), `${puzzles} puzzles · 1 h 30 min`);
 });
 
 test('generationTimeText is shorter for fast quality', () => {

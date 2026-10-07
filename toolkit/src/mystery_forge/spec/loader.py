@@ -14,7 +14,13 @@ from pydantic import BaseModel, ValidationError
 
 from mystery_forge.findings import Finding
 from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
-from mystery_forge.yaml_loading import YamlDocument, YamlLoadError, parse_yaml_text, split_front_matter
+from mystery_forge.yaml_loading import (
+    YamlDocument,
+    YamlLoadError,
+    parse_yaml_text,
+    read_source_text,
+    split_front_matter,
+)
 
 SOURCE_FOLDER: str = "source"
 NUMBERED_FILE: re.Pattern[str] = re.compile(r"^([A-Z])(\d+)")
@@ -63,7 +69,7 @@ def load_game_source(game_dir: Path) -> tuple[GameSource, list[Finding]]:
     documents: list[SourceDocument] = load_documents(root, findings)
     report_duplicate_ids([puzzle.id for puzzle in puzzles], "puzzle", findings)
     report_duplicate_ids([document.meta.id for document in documents], "document", findings)
-    images: dict[str, str] = load_images(root)
+    images: dict[str, str] = load_images(root, findings)
     return GameSource(root, story, flow, tuple(puzzles), tuple(documents), images), findings
 
 
@@ -82,7 +88,25 @@ def load_required_model[ModelType: BaseModel](
             )
         )
         return None
-    return load_yaml_model(path.read_text(encoding="utf-8"), name, model, findings)
+    text: str | None = read_source_file(path, name, findings)
+    return load_yaml_model(text, name, model, findings) if text is not None else None
+
+
+def read_source_file(path: Path, file: str, findings: list[Finding]) -> str | None:
+    """Read a source file, or add a finding and return None when its bytes are not UTF-8."""
+    try:
+        return read_source_text(path)
+    except UnicodeDecodeError as error:
+        findings.append(
+            Finding(
+                severity="error",
+                rule="source.encoding",
+                message=f"The file is not UTF-8 text: byte {error.start} cannot be read.",
+                file=file,
+                fix_hint="Save the file as UTF-8 text.",
+            )
+        )
+        return None
 
 
 def load_yaml_model[ModelType: BaseModel](
@@ -144,7 +168,10 @@ def load_puzzles(root: Path, findings: list[Finding]) -> list[Puzzle]:
     puzzles: list[Puzzle] = []
     for path in numbered_files(root / "puzzles", "*.yaml"):
         file: str = f"puzzles/{path.name}"
-        puzzle: Puzzle | None = load_yaml_model(path.read_text(encoding="utf-8"), file, Puzzle, findings)
+        text: str | None = read_source_file(path, file, findings)
+        if text is None:
+            continue
+        puzzle: Puzzle | None = load_yaml_model(text, file, Puzzle, findings)
         if puzzle is not None and file_name_matches(path.name, puzzle.id, file, findings):
             puzzles.append(puzzle)
     return puzzles
@@ -154,8 +181,11 @@ def load_documents(root: Path, findings: list[Finding]) -> list[SourceDocument]:
     documents: list[SourceDocument] = []
     for path in numbered_files(root / "documents", "*.md"):
         file: str = f"documents/{path.name}"
+        text: str | None = read_source_file(path, file, findings)
+        if text is None:
+            continue
         try:
-            header, body, body_line = split_front_matter(path.read_text(encoding="utf-8"))
+            header, body, body_line = split_front_matter(text)
         except YamlLoadError as error:
             findings.append(Finding(severity="error", rule="yaml.syntax", message=error.message, file=file, line=1))
             continue
@@ -220,8 +250,13 @@ def report_duplicate_ids(ids: list[str], kind: str, findings: list[Finding]) -> 
             )
 
 
-def load_images(root: Path) -> dict[str, str]:
+def load_images(root: Path, findings: list[Finding]) -> dict[str, str]:
     folder: Path = root / "images"
     if not folder.is_dir():
         return {}
-    return {path.stem: path.read_text(encoding="utf-8") for path in sorted(folder.glob("*.svg"))}
+    images: dict[str, str] = {}
+    for path in sorted(folder.glob("*.svg")):
+        text: str | None = read_source_file(path, f"images/{path.name}", findings)
+        if text is not None:
+            images[path.stem] = text
+    return images

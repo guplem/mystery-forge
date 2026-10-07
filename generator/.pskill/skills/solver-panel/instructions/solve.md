@@ -8,6 +8,8 @@ Then solve each puzzle that the packet lists under the puzzles to solve, the way
 - In `evidence`, copy the exact sentences from the packet that prove your answer, with the title of the document that holds each one. Copy them character for character.
 - In `candidates`, list the other answers that you considered. Mark `fits_all_clues: true` when an answer fits every clue as well as your main answer does: that means the puzzle has two answers, which is the most important problem to find. Otherwise name the clue that rules it out in `failing_clue`.
 - Keep `reasoning` to three sentences at most.
+- In `aha`, name in one sentence the insight that unlocked the puzzle. Set `all_steps_stated: true` when the material told you every step of the method, so that you only had to follow instructions; set it to false when you had to discover something yourself.
+- Write your answer to a file with the Write tool and submit it from that file (`... submit <run> --task <n> < answer.yaml`): a long shell command fails on Windows.
 {% if item.has_accusation %}- The packet also has a final accusation. Answer each question with the option id that the evidence supports, with your evidence quotes.
 {% else %}- Return an empty `accusation` list.
 {% endif %}
