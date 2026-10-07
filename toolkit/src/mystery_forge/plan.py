@@ -53,6 +53,8 @@ from mystery_forge.spec.models import (
 )
 
 PLAN_FILE: str = "plan.yaml"
+# A shorter title, such as "The tide", also occurs in plain sentences, so a search for it finds false matches.
+MIN_STALE_TITLE_LENGTH: int = 12
 
 
 class PlannedPuzzle(SourceModel):
@@ -155,6 +157,45 @@ def planned_sentence_findings(game_dir: Path, game: Game) -> list[Finding]:
             if not any(normalize_quote_text(sentence) in texts[document_id] for document_id in written)
         )
     return findings
+
+
+def stale_title_findings(game_dir: Path, game: Game) -> list[Finding]:
+    """Report a puzzle that a hint, a solution, or a document names by its old plan title.
+
+    Writers name the other puzzles by title, and they read the titles in the plan. A writer may later rename its own
+    puzzle, and then the old name reaches the printed solutions, where players look for a puzzle that does not exist.
+    """
+    plan: Plan | None = load_required_model(game_dir / SOURCE_FOLDER, PLAN_FILE, Plan, [])
+    if plan is None:
+        return []
+    titles: dict[str, str] = {puzzle.source.id: puzzle.source.title for puzzle in game.puzzles}
+    renamed: list[tuple[str, str]] = [
+        (planned.title, titles[planned.id])
+        for planned in plan.puzzles
+        if planned.id in titles
+        and planned.title.casefold() != titles[planned.id].casefold()
+        and len(planned.title) >= MIN_STALE_TITLE_LENGTH
+    ]
+    texts: list[tuple[str, str]] = [
+        (
+            puzzle.file,
+            " ".join([*(step.text for step in puzzle.source.solution), *(hint.text for hint in puzzle.source.hints)]),
+        )
+        for puzzle in game.puzzles
+    ]
+    texts += [(document.file, document.text) for document in game.documents]
+    return [
+        Finding(
+            severity="error",
+            rule="plan.stale_title",
+            message=f'{file} names a puzzle "{old}", its title in the plan. The puzzle is now called "{new}".',
+            file=file,
+            fix_hint=f'Write "{new}" instead, or the printed code of the puzzle.',
+        )
+        for file, text in texts
+        for old, new in renamed
+        if old.casefold() in text.casefold()
+    ]
 
 
 def plan_finding(rule: str, message: str, fix_hint: str, severity: Severity = "error") -> Finding:

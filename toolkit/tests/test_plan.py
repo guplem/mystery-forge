@@ -10,7 +10,7 @@ from test_assemble import FAKE_IMPLEMENTATIONS
 from mystery_forge.assemble import assemble_game
 from mystery_forge.findings import Finding
 from mystery_forge.game import Game
-from mystery_forge.plan import check_plan_folder, planned_sentence_findings
+from mystery_forge.plan import check_plan_folder, planned_sentence_findings, stale_title_findings
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
 IMPLEMENTED: frozenset[str] = frozenset({"caesar-cipher", "arithmetic-lock", "deduction", "anagram", "maze"})
@@ -327,3 +327,39 @@ def test_planned_sentences_are_checked_only_with_a_valid_plan_and_written_docume
     assert planned_sentence_findings(game_dir, game) == []
     (game_dir / "source" / "plan.yaml").unlink()
     assert planned_sentence_findings(game_dir, game) == []
+
+
+def test_an_old_plan_title_in_a_hint_a_solution_or_a_document_is_reported(game_dir: Path) -> None:
+    plan = golden_plan()
+    plan["puzzles"][0]["title"] = "The coded logbook line"
+    write_plan(game_dir, plan)
+    puzzle_path = game_dir / "source" / "puzzles" / "P3.yaml"
+    puzzle_text = puzzle_path.read_text(encoding="utf-8")
+    puzzle_path.write_text(
+        puzzle_text.replace("The wet boot prints show", "After THE CODED LOGBOOK LINE, the wet boot prints show"),
+        encoding="utf-8",
+    )
+    document_path = game_dir / "source" / "documents" / "D5.md"
+    document_path.write_text(
+        document_path.read_text(encoding="utf-8") + "\nSee the coded logbook line.\n", encoding="utf-8"
+    )
+    findings = stale_title_findings(game_dir, assembled(game_dir))
+    assert [(finding.rule, finding.file, finding.severity) for finding in findings] == [
+        ("plan.stale_title", "puzzles/P3.yaml", "error"),
+        ("plan.stale_title", "documents/D5.md", "error"),
+    ]
+    assert "The keeper's coded line" in findings[0].message
+
+
+def test_stale_titles_need_a_valid_plan_and_a_changed_title(game_dir: Path) -> None:
+    game = assembled(game_dir)
+    assert stale_title_findings(game_dir, game) == []
+    plan = golden_plan()
+    plan["puzzles"][0]["title"] = "the KEEPER's coded line"
+    plan["puzzles"][1]["id"] = "P9"
+    # A short title such as "The tide" also occurs in plain sentences, so only a long title counts.
+    plan["puzzles"][2]["title"] = "The tide"
+    write_plan(game_dir, plan)
+    assert stale_title_findings(game_dir, game) == []
+    (game_dir / "source" / "plan.yaml").unlink()
+    assert stale_title_findings(game_dir, game) == []

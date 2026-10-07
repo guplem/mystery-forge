@@ -48,7 +48,7 @@ from mystery_forge.panel.models import (
 )
 from mystery_forge.panel.packets import STORY_ONLY_STAGE, StagePacket, build_guesser_packet, build_panel_packets
 from mystery_forge.paths import SystemFolders
-from mystery_forge.plan import PLAN_FILE, Plan, check_plan_folder, planned_sentence_findings
+from mystery_forge.plan import PLAN_FILE, Plan, check_plan_folder, planned_sentence_findings, stale_title_findings
 from mystery_forge.render.companion_data import build_companion_html
 from mystery_forge.render.game_renderer import PREVIEW_FOLDER, RenderReport, render_game
 from mystery_forge.render.pdf import BrowserNotFoundError, open_sheet_browser
@@ -185,6 +185,7 @@ def full_check(game_dir: Path, write: bool = True) -> list[Finding]:
         (game_dir / "game.json").write_text(result.game.model_dump_json(indent=2), encoding="utf-8")
     findings.extend(run_checks(result.game))
     findings.extend(planned_sentence_findings(game_dir, result.game))
+    findings.extend(stale_title_findings(game_dir, result.game))
     # A run with errors records nothing: the codes keep their last pass, which no longer matches, so they stay stale.
     if write and count_errors(findings) == 0:
         hashes: dict[str, str] = game_hashes(result.game)
