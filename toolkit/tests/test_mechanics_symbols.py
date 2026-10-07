@@ -101,7 +101,7 @@ def test_symbol_glyphs_of_the_26_letters_are_distinct(mechanic_id: str) -> None:
 @pytest.mark.parametrize("mechanic_id", MECHANIC_IDS)
 def test_symbol_key_shows_every_letter_only_when_asked(mechanic_id: str) -> None:
     with_key: Artifact = build(mechanic_id, {"include_key": True}, make_context())
-    without_key: Artifact = build(mechanic_id, {"include_key": False}, make_context())
+    without_key: Artifact = build(mechanic_id, {"include_key": False, "key_parts": 1}, make_context())
     assert glyph_bodies(with_key, "data-key-symbol") == glyph_bodies(
         build(mechanic_id, {"plaintext": PANGRAM}, make_context())
     )
@@ -196,10 +196,33 @@ def test_symbol_substitution_solver_text_can_be_solved_with_its_legend() -> None
     assert all(1 <= int(number) <= 32 for number in re.findall(r"glyph (\d+)", legend))
 
 
-def test_symbol_substitution_without_key_adds_a_print_note() -> None:
-    artifact: Artifact = build("symbol-substitution", {"include_key": "false"}, make_context())
+def test_symbol_substitution_needs_its_key_somewhere() -> None:
+    with pytest.raises(MechanicBuildError, match="no key"):
+        build("symbol-substitution", {"include_key": "false"}, make_context())
+
+
+@pytest.mark.parametrize("mechanic", ["symbol-substitution", "pigpen-cipher", "braille"])
+def test_the_key_can_split_into_parts_for_other_documents(mechanic: str) -> None:
+    artifact: Artifact = build(
+        mechanic, {"include_key": False, "key_parts": 3, "plaintext": "Old mill"}, make_context()
+    )
+    assert "data-key-symbol" not in artifact.html
     assert "\nKey:" not in artifact.solver_text
-    assert artifact.print_notes == ("Key not printed here: the players need the symbol key from another document.",)
+    assert [part.name for part in artifact.parts] == ["key1", "key2", "key3"]
+    letters: list[str] = [
+        letter
+        for part in artifact.parts
+        for letter in re.findall(r'<span class="mf-glyph-key-letter">([A-Z])</span>', part.html)
+    ]
+    assert letters == list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    assert all(part.solver_text.startswith("Key: ") for part in artifact.parts)
+    assert artifact.parts[0].solver_text.split(", ")[0].startswith("Key: A = ")
+    assert artifact.print_notes == ()
+
+
+def test_the_key_goes_with_the_message_or_in_parts_not_both() -> None:
+    with pytest.raises(MechanicBuildError, match="both"):
+        build("pigpen-cipher", {"include_key": True, "key_parts": 2}, make_context())
 
 
 def test_symbol_substitution_alphabet_depends_on_the_seed() -> None:

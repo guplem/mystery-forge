@@ -8,6 +8,7 @@ The rules that the plan step shares (`plan.py`) are pure functions over `PuzzleN
 """
 
 import json
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Literal
@@ -16,13 +17,14 @@ from mystery_forge.answers import normalize_answer
 from mystery_forge.catalog import Mechanic
 from mystery_forge.checks.game_index import FLOW_FILE, id_number, mentions, puzzles_by_id, squash, stage_positions
 from mystery_forge.findings import Finding
-from mystery_forge.game import AssembledPuzzle, Game
+from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
 from mystery_forge.spec.documents import ARTIFACT_MARK
 from mystery_forge.spec.models import Flow, Stage
 
 DependencyIssueKind = Literal["unknown", "later_stage"]
 OpenerIssueKind = Literal["unknown", "order"]
 FinalPuzzleIssueKind = Literal["unknown", "stage"]
+PART_MARK_PATTERN: re.Pattern[str] = re.compile(r"⟦artifact:(P\d+\.[a-z0-9-]+)⟧")
 
 
 @dataclass(frozen=True)
@@ -54,6 +56,7 @@ def check_graph(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
         *document_findings(game),
         *parallel_width_findings(game),
         *artifact_findings(game),
+        *artifact_part_findings(game),
         *needed_text_findings(game),
         *unused_dependency_findings(game, mechanics),
     ]
@@ -466,6 +469,71 @@ def artifact_findings(game: Game) -> list[Finding]:
                 )
             )
     return findings
+
+
+def artifact_part_findings(game: Game) -> list[Finding]:
+    """Report a part of a material (such as one part of a key) that no document, two documents, or a document of a
+    later stage prints, and a part mark that names no part."""
+    positions: dict[str, int] = stage_positions(game)
+    findings: list[Finding] = []
+    known: set[str] = set()
+    for puzzle in game.puzzles:
+        if puzzle.artifact is None:
+            continue
+        limit: int = positions.get(puzzle.source.stage, len(positions))
+        for part in puzzle.artifact.parts:
+            target: str = f"{puzzle.source.id}.{part.name}"
+            known.add(target)
+            mark: str = ARTIFACT_MARK.format(puzzle=target)
+            holders: list[AssembledDocument] = [document for document in game.documents if mark in document.body_html]
+            if not holders:
+                findings.append(
+                    part_finding(
+                        "graph.artifact_part_missing",
+                        f"No document prints the part {part.name} of the material of {puzzle.source.id}.",
+                        puzzle.file,
+                        f"Add `{{{{artifact:{target}}}}}` to a document of stage {puzzle.source.stage} or earlier.",
+                    )
+                )
+            elif len(holders) > 1:
+                findings.append(
+                    part_finding(
+                        "graph.artifact_part_duplicated",
+                        f"The part {part.name} of {puzzle.source.id} is printed in "
+                        f"{', '.join(document.meta.id for document in holders)}.",
+                        puzzle.file,
+                        "Keep the part reference in one document only.",
+                    )
+                )
+            late: list[str] = [
+                document.meta.id for document in holders if positions.get(document.meta.stage, len(positions)) > limit
+            ]
+            if late:
+                findings.append(
+                    part_finding(
+                        "graph.artifact_part_late",
+                        f"The part {part.name} of {puzzle.source.id} is in {', '.join(late)}, which players open "
+                        f"after the stage {puzzle.source.stage} of the puzzle.",
+                        puzzle.file,
+                        f"Move the part to a document of stage {puzzle.source.stage} or earlier.",
+                    )
+                )
+    for document in game.documents:
+        for match in PART_MARK_PATTERN.finditer(document.body_html):
+            if match.group(1) not in known:
+                findings.append(
+                    part_finding(
+                        "graph.artifact_part_unknown",
+                        f"{document.meta.id} prints the part {match.group(1)}, but that material has no such part.",
+                        document.file,
+                        "Use a part name that the mechanic's params create, such as key1 for `key_parts: 2`.",
+                    )
+                )
+    return findings
+
+
+def part_finding(rule: str, message: str, file: str, fix_hint: str) -> Finding:
+    return Finding(severity="error", rule=rule, message=message, file=file, fix_hint=fix_hint)
 
 
 def needed_text_findings(game: Game) -> list[Finding]:

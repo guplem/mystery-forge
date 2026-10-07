@@ -1,4 +1,4 @@
-from mystery_forge.mechanics.base import Artifact
+from mystery_forge.mechanics.base import Artifact, ArtifactPart
 from mystery_forge.render.document_body import (
     SpeakerLine,
     clean_svg,
@@ -72,3 +72,12 @@ def test_speaker_lines_keep_a_block_after_the_last_paragraph() -> None:
         SpeakerLine(speaker="Ana", html="Hi"),
         SpeakerLine(speaker=None, html="<ul>\n<li>note</li>\n</ul>"),
     ]
+
+
+def test_insert_artifacts_places_a_named_part_of_an_artifact() -> None:
+    part = ArtifactPart(name="key1", html="<p>A = B</p>", solver_text="A = B")
+    artifact = Artifact(html="<p>msg</p>", solver_text="msg", print_notes=("Cut it",), parts=(part,))
+    html = insert_artifacts("<p>⟦artifact:P1.key1⟧</p>\n<p>Look ⟦artifact:P1.key9⟧</p>", {"P1": artifact})
+    assert '<div class="mf-artifact" data-artifact="P1.key1"><p>A = B</p></div>' in html
+    assert '<div class="mf-artifact mf-artifact-missing" data-artifact="P1.key9"></div>' in html
+    assert "Cut it" not in html

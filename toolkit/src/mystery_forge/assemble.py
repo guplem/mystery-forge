@@ -239,6 +239,8 @@ def insert_solver_texts(document: AssembledDocument, artifacts: dict[str, Artifa
     text: str = document.text
     for puzzle_id, artifact in artifacts.items():
         text = text.replace(ARTIFACT_MARK.format(puzzle=puzzle_id), artifact.solver_text)
+        for part in artifact.parts:
+            text = text.replace(ARTIFACT_MARK.format(puzzle=f"{puzzle_id}.{part.name}"), part.solver_text)
     return document.model_copy(update={"text": text})
 
 

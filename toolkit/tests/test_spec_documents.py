@@ -144,3 +144,9 @@ def test_html_to_text_separates_blocks_and_collapses_spaces() -> None:
     )
     assert html_to_text("<table><tr><td>A</td><td>B</td></tr><tr><td>C</td></tr></table>") == "A B\nC"
     assert html_to_text("") == ""
+
+
+def test_an_artifact_part_reference_becomes_a_part_mark(context: ReferenceContext) -> None:
+    resolved, rules = resolve("{{artifact:P2.key1}} {{artifact:P9.key1}}", context, "P1")
+    assert resolved == f"{ARTIFACT_MARK.format(puzzle='P2.key1')} {{{{artifact:P9.key1}}}}"
+    assert rules == ["reference.unknown"]

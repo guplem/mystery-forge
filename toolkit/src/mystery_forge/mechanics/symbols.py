@@ -12,13 +12,24 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from mystery_forge.mechanics.base import Artifact, MechanicContext, MechanicImplementation, RenderedArtifact
+from mystery_forge.mechanics.base import (
+    Artifact,
+    ArtifactPart,
+    MechanicBuildError,
+    MechanicContext,
+    MechanicImplementation,
+    RenderedArtifact,
+)
 from mystery_forge.mechanics.text_tools import attribute_values, plaintext_for, require_no_digits
 
 ALPHABET: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 PLAINTEXT_DESCRIPTION: str = (
     "The message to encode. It must contain the answer. Leave it empty to encode the answer alone. "
     "Letters only: spell numbers as words. Punctuation is dropped."
+)
+KEY_PARTS_DESCRIPTION: str = (
+    "Split the key over this many parts (1 to 4), each printed in another document with {{artifact:<puzzle id>.key1}}, "
+    "{{artifact:<puzzle id>.key2}}, and so on. Each part holds a run of the alphabet. 0 prints no separate key."
 )
 STROKE_ATTRIBUTES: str = (
     'fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"'
@@ -58,13 +69,17 @@ def message_html(mechanic_id: str, plaintext: str, glyphs: Mapping[str, Glyph], 
     return f'<div class="mf-symbols mf-{mechanic_id}">{message}{key_html}</div>'
 
 
-def key_chart_html(glyphs: Mapping[str, Glyph]) -> str:
+def key_chart_html(glyphs: Mapping[str, Glyph], letters: str = ALPHABET) -> str:
     entries: str = "".join(
         f'<span class="mf-glyph-key-entry">{glyph_svg(letter, glyphs[letter], "data-key-symbol")}'
         f'<span class="mf-glyph-key-letter">{letter}</span></span>'
-        for letter in ALPHABET
+        for letter in letters
     )
     return f'<div class="mf-glyph-key">{entries}</div>'
+
+
+def key_solver_text(glyphs: Mapping[str, Glyph], letters: str = ALPHABET) -> str:
+    return "Key: " + ", ".join(f"{letter} = {glyphs[letter].description}" for letter in letters)
 
 
 def message_solver_text(label: str, plaintext: str, glyphs: Mapping[str, Glyph], include_key: bool) -> str:
@@ -72,7 +87,27 @@ def message_solver_text(label: str, plaintext: str, glyphs: Mapping[str, Glyph],
     text: str = f"{label}: {' / '.join(words)}"
     if not include_key:
         return text
-    return text + "\nKey: " + ", ".join(f"{letter} = {glyphs[letter].description}" for letter in ALPHABET)
+    return text + "\n" + key_solver_text(glyphs)
+
+
+def key_parts(mechanic_id: str, glyphs: Mapping[str, Glyph], count: int, include_key: bool) -> tuple[ArtifactPart, ...]:
+    """Split the key into `count` runs of the alphabet, for other documents to print: a key on another prop makes
+    the players connect two documents, while a key next to the message turns the puzzle into a worksheet."""
+    if count and include_key:
+        raise MechanicBuildError(
+            "The key cannot go both next to the message and in separate parts.",
+            fix_hint="Set include_key to false when you use key_parts.",
+        )
+    size: int = -(-len(ALPHABET) // count) if count else 0
+    runs: list[str] = [ALPHABET[start : start + size] for start in range(0, len(ALPHABET), size)] if count else []
+    return tuple(
+        ArtifactPart(
+            name=f"key{number}",
+            html=f'<div class="mf-symbols mf-{mechanic_id}">{key_chart_html(glyphs, letters)}</div>',
+            solver_text=key_solver_text(glyphs, letters),
+        )
+        for number, letters in enumerate(runs, start=1)
+    )
 
 
 def symbol_plaintext(raw_plaintext: str | None, context: MechanicContext, mechanic_name: str) -> str:
@@ -135,6 +170,7 @@ class PigpenParams(BaseModel):
     include_key: bool = Field(
         default=False, description="Print the pigpen key (every letter with its symbol) next to the message."
     )
+    key_parts: int = Field(default=0, ge=0, le=4, description=KEY_PARTS_DESCRIPTION)
 
 
 def build_pigpen(params: PigpenParams, context: MechanicContext) -> Artifact:
@@ -142,6 +178,7 @@ def build_pigpen(params: PigpenParams, context: MechanicContext) -> Artifact:
     return Artifact(
         html=message_html("pigpen-cipher", plaintext, PIGPEN_GLYPHS, params.include_key),
         solver_text=message_solver_text("Symbols", plaintext, PIGPEN_GLYPHS, params.include_key),
+        parts=key_parts("pigpen-cipher", PIGPEN_GLYPHS, params.key_parts, params.include_key),
     )
 
 
@@ -178,6 +215,7 @@ class BrailleParams(BaseModel):
     include_key: bool = Field(
         default=False, description="Print the Braille key (every letter with its cell) next to the message."
     )
+    key_parts: int = Field(default=0, ge=0, le=4, description=KEY_PARTS_DESCRIPTION)
 
 
 def build_braille(params: BrailleParams, context: MechanicContext) -> Artifact:
@@ -185,6 +223,7 @@ def build_braille(params: BrailleParams, context: MechanicContext) -> Artifact:
     return Artifact(
         html=message_html("braille", plaintext, BRAILLE_GLYPHS, params.include_key),
         solver_text=message_solver_text("Symbols", plaintext, BRAILLE_GLYPHS, params.include_key),
+        parts=key_parts("braille", BRAILLE_GLYPHS, params.key_parts, params.include_key),
     )
 
 
@@ -224,21 +263,25 @@ class SymbolSubstitutionParams(BaseModel):
     plaintext: str | None = Field(default=None, description=PLAINTEXT_DESCRIPTION)
     include_key: bool = Field(
         default=True,
-        description="Print the key (every letter with its symbol) next to the message. Set it to false only when "
-        "another document of the game gives the key.",
+        description="Print the key (every letter with its symbol) next to the message: a worksheet, fine for kids. "
+        "For a real puzzle, set it to false and use key_parts.",
     )
+    key_parts: int = Field(default=0, ge=0, le=4, description=KEY_PARTS_DESCRIPTION)
 
 
 def build_symbol_substitution(params: SymbolSubstitutionParams, context: MechanicContext) -> Artifact:
     plaintext: str = symbol_plaintext(params.plaintext, context, "the symbol alphabet")
     glyphs: dict[str, Glyph] = substitution_glyphs(context.seed)
-    notes: tuple[str, ...] = (
-        () if params.include_key else ("Key not printed here: the players need the symbol key from another document.",)
-    )
+    # The symbols are new for every game, so only the builder can draw the key: without it, nobody can solve this.
+    if not params.include_key and not params.key_parts:
+        raise MechanicBuildError(
+            "The symbols are new for this game, but the material prints no key.",
+            fix_hint="Set key_parts to 1 to 4 and print each part in another document, or set include_key to true.",
+        )
     return Artifact(
         html=message_html("symbol-substitution", plaintext, glyphs, params.include_key),
         solver_text=message_solver_text("Symbols", plaintext, glyphs, params.include_key),
-        print_notes=notes,
+        parts=key_parts("symbol-substitution", glyphs, params.key_parts, params.include_key),
     )
 
 

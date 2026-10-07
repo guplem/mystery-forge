@@ -19,7 +19,7 @@ from mystery_forge.checks.graph import (
 )
 from mystery_forge.findings import Finding
 from mystery_forge.game import Game
-from mystery_forge.mechanics.base import Artifact
+from mystery_forge.mechanics.base import Artifact, ArtifactPart
 from mystery_forge.spec.models import Stage
 
 
@@ -242,3 +242,40 @@ def test_the_shared_graph_rules_work_on_plain_puzzle_data() -> None:
     assert final_puzzle_issue(flow, nodes(("P3", "A", ()))) == "stage"
     assert final_puzzle_issue(flow, []) == "unknown"
     assert final_puzzle_issue(flow.model_copy(update={"final_puzzle": None}), []) is None
+
+
+def with_key_parts(game: Game) -> Game:
+    artifact = game.puzzles[0].artifact
+    assert artifact is not None
+    parts = (
+        ArtifactPart(name="key1", html="<p>A-M</p>", solver_text="A-M"),
+        ArtifactPart(name="key2", html="<p>N-Z</p>", solver_text="N-Z"),
+    )
+    return edit_assembled_puzzle(game, "P1", artifact=artifact.model_copy(update={"parts": parts}))
+
+
+def test_each_part_of_an_artifact_sits_in_exactly_one_document_of_its_stage_or_earlier() -> None:
+    game: Game = with_key_parts(golden_game())
+    game = edit_document(game, "D1", body_html="<p>⟦artifact:P1.key1⟧ and ⟦artifact:P1.key7⟧</p>")
+    game = edit_document(game, "D4", body_html="<p>⟦artifact:P1.key2⟧ ⟦artifact:P1.key1⟧</p>")
+    findings = graph_findings(game)
+    # D4 is in stage B, after the stage A of P1, so both parts there are late.
+    assert sorted(rules(findings)) == [
+        "graph.artifact_part_duplicated",
+        "graph.artifact_part_late",
+        "graph.artifact_part_late",
+        "graph.artifact_part_unknown",
+    ]
+    by_rule = {finding.rule: finding for finding in findings}
+    assert "key1" in by_rule["graph.artifact_part_duplicated"].message
+    assert "key2" in by_rule["graph.artifact_part_late"].message
+    assert (by_rule["graph.artifact_part_unknown"].file, by_rule["graph.artifact_part_unknown"].severity) == (
+        "documents/D1.md",
+        "error",
+    )
+    placed = edit_document(
+        with_key_parts(golden_game()), "D1", body_html="<p>⟦artifact:P1.key1⟧ ⟦artifact:P1.key2⟧</p>"
+    )
+    assert graph_findings(placed) == []
+    missing = graph_findings(edit_document(with_key_parts(golden_game()), "D1", body_html="<p>⟦artifact:P1.key1⟧</p>"))
+    assert rules(missing) == ["graph.artifact_part_missing"]

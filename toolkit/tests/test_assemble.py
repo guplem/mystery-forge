@@ -6,10 +6,18 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from mystery_forge.assemble import assemble_game, game_salt, puzzle_codes
+from mystery_forge.assemble import assemble_game, game_salt, insert_solver_texts, puzzle_codes
 from mystery_forge.findings import Finding
-from mystery_forge.mechanics.base import Artifact, MechanicBuildError, MechanicContext, MechanicImplementation
+from mystery_forge.game import AssembledDocument
+from mystery_forge.mechanics.base import (
+    Artifact,
+    ArtifactPart,
+    MechanicBuildError,
+    MechanicContext,
+    MechanicImplementation,
+)
 from mystery_forge.spec.documents import ARTIFACT_MARK
+from mystery_forge.spec.models import DocumentMeta
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
 
@@ -197,3 +205,13 @@ def test_an_unknown_reference_in_a_header_field_is_a_finding(game_dir: Path) -> 
     path.write_text(text, encoding="utf-8")
     result = assemble_game(game_dir, FAKE_IMPLEMENTATIONS)
     assert rules(result.findings) == ["reference.unknown"]
+
+
+def test_a_part_mark_gets_the_solver_text_of_the_part() -> None:
+    part = ArtifactPart(name="key1", html="<p>A = B</p>", solver_text="Key: A = B")
+    artifact = Artifact(html="<p>msg</p>", solver_text="msg", parts=(part,))
+    meta = DocumentMeta(format_version=1, id="D1", kind="letter", stage="A", title="A letter")
+    document = AssembledDocument(
+        meta=meta, file="documents/D1.md", body_html="", text="⟦artifact:P1⟧ and ⟦artifact:P1.key1⟧"
+    )
+    assert insert_solver_texts(document, {"P1": artifact}).text == "msg and Key: A = B"

@@ -13,7 +13,7 @@ from typing import Final
 from mystery_forge.mechanics.base import Artifact
 
 PAGEBREAK: Final[str] = '<div class="mf-pagebreak"></div>\n'
-ARTIFACT_MARK_PATTERN: Final[re.Pattern[str]] = re.compile(r"(<p>)?⟦artifact:(P\d+)⟧(</p>)?")
+ARTIFACT_MARK_PATTERN: Final[re.Pattern[str]] = re.compile(r"(<p>)?⟦artifact:(P\d+)(?:\.([a-z0-9-]+))?⟧(</p>)?")
 IMAGE_MARK_PATTERN: Final[re.Pattern[str]] = re.compile(r"(<p>)?⟦image:([^|⟧]+)\|([^⟧]*)⟧(</p>)?")
 SVG_NOISE_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"<\?xml[^>]*\?>|<!DOCTYPE[^>]*>|<script\b.*?</script>", re.DOTALL | re.IGNORECASE
@@ -54,12 +54,22 @@ def artifact_block(puzzle_id: str, artifact: Artifact | None) -> str:
     )
 
 
+def part_block(puzzle_id: str, name: str, artifact: Artifact | None) -> str:
+    target: str = f"{puzzle_id}.{name}"
+    part = next((part for part in artifact.parts if part.name == name), None) if artifact is not None else None
+    if part is None:
+        return f'<div class="mf-artifact mf-artifact-missing" data-artifact="{target}"></div>'
+    return f'<div class="mf-artifact-block"><div class="mf-artifact" data-artifact="{target}">{part.html}</div></div>'
+
+
 def insert_artifacts(body_html: str, artifacts: Mapping[str, Artifact | None]) -> str:
-    """Replace each artifact mark (alone in its paragraph, or inside text) with the built artifact."""
+    """Replace each artifact mark (alone in its paragraph, or inside text) with the built artifact or one part."""
 
     def replace(match: re.Match[str]) -> str:
-        block: str = artifact_block(match.group(2), artifacts.get(match.group(2)))
-        return block if match.group(1) and match.group(3) else (match.group(1) or "") + block + (match.group(3) or "")
+        opening, puzzle_id, part_name, closing = match.groups()
+        artifact: Artifact | None = artifacts.get(puzzle_id)
+        block: str = part_block(puzzle_id, part_name, artifact) if part_name else artifact_block(puzzle_id, artifact)
+        return block if opening and closing else (opening or "") + block + (closing or "")
 
     return ARTIFACT_MARK_PATTERN.sub(replace, body_html)
 

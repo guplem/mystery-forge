@@ -56,6 +56,7 @@ REFERENCE_FORMS: dict[str, str] = {
     "{{doc:<document id>}}": "The title of another document.",
     "{{stage:<stage id>}}": "The envelope label, such as 'Envelope B' in the game language.",
     "{{artifact}}": "The built material of the puzzle named in the front matter. Or {{artifact:<puzzle id>}}.",
+    "{{artifact:<puzzle id>.<part>}}": "One part of a built material, such as key1 of a key that key_parts splits.",
     "{{image:<id>}}": "The SVG image images/<id>.svg. Add a caption with {{image:<id>|caption}}.",
 }
 

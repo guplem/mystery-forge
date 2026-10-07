@@ -124,6 +124,7 @@ mechanics:
     builder: pigpen-cipher
     pitfalls:
       - Many variants exist. Always ship the exact key variant that the game uses, or let players derive it.
+      - A key next to the message makes a worksheet. Set key_parts to 1 or more and print each part on another prop with {{artifact:<puzzle id>.key1}}.
     hint_ladder:
       - The symbols on <document> are the message. The key is on <other document>.
       - These shapes are pieces of a grid. Find the grid drawing.
@@ -188,6 +189,7 @@ mechanics:
     pitfalls:
       - Cell orientation and spacing can be unclear. Group each cell clearly.
       - Use a strict 2 by 3 grid at easy difficulty.
+      - A key next to the message makes a worksheet. Set key_parts to 1 or more and print each part on another prop with {{artifact:<puzzle id>.key1}}.
     hint_ladder:
       - Look at the dots on <document>. The chart that you need is on <other document>.
       - Count the dots in each small group. Each group is one letter.
@@ -506,6 +508,7 @@ mechanics:
     pitfalls:
       - Symbols that look alike in black and white at small size. Keep each symbol clearly different.
       - Every symbol in the message must be in a key, or in a known word whose other letters are known.
+      - include_key prints the key next to the message, which suits kids only. For other audiences, set include_key to false and key_parts to 2 to 4, and print each part on a different prop with {{artifact:<puzzle id>.key1}}, {{artifact:<puzzle id>.key2}}, and so on.
     hint_ladder:
       - The symbols on <document> are the message. You saw these symbols on other items too.
       - Combine the partial keys from <documents>. A sign that you can already read gives the rest.
