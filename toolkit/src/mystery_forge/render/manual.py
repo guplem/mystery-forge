@@ -198,12 +198,16 @@ def personal_section(game: Game) -> ManualSection | None:
 def host_section(game: Game) -> ManualSection:
     language: str = game.config.language
     rows: list[list[str]] = []
+    # Groups solve in parallel, so puzzles times minutes overshoots: share the config duration by puzzle count.
+    total: int = max(1, len(game.puzzles))
+    counted: int = 0
     elapsed: int = 0
     for stage in game.flow.stages:
         count: int = sum(1 for puzzle in game.puzzles if puzzle.source.stage == stage.id)
-        minutes: int = count * game.brief.minutes_per_puzzle
-        elapsed += minutes
-        rows.append([text(language, "envelope_label", stage=stage.id), str(count), str(minutes), str(elapsed)])
+        counted += count
+        until: int = round(game.config.duration_minutes * counted / total)
+        rows.append([text(language, "envelope_label", stage=stage.id), str(count), str(until - elapsed), str(until)])
+        elapsed = until
     headers: list[str] = [
         text(language, key)
         for key in ("manual_host_stage", "manual_host_puzzles", "manual_host_minutes", "manual_host_by")
