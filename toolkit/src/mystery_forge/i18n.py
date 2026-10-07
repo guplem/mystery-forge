@@ -2167,6 +2167,13 @@ DATE_PATTERNS: Final[dict[str, str]] = {
 }
 
 
+# Game languages that are not written in the Latin alphabet (Serbian counts here, because Cyrillic is its official
+# script). The mechanics that fold text to A to Z cannot hide their answers.
+NON_LATIN_LANGUAGES: Final[frozenset[str]] = frozenset(
+    {"ar", "bg", "bn", "el", "fa", "he", "hi", "ja", "ko", "ru", "sr", "ta", "th", "uk", "ur", "zh"}
+)
+
+
 def known_language(language: str) -> str:
     return language if language in STRINGS else "en"
 

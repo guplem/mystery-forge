@@ -117,6 +117,10 @@ class Mechanic(CatalogModel):
     hint_ladder: tuple[Text, Text, Text]
     in_world_examples: Annotated[tuple[Text, ...], Field(min_length=2, max_length=4)]
     combines_documents: bool
+    # The builder folds text to the letters A to Z, or fills a grid with them, so it fits only a Latin-script language.
+    latin_letters: bool = False
+    # The builder writes sentences in the game language, so it fits only a language with a checked table.
+    writes_sentences: bool = False
 
     @model_validator(mode="after")
     def check_rules(self) -> Self:
