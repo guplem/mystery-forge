@@ -184,12 +184,23 @@ def test_the_death_filter_uses_the_words_of_the_game_language(game_dir: Path, la
     assert "story.audience" in rules(check_story_folder(game_dir))
 
 
-def test_every_config_language_has_death_words() -> None:
-    from mystery_forge.config import CONFIG_SCHEMA_PATH
+def test_every_language_with_a_checked_table_has_death_words() -> None:
+    from mystery_forge.i18n import LANGUAGES
     from mystery_forge.story_checks import DEATH_WORDS
 
-    schema = json.loads(CONFIG_SCHEMA_PATH.read_text(encoding="utf-8"))
-    assert set(schema["properties"]["language"]["enum"]) == set(DEATH_WORDS)
+    assert set(DEATH_WORDS) == set(LANGUAGES)
+
+
+def test_a_language_without_death_words_skips_the_keyword_check(game_dir: Path) -> None:
+    config_path = game_dir / "source" / "config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["language"] = "ja"
+    config["audience"] = "kids"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    data = story_data(game_dir)
+    data["truth"] = "There was a murder in the lighthouse."
+    save_story(game_dir, data)
+    assert "story.audience" not in rules(check_story_folder(game_dir), "error")
 
 
 def test_the_intro_length_message_states_the_real_range(game_dir: Path) -> None:

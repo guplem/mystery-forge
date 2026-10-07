@@ -46,8 +46,12 @@ def test_each_language_has_its_own_words(language: str, text: str, count: int) -
     assert len(check_references(with_text(text, language))) == count
 
 
-def test_every_game_language_has_patterns() -> None:
+def test_every_language_with_a_checked_table_has_patterns() -> None:
     assert set(FREE_TEXT_PATTERNS) == {"en", "es", "ca", "fr", "de", "it", "pt"}
+
+
+def test_a_language_without_patterns_reports_no_free_text() -> None:
+    assert check_references(with_text("Open envelope B.", "ja")) == []
 
 
 def golden_deduction() -> Deduction:
