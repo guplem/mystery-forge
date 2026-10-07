@@ -139,7 +139,8 @@ def test_assemble_writes_game_json_and_reports_findings(tmp_path: Path, monkeypa
     assert Path(result["report"]).is_file()
 
 
-def test_assemble_of_a_folder_without_source(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_assemble_of_a_folder_with_an_empty_source(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tmp_path / "source").mkdir()
     code, result = run(["assemble", "--game", str(tmp_path)], monkeypatch)
     assert code == 0
     assert result["ok"] is False
@@ -259,11 +260,12 @@ def test_main_reads_stdin_as_utf8(monkeypatch: pytest.MonkeyPatch) -> None:
     assert stdin.encoding == "utf-8"
 
 
-def test_a_crash_inside_a_verb_is_one_json_line_with_exit_2(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_crash_inside_a_verb_is_one_json_line_with_exit_2(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def explode(*arguments: Any) -> Any:
         raise KeyError("lost")
 
     monkeypatch.setattr(cli, "assemble_game", explode)
-    code, result = run(["assemble", "--game", "nowhere"], monkeypatch)
+    (tmp_path / "source").mkdir()
+    code, result = run(["assemble", "--game", str(tmp_path)], monkeypatch)
     assert code == 2
     assert result == {"ok": False, "message": "KeyError: 'lost'"}

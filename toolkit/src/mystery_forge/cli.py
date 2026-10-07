@@ -39,6 +39,7 @@ from mystery_forge.paths import (
 )
 from mystery_forge.render.pdf import BrowserNotFoundError, launch_first_available
 from mystery_forge.spec.documents import ALL_DIRECTIVES
+from mystery_forge.spec.loader import SOURCE_FOLDER
 from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
 
 type VerbHandler = Callable[[argparse.Namespace, TextIO], int]
@@ -353,6 +354,11 @@ def main(argv: list[str] | None = None, output: TextIO | None = None) -> int:
         sys.stdin.reconfigure(encoding="utf-8")
     arguments: argparse.Namespace = build_parser().parse_args(argv)
     handler: VerbHandler = arguments.handler
+    game: str | None = getattr(arguments, "game", None)
+    # A mistyped game path must not become a new folder full of reports for a game that does not exist.
+    if game is not None and not (Path(game) / SOURCE_FOLDER).is_dir():
+        emit(stream, {"ok": False, "message": f"The game folder {game} has no source folder. Check the path."})
+        return 2
     try:
         exit_code: int = handler(arguments, stream)
     except Exception as error:
