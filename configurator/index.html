@@ -127,6 +127,7 @@
             <button type="button" class="language-switch__button" data-ui-language="es" lang="es">Español</button>
           </div>
         </div>
+        <p id="language-note" class="language-note" role="status" hidden></p>
         <p class="masthead__tagline" data-text="page.tagline"></p>
         <h2 class="visually-hidden" data-text="how.title">How it works</h2>
         <ol class="how-it-works">
@@ -175,10 +176,6 @@
               <svg class="icon" aria-hidden="true"><use href="#icon-download" /></svg>
               <span data-text="action.download"></span>
             </button>
-            <button type="button" id="copy-prompt" class="button">
-              <svg class="icon" aria-hidden="true"><use href="#icon-copy" /></svg>
-              <span data-text="action.copy_prompt"></span>
-            </button>
             <label class="button file-button">
               <input type="file" id="config-file-input" class="visually-hidden" accept=".json,application/json" />
               <svg class="icon" aria-hidden="true"><use href="#icon-upload" /></svg>
@@ -195,12 +192,37 @@
           <div id="load-errors" class="load-errors" role="alert"></div>
         </div>
 
-        <section id="next-steps" class="next-steps" aria-labelledby="next-steps-title" hidden>
+        <section id="next-steps" class="next-steps" aria-labelledby="next-steps-title">
           <h2 id="next-steps-title" class="next-steps__title" data-text="next.title"></h2>
           <ol class="next-steps__list">
-            <li data-text="next.step1"></li>
-            <li data-text="next.step2"></li>
-            <li id="next-step-3"></li>
+            <li>
+              <span data-text="next.install"></span>
+              <span class="next-steps__links">
+                <a
+                  class="next-steps__link"
+                  href="https://docs.astral.sh/uv/getting-started/installation/"
+                  target="_blank"
+                  rel="noopener"
+                  data-text="next.link_uv"
+                ></a>
+                <a
+                  class="next-steps__link"
+                  href="https://claude.com/claude-code"
+                  target="_blank"
+                  rel="noopener"
+                  data-text="next.link_claude"
+                ></a>
+              </span>
+            </li>
+            <li>
+              <span data-text="next.open"></span>
+              <ul class="next-steps__systems">
+                <li><strong data-text="next.windows_label"></strong> <span data-text="next.windows"></span></li>
+                <li><strong data-text="next.mac_label"></strong> <span data-text="next.mac"></span></li>
+              </ul>
+            </li>
+            <li data-text="next.trust"></li>
+            <li id="next-step-say"></li>
           </ol>
           <p id="next-note" class="next-steps__note"></p>
         </section>
@@ -208,6 +230,10 @@
         <details id="prompt-panel" class="prompt-panel">
           <summary data-text="prompt.title"></summary>
           <label class="prompt-panel__help" for="prompt-text" data-text="prompt.help"></label>
+          <button type="button" id="copy-prompt" class="button prompt-panel__copy">
+            <svg class="icon" aria-hidden="true"><use href="#icon-copy" /></svg>
+            <span data-text="action.copy_prompt"></span>
+          </button>
           <textarea id="prompt-text" class="prompt-panel__text" rows="10" readonly spellcheck="false"></textarea>
         </details>
       </aside>

@@ -217,6 +217,18 @@ textarea {
   outline-color: #f3e3c3;
 }
 
+.language-note {
+  width: fit-content;
+  max-width: 100%;
+  margin: 12px 0 0 auto;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--night);
+  background: #f3e3c3;
+  animation: rise 0.35s ease-out;
+}
+
 .how-it-works {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -902,6 +914,11 @@ textarea {
   margin-bottom: 14px;
 }
 
+/* A details element does not lay out its content as a grid, so margins give the field gap of .panel__fields. */
+.advanced > .field + .field {
+  margin-top: 24px;
+}
+
 /* ------------------------------------------------------------------ style previews */
 
 .style-preview {
@@ -1165,7 +1182,8 @@ textarea {
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* One button per row: two buttons side by side wrap long labels, as in Spanish, into cramped lines. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   margin-top: 20px;
 }
@@ -1207,7 +1225,6 @@ textarea {
 }
 
 .button--primary {
-  grid-column: 1 / -1;
   min-height: 54px;
   font-size: 1.08rem;
   border-color: var(--accent-dark);
@@ -1223,7 +1240,6 @@ textarea {
 }
 
 .button--quiet {
-  grid-column: 1 / -1;
   min-height: 38px;
   border-color: transparent;
   background: transparent;
@@ -1344,7 +1360,7 @@ textarea {
   gap: 10px;
 }
 
-.next-steps__list li {
+.next-steps__list > li {
   counter-increment: step;
   position: relative;
   padding-left: 38px;
@@ -1352,7 +1368,7 @@ textarea {
   overflow-wrap: anywhere;
 }
 
-.next-steps__list li::before {
+.next-steps__list > li::before {
   content: counter(step);
   position: absolute;
   left: 0;
@@ -1366,6 +1382,45 @@ textarea {
   font-weight: 700;
   color: var(--night);
   background: #d9b878;
+}
+
+.next-steps__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.next-steps__link {
+  padding: 4px 12px;
+  border: 1px solid rgba(217, 184, 120, 0.6);
+  border-radius: 999px;
+  font-weight: 650;
+  font-size: 0.88rem;
+  color: #f3dca8;
+  text-decoration: none;
+}
+
+.next-steps__link:hover {
+  color: var(--night);
+  background: #d9b878;
+}
+
+.next-steps__link::after {
+  content: ' \2197';
+}
+
+.next-steps__systems {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  color: #dccfb8;
+}
+
+.next-steps__systems strong {
+  color: #fbf3e4;
 }
 
 .next-steps__note {
@@ -1397,6 +1452,11 @@ textarea {
   margin: 10px 0 6px;
   font-size: 0.88rem;
   color: var(--muted);
+}
+
+.prompt-panel__copy {
+  width: 100%;
+  margin-bottom: 10px;
 }
 
 .prompt-panel__text {

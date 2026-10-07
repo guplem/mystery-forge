@@ -10,7 +10,7 @@ The config page that a user opens with a double-click (`file://`). It writes a `
 | `configSchemaValidator.js` | The JSON Schema subset validator and `applyDefaults`.                                                    |
 | `configEstimate.js`        | The puzzle count, pages, and generation time estimate. Must match `contracts/estimate-vectors.json`.     |
 | `uiText.js`                | Every page text in English and Spanish. Keys `field.<path>` and `enum.<path>.<value>` follow the schema. |
-| `configForm.js`            | The page decisions: form model, audience presets, warnings, prompt, file name, file loading, draft.      |
+| `configForm.js`            | The page decisions: form model, presets, warnings, language follow, prompt, file name, loading, draft.   |
 | `index.html`, `styles.css` | The page and its look. Icons are inline SVG symbols; no external resource.                               |
 | `app.js`                   | DOM glue only. The browser tests in `toolkit/tests/test_configurator_page.py` cover it.                  |
 

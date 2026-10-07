@@ -6,7 +6,7 @@ from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
-from playwright.sync_api import Browser, Error, Page, Playwright, expect, sync_playwright
+from playwright.sync_api import Browser, Error, FloatRect, Page, Playwright, ViewportSize, expect, sync_playwright
 from test_assemble import FAKE_IMPLEMENTATIONS, GOLDEN_GAME
 
 from mystery_forge.assemble import assemble_game
@@ -24,6 +24,8 @@ Object.defineProperty(window, 'localStorage', {
 });
 """
 LOCKED_PUZZLE_TITLE: str = "How did the thief reach the rock?"
+PHONE: ViewportSize = ViewportSize(width=390, height=844)
+LAPTOP: ViewportSize = ViewportSize(width=1280, height=800)
 
 
 @pytest.fixture(scope="module")
@@ -61,8 +63,10 @@ def launch_firefox(playwright: Playwright) -> Browser:
         pytest.skip("Playwright's Firefox is not installed (`uv run playwright install firefox`).")
 
 
-def open_page(browser: Browser, url: str, init_script: str | None = None) -> tuple[Page, list[str]]:
-    context = browser.new_context(viewport={"width": 390, "height": 844})
+def open_page(
+    browser: Browser, url: str, init_script: str | None = None, viewport: ViewportSize = PHONE
+) -> tuple[Page, list[str]]:
+    context = browser.new_context(viewport=viewport)
     if init_script is not None:
         context.add_init_script(init_script)
     page: Page = context.new_page()
@@ -86,6 +90,29 @@ def assert_locked_titles_hidden(page: Page) -> None:
     for tab in ("start", "check", "hints", "solutions"):
         page.click(f"[data-tab={tab}]")
         assert LOCKED_PUZZLE_TITLE not in page.inner_text("body"), tab
+
+
+def box(page: Page, selector: str) -> FloatRect:
+    found: FloatRect | None = page.locator(selector).bounding_box()
+    assert found is not None, selector
+    return found
+
+
+def assert_phone_start_layout(page: Page) -> None:
+    """On a phone, the clock and the envelopes come first, above the folded intro."""
+    timer: FloatRect = box(page, "#timer-toggle")
+    assert timer["y"] + timer["height"] < PHONE["height"]
+    assert timer["y"] < box(page, "[data-stage=A]")["y"] < box(page, "#intro")["y"]
+    folded_height: float = box(page, "#intro")["height"]
+    page.click("#intro-more")
+    expect(page.locator("#intro-more")).to_have_count(0)
+    assert box(page, "#intro")["height"] > folded_height
+
+
+def assert_wide_start_layout(page: Page) -> None:
+    """On a wide screen, the whole intro comes first, with no button to unfold it."""
+    assert box(page, "#intro")["y"] < box(page, "#timer-toggle")["y"]
+    expect(page.locator("#intro-more")).to_be_hidden()
 
 
 def play_the_golden_game(page: Page) -> None:
@@ -169,7 +196,12 @@ def assert_progress_survived(page: Page) -> None:
 def run_smoke_test(launch: Callable[[Playwright], Browser], playwright: Playwright, url: str) -> None:
     browser: Browser = launch(playwright)
     try:
+        wide, wide_errors = open_page(browser, url, viewport=LAPTOP)
+        assert_wide_start_layout(wide)
+        assert wide_errors == []
+
         page, errors = open_page(browser, url)
+        assert_phone_start_layout(page)
         play_the_golden_game(page)
         assert_progress_survived(page)
         assert errors == []
