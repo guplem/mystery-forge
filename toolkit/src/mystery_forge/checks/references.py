@@ -66,7 +66,8 @@ def free_text_findings(game: Game) -> list[Finding]:
     stage_labels: set[str] = {text(language, "envelope_label", stage=stage.id) for stage in game.flow.stages}
     findings: list[Finding] = []
     for document in game.documents:
-        for free_text in FREE_TEXT_PATTERNS[language]:
+        # Languages without a checked table have no patterns: the document review catches such text there.
+        for free_text in FREE_TEXT_PATTERNS.get(language, ()):
             findings.extend(
                 free_text_finding(document, match, free_text.directive)
                 for match in free_text.pattern.finditer(document.text)

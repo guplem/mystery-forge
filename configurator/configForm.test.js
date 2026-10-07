@@ -142,8 +142,9 @@ test('initialConfig holds the schema defaults, a valid config', () => {
 
 test('initialConfig takes the game language and the paper size from the browser languages', () => {
   assert.equal(configForm.initialConfig(['es-ES', 'en']).language, 'es');
-  assert.equal(configForm.initialConfig(['ja-JP', 'fr']).language, 'fr');
-  assert.equal(configForm.initialConfig(['ja-JP']).language, 'en');
+  assert.equal(configForm.initialConfig(['ja-JP', 'fr']).language, 'ja');
+  assert.equal(configForm.initialConfig(['qu-PE', 'fr']).language, 'fr');
+  assert.equal(configForm.initialConfig(['qu-PE']).language, 'en');
   assert.equal(configForm.initialConfig(['en-US']).equipment.paper, 'Letter');
   assert.equal(configForm.initialConfig(['en-CA']).equipment.paper, 'Letter');
   assert.equal(configForm.initialConfig(['en-GB', 'en-US']).equipment.paper, 'A4');
