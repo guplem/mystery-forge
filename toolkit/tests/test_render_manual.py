@@ -179,7 +179,8 @@ def test_a_game_master_gets_a_timing_section() -> None:
     game = configured(golden_game(), {"host": "game_master"})
     host = section(game, "Game master guide")
     assert host.table is not None
-    assert host.table.rows == [["Envelope A", "2", "12", "12"], ["Envelope B", "1", "6", "18"]]
+    # The rows share the 40 minutes of the config by puzzle count, so the table ends at the game length.
+    assert host.table.rows == [["Envelope A", "2", "27", "27"], ["Envelope B", "1", "13", "40"]]
     assert host.checklist[0] == "If a group is stuck for 10 minutes, give them the next hint."
     assert "Game master guide" in [block.text for block in blocks(game) if block.kind == "heading"]
 
