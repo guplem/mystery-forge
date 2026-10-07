@@ -129,6 +129,7 @@ test('buildFormModel derives each widget, its limits, and its options from the s
   assert.equal(fields.get('content.death_allowed')?.placeholder, '');
   assert.equal(fields.get('content.death_allowed')?.maxLength, 0);
   assert.equal(configForm.buildFormModel('es')[0]?.title, 'Quién juega');
+  assert.equal(configForm.buildFormModel('ca')[0]?.title, 'Qui juga');
 });
 
 test('initialConfig holds the schema defaults, a valid config', () => {
@@ -142,6 +143,7 @@ test('initialConfig holds the schema defaults, a valid config', () => {
 
 test('initialConfig takes the game language and the paper size from the browser languages', () => {
   assert.equal(configForm.initialConfig(['es-ES', 'en']).language, 'es');
+  assert.equal(configForm.initialConfig(['ca-ES', 'es']).language, 'ca');
   assert.equal(configForm.initialConfig(['ja-JP', 'fr']).language, 'ja');
   assert.equal(configForm.initialConfig(['qu-PE', 'fr']).language, 'fr');
   assert.equal(configForm.initialConfig(['qu-PE']).language, 'en');
@@ -159,7 +161,11 @@ test('followPageLanguage moves the game language and the default paper size to t
   assert.equal(spanish.config.language, 'es');
   assert.equal(spanish.config.equipment.paper, 'A4');
   assert.equal(usEnglish.language, 'en');
-  const english = configForm.followPageLanguage(spanish.config, 'es', 'en', ['en-US']);
+  const catalan = configForm.followPageLanguage(spanish.config, 'es', 'ca', ['en-US']);
+  assert.equal(catalan.followed, true);
+  assert.equal(catalan.config.language, 'ca');
+  assert.equal(catalan.config.equipment.paper, 'A4');
+  const english = configForm.followPageLanguage(catalan.config, 'ca', 'en', ['en-US']);
   assert.deepEqual(english, { config: usEnglish, followed: true });
 });
 

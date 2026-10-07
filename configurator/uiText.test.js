@@ -53,18 +53,25 @@ for (const language of uiText.UI_LANGUAGES) {
   });
 }
 
-test('both languages have the same keys and the same placeholders', () => {
-  const english = uiText.TEXTS.en ?? {};
-  const spanish = uiText.TEXTS.es ?? {};
-  assert.deepEqual(Object.keys(spanish).sort(), Object.keys(english).sort());
-  for (const [key, text] of Object.entries(english)) {
-    assert.deepEqual(placeholdersOf(spanish[key] ?? ''), placeholdersOf(text), key);
-  }
+for (const language of uiText.UI_LANGUAGES) {
+  test(`the "${language}" texts have the same keys and the same placeholders as English`, () => {
+    const english = uiText.TEXTS.en ?? {};
+    const texts = uiText.TEXTS[language] ?? {};
+    assert.deepEqual(Object.keys(texts).sort(), Object.keys(english).sort());
+    for (const [key, text] of Object.entries(english)) {
+      assert.deepEqual(placeholdersOf(texts[key] ?? ''), placeholdersOf(text), key);
+    }
+  });
+}
+
+test('the page offers English, Spanish, and Catalan', () => {
+  assert.deepEqual(uiText.UI_LANGUAGES, ['en', 'es', 'ca']);
 });
 
 test('translate fills the placeholders and keeps an unknown placeholder', () => {
   assert.equal(uiText.translate('en', 'estimate.about', { time: '2 h' }), 'about 2 h');
-  assert.equal(uiText.translate('es', 'estimate.about', { time: '2 h' }), 'unas 2 h');
+  assert.equal(uiText.translate('es', 'estimate.about', { time: '2 h' }), 'aprox. 2 h');
+  assert.equal(uiText.translate('ca', 'estimate.about', { time: '50 min' }), 'aprox. 50 min');
   assert.equal(uiText.translate('en', 'estimate.about'), 'about {time}');
 });
 
@@ -76,6 +83,8 @@ test('translate falls back to English for an unknown language, and to the key fo
 test('pickUiLanguage takes the first supported browser language, else English', () => {
   assert.equal(uiText.pickUiLanguage(['es-ES', 'en-US']), 'es');
   assert.equal(uiText.pickUiLanguage(['fr-FR', 'ES']), 'es');
+  assert.equal(uiText.pickUiLanguage(['ca-ES']), 'ca');
+  assert.equal(uiText.pickUiLanguage(['fr-FR', 'ca', 'es']), 'ca');
   assert.equal(uiText.pickUiLanguage(['en-GB', 'es']), 'en');
   assert.equal(uiText.pickUiLanguage(['fr-FR']), 'en');
   assert.equal(uiText.pickUiLanguage([]), 'en');
