@@ -90,6 +90,14 @@ clues:
   - id: felix-debt
     document: D5
     quote: Mr Ward still owes me forty pounds for the brass sextant
+  - id: came-by-boat
+    hidden: true
+    revealed_by: P3
+    quote: The thief crossed to the rock at low tide and carried the lens back to a boat.
+  - id: lens-for-the-debt
+    hidden: true
+    revealed_by: P2
+    quote: The collector offered to forget the debt of Felix in exchange for a lighthouse lens.
 intro: >-
   Gull Rock, the morning of 15 March 1931. The lighthouse stood dark all night, and two fishing boats nearly hit
   the rocks in the storm. At dawn the keeper climbed to the lamp room and found it empty: the great lens, as tall as
@@ -107,7 +115,7 @@ deduction:
         - { id: maud, text: 'Maud Price, the inspector' }
       correct: felix
       points: 50
-      proven_by: [wet-boots, felix-debt]
+      proven_by: [wet-boots, felix-debt, came-by-boat]
     - id: why
       prompt: Why did the thief take it?
       options:
@@ -116,7 +124,7 @@ deduction:
         - { id: prank, text: As a prank }
       correct: debt
       points: 25
-      proven_by: [felix-debt]
+      proven_by: [felix-debt, lens-for-the-debt]
   exclusions:
     - suspect: ana-ruiz
       clues: [kitchen-all-night]
@@ -139,10 +147,10 @@ epilogues:
     text: The thief stays free, and Gull Rock waits for a new lens.
 reveal:
   - text: The thief came by water at night, so it was someone with a boat.
-    clues: [wet-boots]
+    clues: [wet-boots, came-by-boat]
   - text: Ana could not have done it, because she was in the kitchen all night.
     clues: [kitchen-all-night]
   - text: Maud was not on the rock that night.
     clues: [maud-ticket]
   - text: Felix needed money and owed it to a collector of brass instruments.
-    clues: [felix-debt]
+    clues: [felix-debt, lens-for-the-debt]

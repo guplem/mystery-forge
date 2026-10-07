@@ -47,12 +47,29 @@ def parse_story_time(value: str) -> datetime:
 
 
 class Clue(SourceModel):
-    """A piece of evidence: a verbatim quote from one document. Solution steps, hints, and proofs cite clues by id."""
+    """A piece of evidence. Solution steps, hints, and proofs cite clues by id.
+
+    A plain clue is a verbatim quote from one document. A hidden clue is in no document: its quote states, in plain
+    words, the fact that a puzzle reveals when players solve it. So a proof that cites a hidden clue needs that puzzle.
+    """
 
     id: ClueId
-    document: DocumentId
+    document: DocumentId | None = None
     quote: Text
     note: str = ""
+    hidden: bool = False
+    # The puzzle whose answer reveals a hidden clue. The story step may leave it empty; the planner fills it.
+    revealed_by: PuzzleId | None = None
+
+    @model_validator(mode="after")
+    def check_source(self) -> Self:
+        if self.hidden and self.document is not None:
+            raise ValueError(f"clue '{self.id}': a hidden clue has no document; a puzzle reveals it")
+        if not self.hidden and self.document is None:
+            raise ValueError(f"clue '{self.id}' needs a document, or set hidden to true")
+        if not self.hidden and self.revealed_by is not None:
+            raise ValueError(f"clue '{self.id}': only a hidden clue has revealed_by")
+        return self
 
 
 class Character(SourceModel):

@@ -2,7 +2,7 @@ from typing import Any
 
 from test_checks_support import edit_document, edit_flow, edit_story, golden_game, rules
 
-from mystery_forge.checks.deduction import check_deduction
+from mystery_forge.checks.deduction import check_deduction, hidden_clue_count_findings
 from mystery_forge.game import Game
 from mystery_forge.spec.models import AccusationOption, Character, Clue, Deduction, Exclusion
 
@@ -75,7 +75,7 @@ def test_a_proof_clue_must_be_in_a_document_of_the_game() -> None:
         "deduction.questions.1.proven_by.0",
     ]
     assert rules(check_deduction(hidden)) == ["deduction.proof_unavailable"] * 3
-    assert check_deduction(unknown_id) == []
+    assert "deduction.proof_unavailable" not in rules(check_deduction(unknown_id))
 
 
 def test_a_question_should_offer_one_option_per_suspect() -> None:
@@ -110,3 +110,49 @@ def test_a_game_without_suspects_needs_no_who_question() -> None:
     ]
     game: Game = edit_story(golden_game(), characters=characters)
     assert rules(check_deduction(game)) == ["deduction.culprit_not_suspect"]
+
+
+def hidden_clue(game: Game, clue_id: str, **updates: Any) -> Game:
+    clues: list[Clue] = [clue.model_copy(update=updates) if clue.id == clue_id else clue for clue in game.story.clues]
+    return edit_story(game, clues=clues)
+
+
+def test_a_hidden_proof_clue_needs_no_document() -> None:
+    assert rules(check_deduction(golden_game())) == []
+
+
+def test_at_least_two_questions_need_a_clue_that_a_puzzle_reveals() -> None:
+    who, why = golden_deduction().questions
+    plain_why = why.model_copy(update={"proven_by": ["felix-debt"]})
+    findings = check_deduction(with_deduction(questions=[who, plain_why]))
+    assert rules(findings) == ["deduction.puzzles_not_needed"]
+    assert (findings[0].file, findings[0].path, findings[0].severity) == (
+        "story.yaml",
+        "deduction.questions",
+        "error",
+    )
+    assert "1 of 2" in findings[0].message
+    assert check_deduction(with_deduction(questions=[who])) == []
+    assert "deduction.puzzles_not_needed" in rules(check_deduction(with_deduction(questions=[plain_why])))
+
+
+def test_a_hidden_clue_counts_only_when_an_existing_puzzle_reveals_it() -> None:
+    for revealed_by in (None, "P9"):
+        game: Game = hidden_clue(golden_game(), "came-by-boat", revealed_by=revealed_by)
+        assert rules(check_deduction(game)) == ["deduction.puzzles_not_needed"]
+    unknown_proof: Game = with_deduction(
+        questions=[question.model_copy(update={"proven_by": ["ghost"]}) for question in golden_deduction().questions]
+    )
+    assert rules(check_deduction(unknown_proof)) == ["deduction.puzzles_not_needed"]
+
+
+def test_a_case_file_story_with_fewer_than_two_hidden_clues_gets_a_warning() -> None:
+    story = golden_game().story
+    config = golden_game().config
+    assert hidden_clue_count_findings(story, config) == []
+    one_hidden = story.model_copy(update={"clues": [clue for clue in story.clues if clue.id != "came-by-boat"]})
+    findings = hidden_clue_count_findings(one_hidden, config)
+    assert rules(findings) == ["deduction.few_hidden_clues"]
+    assert (findings[0].file, findings[0].path, findings[0].severity) == ("story.yaml", "clues", "warning")
+    assert hidden_clue_count_findings(one_hidden, config.model_copy(update={"format": "case_file"})) != []
+    assert hidden_clue_count_findings(one_hidden, config.model_copy(update={"format": "envelopes"})) == []

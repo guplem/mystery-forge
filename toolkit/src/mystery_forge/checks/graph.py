@@ -2,15 +2,46 @@
 
 Players move through the game along this graph. A puzzle that depends on an unknown or a later puzzle, a stage that
 never opens, or an artifact that no document prints makes the printed game impossible to finish.
+
+The rules that the plan step shares (`plan.py`) are pure functions over `PuzzleNode`, so one definition serves both.
 """
 
-from mystery_forge.checks.game_index import FLOW_FILE, puzzles_by_id, stage_positions
+import json
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from typing import Literal
+
+from mystery_forge.catalog import Mechanic
+from mystery_forge.checks.game_index import FLOW_FILE, id_number, puzzles_by_id, squash, stage_positions
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledPuzzle, Game
 from mystery_forge.spec.documents import ARTIFACT_MARK
+from mystery_forge.spec.models import Flow, Stage
+
+DependencyIssueKind = Literal["unknown", "later_stage"]
+OpenerIssueKind = Literal["unknown", "order"]
+FinalPuzzleIssueKind = Literal["unknown", "stage"]
 
 
-def check_graph(game: Game) -> list[Finding]:
+@dataclass(frozen=True)
+class PuzzleNode:
+    """The plain data of one puzzle that the graph rules read: a planned puzzle and a written puzzle both give it."""
+
+    id: str
+    stage: str
+    depends_on: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class DependencyIssue:
+    puzzle_id: str
+    # The position of the dependency in the puzzle's depends_on list.
+    index: int
+    dependency_id: str
+    kind: DependencyIssueKind
+
+
+def check_graph(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
     return [
         *unknown_stage_findings(game),
         *dependency_findings(game),
@@ -21,7 +52,53 @@ def check_graph(game: Game) -> list[Finding]:
         *document_findings(game),
         *parallel_width_findings(game),
         *artifact_findings(game),
+        *unused_dependency_findings(game, mechanics),
     ]
+
+
+def game_nodes(game: Game) -> list[PuzzleNode]:
+    return [
+        PuzzleNode(id=puzzle.source.id, stage=puzzle.source.stage, depends_on=tuple(puzzle.source.depends_on))
+        for puzzle in game.puzzles
+    ]
+
+
+def dependency_issues(nodes: Sequence[PuzzleNode], stage_ids: Sequence[str]) -> list[DependencyIssue]:
+    """Find each dependency on an unknown puzzle or on a puzzle of a later stage. An unknown stage is never later."""
+    positions: dict[str, int] = {stage_id: index for index, stage_id in enumerate(stage_ids)}
+    by_id: dict[str, PuzzleNode] = {node.id: node for node in nodes}
+    issues: list[DependencyIssue] = []
+    for node in nodes:
+        for index, dependency_id in enumerate(node.depends_on):
+            dependency: PuzzleNode | None = by_id.get(dependency_id)
+            if dependency is None:
+                issues.append(DependencyIssue(node.id, index, dependency_id, "unknown"))
+            elif positions.get(dependency.stage, -1) > positions.get(node.stage, len(positions)):
+                issues.append(DependencyIssue(node.id, index, dependency_id, "later_stage"))
+    return issues
+
+
+def stage_opener_issues(stages: Sequence[Stage], nodes: Sequence[PuzzleNode]) -> list[tuple[int, OpenerIssueKind]]:
+    """Find each stage after the first that opens with an unknown puzzle or with a puzzle that is not earlier."""
+    positions: dict[str, int] = {stage.id: index for index, stage in enumerate(stages)}
+    by_id: dict[str, PuzzleNode] = {node.id: node for node in nodes}
+    issues: list[tuple[int, OpenerIssueKind]] = []
+    for index, stage in enumerate(stages[1:], start=1):
+        opener: PuzzleNode | None = by_id.get(stage.opens_with)
+        if opener is None:
+            issues.append((index, "unknown"))
+        elif positions.get(opener.stage, -1) >= index:
+            issues.append((index, "order"))
+    return issues
+
+
+def final_puzzle_issue(flow: Flow, nodes: Sequence[PuzzleNode]) -> FinalPuzzleIssueKind | None:
+    if flow.final_puzzle is None:
+        return None
+    final: PuzzleNode | None = next((node for node in nodes if node.id == flow.final_puzzle), None)
+    if final is None:
+        return "unknown"
+    return "stage" if final.stage != flow.stages[-1].id else None
 
 
 def unknown_stage_findings(game: Game) -> list[Finding]:
@@ -55,64 +132,67 @@ def unknown_stage_findings(game: Game) -> list[Finding]:
 
 
 def dependency_findings(game: Game) -> list[Finding]:
-    positions: dict[str, int] = stage_positions(game)
     puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
     findings: list[Finding] = []
-    for puzzle in game.puzzles:
-        for index, dependency_id in enumerate(puzzle.source.depends_on):
-            dependency: AssembledPuzzle | None = puzzles.get(dependency_id)
-            if dependency is None:
-                findings.append(
-                    Finding(
-                        severity="error",
-                        rule="graph.unknown_dependency",
-                        message=f"The puzzle {puzzle.source.id} depends on {dependency_id}, which does not exist.",
-                        file=puzzle.file,
-                        path=f"depends_on.{index}",
-                        fix_hint=f"Use an existing puzzle id: {', '.join(puzzles)}.",
-                    )
+    for issue in dependency_issues(game_nodes(game), list(stage_positions(game))):
+        puzzle: AssembledPuzzle = puzzles[issue.puzzle_id]
+        if issue.kind == "unknown":
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="graph.unknown_dependency",
+                    message=f"The puzzle {issue.puzzle_id} depends on {issue.dependency_id}, which does not exist.",
+                    file=puzzle.file,
+                    path=f"depends_on.{issue.index}",
+                    fix_hint=f"Use an existing puzzle id: {', '.join(puzzles)}.",
                 )
-            elif positions.get(dependency.source.stage, -1) > positions.get(puzzle.source.stage, len(positions)):
-                findings.append(
-                    Finding(
-                        severity="error",
-                        rule="graph.dependency_later_stage",
-                        message=f"The puzzle {puzzle.source.id} in stage {puzzle.source.stage} depends on "
-                        f"{dependency_id} in the later stage {dependency.source.stage}.",
-                        file=puzzle.file,
-                        path=f"depends_on.{index}",
-                        fix_hint="Depend only on puzzles of the same or an earlier stage, or move one of the puzzles.",
-                    )
+            )
+        else:
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="graph.dependency_later_stage",
+                    message=f"The puzzle {issue.puzzle_id} in stage {puzzle.source.stage} depends on "
+                    f"{issue.dependency_id} in the later stage {puzzles[issue.dependency_id].source.stage}.",
+                    file=puzzle.file,
+                    path=f"depends_on.{issue.index}",
+                    fix_hint="Depend only on puzzles of the same or an earlier stage, or move one of the puzzles.",
                 )
+            )
     return findings
 
 
-def transitive_dependencies(game: Game) -> dict[str, set[str]]:
+def transitive_dependencies(nodes: Sequence[PuzzleNode]) -> dict[str, set[str]]:
     """Map each puzzle id to every puzzle that it needs, directly or through other puzzles. Unknown ids drop out."""
-    puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
+    by_id: dict[str, PuzzleNode] = {node.id: node for node in nodes}
     needed: dict[str, set[str]] = {}
-    for puzzle_id, puzzle in puzzles.items():
+    for puzzle_id, node in by_id.items():
         found: set[str] = set()
-        pending: list[str] = list(puzzle.source.depends_on)
+        pending: list[str] = list(node.depends_on)
         while pending:
             dependency_id: str = pending.pop()
-            if dependency_id in found or dependency_id not in puzzles:
+            if dependency_id in found or dependency_id not in by_id:
                 continue
             found.add(dependency_id)
-            pending.extend(puzzles[dependency_id].source.depends_on)
+            pending.extend(by_id[dependency_id].depends_on)
         needed[puzzle_id] = found
     return needed
 
 
-def dependency_loop_findings(game: Game) -> list[Finding]:
-    needed: dict[str, set[str]] = transitive_dependencies(game)
-    puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
+def dependency_loops(nodes: Sequence[PuzzleNode]) -> list[list[str]]:
+    """Return each group of puzzles that depend on each other, every group in id order."""
+    needed: dict[str, set[str]] = transitive_dependencies(nodes)
     in_loop: list[str] = sorted((puzzle_id for puzzle_id in needed if puzzle_id in needed[puzzle_id]), key=id_number)
     loops: list[list[str]] = []
     for puzzle_id in in_loop:
         loop: list[str] = [other for other in in_loop if other in needed[puzzle_id] and puzzle_id in needed[other]]
         if loop not in loops:
             loops.append(loop)
+    return loops
+
+
+def dependency_loop_findings(game: Game) -> list[Finding]:
+    puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
     return [
         Finding(
             severity="error",
@@ -122,21 +202,16 @@ def dependency_loop_findings(game: Game) -> list[Finding]:
             path="depends_on",
             fix_hint="Remove one dependency of the loop. A puzzle can only depend on puzzles that players solve first.",
         )
-        for loop in loops
+        for loop in dependency_loops(game_nodes(game))
     ]
 
 
-def id_number(puzzle_id: str) -> int:
-    return int(puzzle_id[1:])
-
-
 def stage_opening_findings(game: Game) -> list[Finding]:
-    positions: dict[str, int] = stage_positions(game)
     puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
     findings: list[Finding] = []
-    for index, stage in enumerate(game.flow.stages[1:], start=1):
-        opener: AssembledPuzzle | None = puzzles.get(stage.opens_with)
-        if opener is None:
+    for index, kind in stage_opener_issues(game.flow.stages, game_nodes(game)):
+        stage: Stage = game.flow.stages[index]
+        if kind == "unknown":
             findings.append(
                 Finding(
                     severity="error",
@@ -147,15 +222,13 @@ def stage_opening_findings(game: Game) -> list[Finding]:
                     fix_hint="Open the stage with the id of an existing puzzle from an earlier stage.",
                 )
             )
-            continue
-        opener_position: int | None = positions.get(opener.source.stage)
-        if opener_position is not None and opener_position >= index:
+        else:
             findings.append(
                 Finding(
                     severity="error",
                     rule="graph.opens_with_order",
                     message=f"The stage {stage.id} opens with {stage.opens_with}, but that puzzle is in the stage "
-                    f"{opener.source.stage}, which is not an earlier stage.",
+                    f"{puzzles[stage.opens_with].source.stage}, which is not an earlier stage.",
                     file=FLOW_FILE,
                     path=f"stages.{index}.opens_with",
                     fix_hint="Open each stage with a puzzle from an earlier stage, so players can open the envelope.",
@@ -215,10 +288,10 @@ def reachability_findings(game: Game) -> list[Finding]:
 
 def final_puzzle_findings(game: Game) -> list[Finding]:
     final_id: str | None = game.flow.final_puzzle
+    issue: FinalPuzzleIssueKind | None = final_puzzle_issue(game.flow, game_nodes(game))
     if final_id is None:
         return []
-    final: AssembledPuzzle | None = puzzles_by_id(game).get(final_id)
-    if final is None:
+    if issue == "unknown":
         return [
             Finding(
                 severity="error",
@@ -229,15 +302,15 @@ def final_puzzle_findings(game: Game) -> list[Finding]:
                 fix_hint="Set final_puzzle to the id of the puzzle that ends the game, or remove the field.",
             )
         ]
+    final: AssembledPuzzle = puzzles_by_id(game)[final_id]
     findings: list[Finding] = []
-    last_stage: str = game.flow.stages[-1].id
-    if final.source.stage != last_stage:
+    if issue == "stage":
         findings.append(
             Finding(
                 severity="error",
                 rule="graph.final_puzzle_stage",
                 message=f"The final puzzle {final_id} is in the stage {final.source.stage}, not in the last stage "
-                f"{last_stage}.",
+                f"{game.flow.stages[-1].id}.",
                 file=FLOW_FILE,
                 path="final_puzzle",
                 fix_hint="Move the final puzzle to the last stage, or name a puzzle of the last stage as final.",
@@ -255,7 +328,7 @@ def funnel_findings(game: Game, final: AssembledPuzzle) -> list[Finding]:
         return []
     puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
     needed_stages: set[str] = {
-        puzzles[puzzle_id].source.stage for puzzle_id in transitive_dependencies(game)[final.source.id]
+        puzzles[puzzle_id].source.stage for puzzle_id in transitive_dependencies(game_nodes(game))[final.source.id]
     }
     return [
         Finding(
@@ -354,3 +427,46 @@ def artifact_findings(game: Game) -> list[Finding]:
                 )
             )
     return findings
+
+
+def unused_dependency_findings(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
+    """Report a dependency whose answer the puzzle never uses: players then need nothing from the earlier puzzle.
+
+    The answer must appear in the puzzle's parameters or in its own documents. A panel puzzle has no parameters to
+    search, and a reader judges its use of earlier answers, so it is skipped.
+    """
+    puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
+    findings: list[Finding] = []
+    for puzzle in game.puzzles:
+        mechanic: Mechanic | None = mechanics.get(puzzle.source.mechanic)
+        if not puzzle.source.depends_on or (mechanic is not None and mechanic.verification == "panel"):
+            continue
+        material: str = squash(" ".join(own_material_texts(game, puzzle)))
+        for index, dependency_id in enumerate(puzzle.source.depends_on):
+            dependency: AssembledPuzzle | None = puzzles.get(dependency_id)
+            if dependency is None:
+                continue
+            forms: set[str] = {squash(dependency.source.answer), *dependency.accepted_normalized} - {""}
+            if any(form in material for form in forms):
+                continue
+            findings.append(
+                Finding(
+                    severity="warning",
+                    rule="graph.unused_dependency",
+                    message=f"The puzzle {puzzle.source.id} depends on {dependency_id}, but the answer of "
+                    f"{dependency_id} appears neither in its params nor in its documents, so players may not need it.",
+                    file=puzzle.file,
+                    path=f"depends_on.{index}",
+                    fix_hint=f"Use the answer of {dependency_id} in the material of {puzzle.source.id} (as a key, a "
+                    "number, or a word that players must combine), or remove the dependency.",
+                )
+            )
+    return findings
+
+
+def own_material_texts(game: Game, puzzle: AssembledPuzzle) -> list[str]:
+    texts: list[str] = [json.dumps(puzzle.source.params, ensure_ascii=False)]
+    texts.extend(document.text for document in game.documents if document.meta.puzzle == puzzle.source.id)
+    if puzzle.artifact is not None:
+        texts.append(puzzle.artifact.solver_text)
+    return texts

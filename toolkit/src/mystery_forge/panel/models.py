@@ -8,7 +8,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-Verdict = Literal["pass", "ambiguous", "gold_suspect", "too_hard", "guessable", "insufficient_solvers"]
+Verdict = Literal["pass", "ambiguous", "gold_suspect", "too_hard", "guessable", "trivial", "insufficient_solvers"]
 SolverStatus = Literal["done", "failed"]
 
 
@@ -40,6 +40,10 @@ class SolverAnswer(PanelModel):
     candidates: list[Candidate] = []
     evidence: list[Evidence] = []
     reasoning: str = ""
+    # The one insight that unlocked the puzzle.
+    aha: str = ""
+    # True when the material stated every step of the method, so solving it took no insight.
+    all_steps_stated: bool = False
 
 
 class AccusationChoice(PanelModel):
@@ -96,6 +100,8 @@ class ItemVerdict(PanelModel):
     wrong: list[AnswerCount]
     alternatives: list[Alternative]
     guessable: bool
+    # The verified solvers that say the material states every step of the method.
+    steps_stated: int = 0
     notes: list[str]
 
 

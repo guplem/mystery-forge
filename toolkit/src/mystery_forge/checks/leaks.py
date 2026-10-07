@@ -1,7 +1,8 @@
 """Answer leaks: a code-like answer must not be readable in any text that players see before they solve the puzzle.
 
 Texts are compared squashed (lowercase letters and digits only), so "B O A T", "b-o-a-t", and "taob" (reversed) all
-count. A puzzle's `leak_allowlist` cuts out the passages that contain the answer on purpose.
+count. A puzzle's `leak_allowlist` cuts out the passages that contain the answer on purpose. A hidden clue leaks the
+same way: when a document that players hold before the revealing puzzle states its fact, the puzzle is not needed.
 """
 
 from dataclasses import dataclass
@@ -12,6 +13,9 @@ from mystery_forge.checks.game_index import (
     FLOW_FILE,
     MIN_SEARCH_LENGTH,
     STORY_FILE,
+    ClueEntry,
+    clue_entries,
+    puzzles_by_id,
     squash,
     stage_positions,
 )
@@ -41,7 +45,7 @@ def check_leaks(game: Game) -> list[Finding]:
         if position is None or puzzle.source.answer_format.kind not in CODE_LIKE_KINDS:
             continue
         findings.extend(puzzle_leak_findings(puzzle, visible_texts(game, puzzle, position)))
-    return findings
+    return [*findings, *hidden_clue_leak_findings(game)]
 
 
 def visible_texts(game: Game, puzzle: AssembledPuzzle, position: int) -> list[VisibleText]:
@@ -136,4 +140,34 @@ def leak_finding(puzzle: AssembledPuzzle, visible: VisibleText, answer: str, rev
         path=visible.path,
         fix_hint=f"Rephrase the text so that it does not contain the answer. If the text must contain it, add the "
         f"passage to `leak_allowlist` in {puzzle.file} with the reason.",
+    )
+
+
+def hidden_clue_leak_findings(game: Game) -> list[Finding]:
+    positions: dict[str, int] = stage_positions(game)
+    puzzles: dict[str, AssembledPuzzle] = puzzles_by_id(game)
+    findings: list[Finding] = []
+    for entry in clue_entries(game):
+        revealer: AssembledPuzzle | None = puzzles.get(entry.clue.revealed_by or "")
+        position: int | None = positions.get(revealer.source.stage) if revealer is not None else None
+        if not entry.clue.hidden or revealer is None or position is None:
+            continue
+        fact: str = squash(entry.clue.quote)
+        findings.extend(
+            hidden_clue_leak_finding(entry, revealer, document.meta.id, document.file)
+            for document in game.documents
+            if positions.get(document.meta.stage, position + 1) <= position and fact in squash(document.text)
+        )
+    return findings
+
+
+def hidden_clue_leak_finding(entry: ClueEntry, revealer: AssembledPuzzle, document_id: str, file: str) -> Finding:
+    return Finding(
+        severity="warning",
+        rule="leaks.hidden_clue_in_text",
+        message=f"The text of {document_id} states the hidden clue '{entry.clue.id}' word for word, and players "
+        f"read it before they solve {revealer.source.id}, the puzzle that reveals it.",
+        file=file,
+        fix_hint=f"Remove the fact from the document, so that only {revealer.source.id} reveals it, or turn the "
+        "clue into a plain clue of that document.",
     )

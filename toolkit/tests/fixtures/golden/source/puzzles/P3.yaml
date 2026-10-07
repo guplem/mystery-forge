@@ -3,7 +3,7 @@ id: P3
 title: How did the thief reach the rock?
 stage: B
 mechanic: deduction
-difficulty: medium
+difficulty: easy
 depends_on: [P1]
 in_world_reason: The causeway to Gull Rock is under water except at one time of the night.
 reveals: The thief walked over at low tide and carried the lens back to a boat.

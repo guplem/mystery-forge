@@ -2194,6 +2194,7 @@ mechanics:
     pitfalls:
       - Too many strips. Keep 6 to 10.
       - The no-cut fallback prints the strips shuffled with labels, and players write the order.
+      - The reading direction in the note must match the printed orientation of the strips.
     hint_ladder:
       - Cut the strips on <document>.
       - The letters continue across the strips.
@@ -2572,6 +2573,7 @@ mechanics:
     pitfalls:
       - A number that appears twice in the kit with different values. Keep each fact in the fact registry.
       - LLMs do arithmetic wrong. Code computes the result.
+      - Never the final puzzle when the note states the formula. The inputs must be unknown to the person that the lock keeps out.
     hint_ladder:
       - The formula on <document> needs numbers from <documents>.
       - Each word in the formula names a fact that you have seen.

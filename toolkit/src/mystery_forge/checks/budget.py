@@ -1,25 +1,57 @@
 """The time and reading budget: the game must fit the play time and the reading load that the user asked for.
 
-The estimate follows the brief (`brief.py`): catalog minutes per puzzle for a group of 3 or 4, divided by the speedup
-of parallel play, longer for solo players and for kids. Reading time and a few minutes per envelope come on top.
+`estimate_play_minutes` is the one time estimate: the plan step (`plan.py`), the game checks, and the cover all use it,
+so they can never disagree. Catalog minutes per puzzle are for a group of 3 or 4; parallel play divides them, and solo
+players and kids take longer. Reading time and a few minutes per envelope come on top.
 """
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Final
 
 from mystery_forge.catalog import Mechanic
 from mystery_forge.findings import Finding, Severity
 from mystery_forge.game import Game
 
-READING_WORDS_PER_MINUTE: Final[int] = 150
+# One reading speed for the plan and the game. It is slow on purpose: players read for clues, not for the story.
+READING_WORDS_PER_MINUTE: Final[int] = 120
 MINUTES_PER_STAGE: Final[int] = 5
 SOLO_FACTOR: Final[float] = 1.25
 KIDS_FACTOR: Final[float] = 1.4
 SPEEDUP_PER_EXTRA_WIDTH: Final[float] = 0.6
-DURATION_WARNING_SHARE: Final[float] = 0.25
-DURATION_ERROR_SHARE: Final[float] = 0.5
+DURATION_WARNING_OVER: Final[float] = 0.1
+DURATION_ERROR_OVER: Final[float] = 0.2
+DURATION_ERROR_UNDER: Final[float] = 0.3
 READING_WARNING_SHARE: Final[float] = 0.3
 PUZZLE_COUNT_TOLERANCE: Final[int] = 2
+
+
+def estimate_play_minutes(
+    puzzle_minutes: Sequence[float],
+    players: int,
+    parallel_width: int,
+    audience: str,
+    stage_count: int,
+    reading_words: int,
+) -> float:
+    """Estimate how long a group plays: solving, then reading, then the minutes to open each envelope."""
+    solving: float = sum(puzzle_minutes) / (1 + SPEEDUP_PER_EXTRA_WIDTH * (parallel_width - 1))
+    if players == 1:
+        solving *= SOLO_FACTOR
+    if audience == "kids":
+        solving *= KIDS_FACTOR
+    # The players share out the papers, so each one reads only a part of the words.
+    reading: float = reading_words / READING_WORDS_PER_MINUTE / players
+    return solving + reading + MINUTES_PER_STAGE * stage_count
+
+
+def duration_severity(estimate: float, wanted: int) -> Severity | None:
+    """Judge an estimate against the config duration. A long game hurts more than a short one."""
+    ratio: float = estimate / wanted
+    if ratio > 1 + DURATION_ERROR_OVER or ratio < 1 - DURATION_ERROR_UNDER:
+        return "error"
+    if ratio > 1 + DURATION_WARNING_OVER:
+        return "warning"
+    return None
 
 
 def check_budget(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
@@ -30,28 +62,33 @@ def document_words(game: Game) -> int:
     return sum(len(document.text.split()) for document in game.documents)
 
 
-def estimated_minutes(game: Game, mechanics: Mapping[str, Mechanic]) -> float:
-    puzzle_minutes: float = sum(
-        mechanics[puzzle.source.mechanic].minutes.for_level(puzzle.source.difficulty)
-        for puzzle in game.puzzles
-        if puzzle.source.mechanic in mechanics
+def game_play_minutes(game: Game, mechanics: Mapping[str, Mechanic]) -> float:
+    return estimate_play_minutes(
+        puzzle_minutes=[
+            mechanics[puzzle.source.mechanic].minutes.for_level(puzzle.source.difficulty)
+            for puzzle in game.puzzles
+            if puzzle.source.mechanic in mechanics
+        ],
+        players=game.brief.players,
+        parallel_width=game.brief.parallel_width,
+        audience=game.brief.audience,
+        stage_count=len(game.flow.stages),
+        reading_words=document_words(game),
     )
-    puzzle_minutes /= 1 + SPEEDUP_PER_EXTRA_WIDTH * (game.brief.parallel_width - 1)
-    if game.brief.players == 1:
-        puzzle_minutes *= SOLO_FACTOR
-    if game.brief.audience == "kids":
-        puzzle_minutes *= KIDS_FACTOR
-    reading_minutes: float = document_words(game) / READING_WORDS_PER_MINUTE
-    return puzzle_minutes + reading_minutes + MINUTES_PER_STAGE * len(game.flow.stages)
+
+
+def estimate_game_minutes(game: Game, mechanics: Mapping[str, Mechanic]) -> int:
+    """Return the estimated play time in whole minutes, such as for the cover."""
+    return round(game_play_minutes(game, mechanics))
 
 
 def duration_findings(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
-    estimate: float = estimated_minutes(game, mechanics)
+    estimate: float = game_play_minutes(game, mechanics)
     wanted: int = game.config.duration_minutes
-    share: float = abs(estimate - wanted) / wanted
-    if share <= DURATION_WARNING_SHARE:
+    severity: Severity | None = duration_severity(estimate, wanted)
+    if severity is None:
         return []
-    severity: Severity = "error" if share > DURATION_ERROR_SHARE else "warning"
+    share: float = abs(estimate - wanted) / wanted
     direction: str = "longer" if estimate > wanted else "shorter"
     return [
         Finding(

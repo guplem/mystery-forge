@@ -391,3 +391,17 @@ def test_design_rules_are_a_short_non_empty_guide() -> None:
     text: str = design_rules_text()
     assert text.startswith("# ")
     assert 0 < len(text.splitlines()) < 300
+
+
+def test_design_rules_keep_puzzles_load_bearing() -> None:
+    text: str = design_rules_text()
+    assert "never the decoding method" in text
+    assert "State the last step when players cannot guess it" not in text
+    for rule in ("never the culprit's own confession", "never a spelled-out formula", "at most 2 puzzles", "has a job"):
+        assert rule in text, rule
+
+
+def test_the_lock_and_the_strips_warn_about_their_known_failures() -> None:
+    lock_pitfalls: str = " ".join(mechanic_by_id("arithmetic-lock").pitfalls).lower()
+    assert "never the final puzzle when the note states the formula" in lock_pitfalls
+    assert "orientation" in " ".join(mechanic_by_id("cut-strips").pitfalls)

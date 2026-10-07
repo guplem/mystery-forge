@@ -3,7 +3,13 @@ from typing import Any
 from test_checks_support import edit_config, edit_flow, edit_puzzle, golden_game, golden_mechanics, only_rule, rules
 
 from mystery_forge.catalog import Mechanic
-from mystery_forge.checks.variety import check_variety
+from mystery_forge.checks.variety import (
+    check_variety,
+    lookup_cipher_ids,
+    missing_player_actions,
+    overused_mechanics,
+    same_action_pairs,
+)
 from mystery_forge.game import Game
 from mystery_forge.spec.models import SolutionStep
 
@@ -81,3 +87,35 @@ def test_enough_puzzles_that_combine_documents_clear_the_cross_document_warning(
     assert only_rule(check_variety(game, golden_mechanics()), "variety.cross_document") == []
     empty: Game = golden_game().model_copy(update={"puzzles": []})
     assert check_variety(empty, golden_mechanics()) == []
+
+
+def test_a_meta_final_puzzle_must_use_an_answer_of_every_earlier_stage_in_an_envelope_game() -> None:
+    meta: Game = edit_puzzle(golden_game(), "P3", is_meta=True, depends_on=[])
+    findings = only_rule(check_variety(meta, golden_mechanics()), "variety.final_not_meta")
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("puzzles/P3.yaml", "depends_on", "warning")
+    ]
+    assert "A" in findings[0].message
+    case_file: Game = meta.model_copy(update={"config": meta.config.model_copy(update={"format": "case_file"})})
+    assert only_rule(check_variety(case_file, golden_mechanics()), "variety.final_not_meta") == []
+    plain: Game = edit_puzzle(golden_game(), "P3", depends_on=[])
+    assert [
+        finding.path for finding in only_rule(check_variety(plain, golden_mechanics()), "variety.final_not_meta")
+    ] == [
+        "is_meta",
+        "depends_on",
+    ]
+
+
+def test_the_shared_variety_rules_work_on_plain_puzzle_data() -> None:
+    mechanics: dict[str, Mechanic] = golden_mechanics()
+    caesar: Mechanic = mechanics["caesar-cipher"]
+    lock: Mechanic = mechanics["arithmetic-lock"]
+    three_ciphers = [("P1", caesar), ("P2", caesar), ("P3", caesar)]
+    assert lookup_cipher_ids(three_ciphers) == ["P1", "P2", "P3"]
+    assert lookup_cipher_ids(three_ciphers[:2]) == []
+    assert overused_mechanics(three_ciphers) == {"caesar-cipher": 3}
+    assert overused_mechanics(three_ciphers[:2]) == {}
+    assert missing_player_actions(three_ciphers, 3) == 3
+    assert missing_player_actions([("P1", caesar), ("P2", lock)], 2) is None
+    assert same_action_pairs([("P1", caesar), ("P2", caesar), ("P3", lock), ("P4", caesar)]) == [("P1", "P2")]

@@ -92,11 +92,11 @@ def verdict_of(report: PanelReport, code: str) -> ItemVerdict:
 @pytest.mark.parametrize(
     ("difficulty", "solvers", "required"),
     [
-        ("easy", 5, 4),
+        ("easy", 5, 3),
         ("medium", 6, 3),
         ("hard", 5, 2),
         ("expert", 5, 2),
-        ("easy", 4, 3),
+        ("easy", 4, 2),
         ("medium", 3, 2),
         ("hard", 3, 1),
         ("expert", 4, 1),
@@ -126,7 +126,7 @@ def test_a_full_correct_panel_passes(golden_game: Game, packets: list[StagePacke
     assert [item.code for item in report.puzzles] == ["A1", "A2", "B1"]
     assert [item.code for item in report.questions] == ["who", "why"]
     first = report.puzzles[0]
-    assert (first.verdict, first.solvers, first.required, first.solves_verified, first.guesses) == ("pass", 5, 4, 5, 0)
+    assert (first.verdict, first.solvers, first.required, first.solves_verified, first.guesses) == ("pass", 5, 3, 5, 0)
     assert first.wrong == [] and first.alternatives == [] and not first.guessable
     assert report.invalid_solvers == []
     assert report_summary(report) == {"ok": True, "verdicts": {"pass": 5}, "invalid_solvers": 0, "failing": []}
@@ -152,18 +152,20 @@ def test_too_hard_lists_what_the_solvers_did(golden_game: Game, packets: list[St
     results[0] = stage_a("a0", stuck, good_answer("A2"))
     results[1] = stage_a("a1", SolverAnswer(code="A1", answer="lighthouse", reasoning="A guess."), good_answer("A2"))
     results[2] = stage_a("a2", good_answer("A2"))
+    results[3] = stage_a("a3", good_answer("A2"))
     report = judge_panel(golden_game, packets, results, None)
     item = verdict_of(report, "A1")
-    assert (item.verdict, item.solves_verified, item.required) == ("too_hard", 2, 4)
+    assert (item.verdict, item.solves_verified, item.required) == ("too_hard", 1, 3)
     assert item.notes == [
         "a0: stuck: The code makes no sense.",
         "a1: answered 'lighthouse': A guess.",
         "a2: stuck: no answer given",
+        "a3: stuck: no answer given",
     ]
     assert item.wrong[0].answer == "lighthouse" and item.wrong[0].count == 1
     assert item.alternatives == []
     summary = report_summary(report)
-    assert summary["failing"] == [{"code": "A1", "reason": "too hard: 2 verified solves of 5, needs 4"}]
+    assert summary["failing"] == [{"code": "A1", "reason": "too hard: 1 verified solves of 5, needs 3"}]
 
 
 def test_too_few_valid_solvers_give_no_verdict(golden_game: Game, packets: list[StagePacket]) -> None:
@@ -194,7 +196,7 @@ def test_invalid_solvers_do_not_count(golden_game: Game, packets: list[StagePack
     assert report.invalid_solvers[1].reason == "The solver failed."
     assert report.invalid_solvers[2].reason == "No packet exists for stage Z."
     item = verdict_of(report, "A1")
-    assert (item.verdict, item.solvers, item.required, item.solves_verified) == ("pass", 3, 3, 3)
+    assert (item.verdict, item.solvers, item.required, item.solves_verified) == ("pass", 3, 2, 3)
     assert report_summary(report)["invalid_solvers"] == 3
 
 
@@ -319,3 +321,47 @@ def test_the_summary_stays_small_with_many_failing_items() -> None:
     assert summary["more_failing"] == 300 - len(summary["failing"])
     assert all(len(entry["reason"]) <= 100 for entry in summary["failing"])
     assert summary["verdicts"] == {"ambiguous": 300}
+
+
+def stated(code: str, aha: str = "") -> SolverAnswer:
+    return good_answer(code).model_copy(update={"all_steps_stated": True, "aha": aha})
+
+
+def test_a_puzzle_whose_material_states_every_step_is_trivial(golden_game: Game, packets: list[StagePacket]) -> None:
+    results = full_panel()
+    for index in range(3):
+        results[index] = stage_a(f"a{index}", stated("A1"), stated("A2", aha="read the receipt"))
+    report = judge_panel(golden_game, packets, results, None)
+    lock = verdict_of(report, "A2")
+    assert lock.verdict == "trivial"
+    assert lock.notes == [f"a{index}: the material states every step; aha: read the receipt" for index in range(3)]
+    assert verdict_of(report, "A1").verdict == "pass"
+    assert not report.ok
+    assert report_summary(report)["failing"] == [
+        {"code": "A2", "reason": "trivial: 3 of 5 solvers say the material states every step"}
+    ]
+
+
+def test_trivial_needs_half_of_the_solvers_that_solved_it(golden_game: Game, packets: list[StagePacket]) -> None:
+    results = full_panel()
+    results[0] = stage_a("a0", good_answer("A1"), stated("A2"))
+    results[1] = stage_a("a1", good_answer("A1"), stated("A2"))
+    results[2] = stage_a("a2", good_answer("A1"), SolverAnswer(code="A2", stuck=True))
+    assert verdict_of(judge_panel(golden_game, packets, results, None), "A2").verdict == "trivial"
+    results[1] = stage_a("a1", good_answer("A1"), good_answer("A2"))
+    assert verdict_of(judge_panel(golden_game, packets, results, None), "A2").verdict == "pass"
+    unproven = SolverAnswer(code="A2", answer="0726", all_steps_stated=True)
+    results = full_panel()
+    results[0] = stage_a("a0", good_answer("A1"), unproven)
+    assert verdict_of(judge_panel(golden_game, packets, results, None), "A2").verdict == "pass"
+
+
+def test_trivial_comes_after_guessable_and_before_too_hard(golden_game: Game, packets: list[StagePacket]) -> None:
+    results = full_panel()
+    results[0] = stage_a("a0", good_answer("A1"), stated("A2"))
+    for index in range(1, 5):
+        results[index] = stage_a(f"a{index}", good_answer("A1"), SolverAnswer(code="A2", stuck=True))
+    report = judge_panel(golden_game, packets, results, None)
+    assert verdict_of(report, "A2").verdict == "trivial"
+    guessed = judge_panel(golden_game, packets, results, GuesserResult(guesses=[Guess(code="A2", answer="0726")]))
+    assert verdict_of(guessed, "A2").verdict == "guessable"

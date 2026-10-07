@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from mystery_forge.findings import Finding
-from mystery_forge.plan import check_plan_folder, plan_minutes
+from mystery_forge.plan import check_plan_folder
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
 IMPLEMENTED: frozenset[str] = frozenset({"caesar-cipher", "arithmetic-lock", "deduction", "anagram", "maze"})
@@ -26,6 +26,7 @@ def golden_plan() -> dict[str, Any]:
                 "difficulty": "easy",
                 "answer": "boathouse",
                 "in_world_reason": "Tom hides his notes.",
+                "hidden_from": "the crew",
                 "reveals": "The keys are in the boathouse.",
                 "documents": ["D2"],
             },
@@ -37,7 +38,8 @@ def golden_plan() -> dict[str, Any]:
                 "difficulty": "easy",
                 "answer": "0726",
                 "in_world_reason": "A dial lock.",
-                "reveals": "An extra coil of rope.",
+                "hidden_from": "anyone without the receipt",
+                "reveals": "The collector offered to forget the debt for a lens.",
                 "documents": ["D3"],
                 "relies_on": ["D1"],
             },
@@ -46,10 +48,11 @@ def golden_plan() -> dict[str, Any]:
                 "stage": "B",
                 "title": "How did the thief reach the rock?",
                 "mechanic": "deduction",
-                "difficulty": "medium",
+                "difficulty": "easy",
                 "depends_on": ["P1"],
                 "answer": "low tide",
                 "in_world_reason": "The causeway floods.",
+                "hidden_from": "anyone who does not know the tides",
                 "reveals": "The thief came at low tide.",
                 "documents": ["D4"],
             },
@@ -233,17 +236,56 @@ def test_puzzle_count_and_budget_warnings(game_dir: Path) -> None:
     assert "plan.budget" in [finding.rule for finding in findings]
 
 
-def test_plan_minutes_scales_with_the_group(game_dir: Path) -> None:
-    from mystery_forge.brief import Brief
-
-    brief = Brief.model_validate_json((game_dir / "source" / "brief.json").read_text(encoding="utf-8"))
-    solo = brief.model_copy(update={"players": 1, "parallel_width": 1})
-    group = brief.model_copy(update={"players": 6, "parallel_width": 3})
-    minutes = {"easy": 10.0}
-    assert plan_minutes([minutes["easy"]], solo, "family") > plan_minutes([minutes["easy"]], group, "family")
-    assert plan_minutes([10.0], brief, "kids") > plan_minutes([10.0], brief, "family")
+def test_the_plan_budget_counts_the_reading_budget_of_the_brief(game_dir: Path) -> None:
+    brief_path = game_dir / "source" / "brief.json"
+    brief = json.loads(brief_path.read_text(encoding="utf-8"))
+    brief["reading_words"] = 20000
+    brief_path.write_text(json.dumps(brief), encoding="utf-8")
+    findings = [finding for finding in check(game_dir) if finding.rule == "plan.budget"]
+    assert [finding.severity for finding in findings] == ["error"]
+    # 5 + 5 + 10 catalog minutes, 20000 words read at 120 a minute by 2 players, 2 envelopes of 5 minutes.
+    assert "about 113 minutes" in findings[0].message
 
 
 def test_two_puzzles_with_the_same_mechanic_are_fine(game_dir: Path) -> None:
     findings = mutate(game_dir, lambda plan: plan["puzzles"][1].update({"mechanic": "caesar-cipher"}))
     assert "plan.same_mechanic" not in warnings(findings)
+
+
+def test_every_planned_puzzle_needs_a_hidden_from(game_dir: Path) -> None:
+    findings = mutate(game_dir, lambda plan: plan["puzzles"][0].pop("hidden_from"))
+    assert errors(findings) == ["schema.missing"]
+    findings = mutate(game_dir, lambda plan: plan["puzzles"][0].update({"hidden_from": ""}))
+    assert errors(findings) == ["schema.string_too_short"]
+
+
+def replace_in_story(game_dir: Path, old: str, new: str) -> None:
+    story_path = game_dir / "source" / "story.yaml"
+    story_path.write_text(story_path.read_text(encoding="utf-8").replace(old, new), "utf-8")
+
+
+def test_every_hidden_story_clue_needs_a_planned_revealing_puzzle(game_dir: Path) -> None:
+    replace_in_story(game_dir, "revealed_by: P2", "revealed_by: P7")
+    findings = [finding for finding in check(game_dir) if finding.rule == "plan.hidden_clue_unplanned"]
+    assert [finding.severity for finding in findings] == ["error"]
+    assert "lens-for-the-debt" in findings[0].message and "P7" in findings[0].message
+    replace_in_story(game_dir, "    revealed_by: P7\n", "")
+    assert "plan.hidden_clue_unplanned" in errors(check(game_dir))
+
+
+def test_a_puzzle_without_a_job_is_a_dead_end(game_dir: Path) -> None:
+    replace_in_story(game_dir, "revealed_by: P2", "revealed_by: P1")
+    findings = [finding for finding in check(game_dir) if finding.rule == "plan.dead_end"]
+    assert [finding.severity for finding in findings] == ["error"]
+    assert "P2" in findings[0].message
+    flow_path = game_dir / "source" / "flow.yaml"
+    flow_path.write_text(flow_path.read_text(encoding="utf-8").replace("final_puzzle: P3", "final_puzzle: P2"), "utf-8")
+    assert errors(check(game_dir)) == ["plan.final_puzzle"]
+
+
+def test_the_same_action_rule_follows_the_code_order_not_the_file_order(game_dir: Path) -> None:
+    def decode_last_in_file(plan: dict[str, Any]) -> None:
+        plan["puzzles"][2]["mechanic"] = "caesar-cipher"
+        plan["puzzles"] = [plan["puzzles"][0], plan["puzzles"][2], plan["puzzles"][1]]
+
+    assert "plan.same_action_in_a_row" not in warnings(mutate(game_dir, decode_last_in_file))
