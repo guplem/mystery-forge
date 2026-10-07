@@ -63,6 +63,7 @@ def test_setup_uses_the_newest_config_in_downloads_and_writes_the_game_folder(
     assert result["summary"]["language"] == "en"
     assert result["summary"]["pick_concept"] == "ask"
     assert result["summary"]["host"] == "self_running"
+    assert result["summary"]["images"] == "svg"
 
 
 def test_setup_with_an_explicit_config_and_a_random_seed(

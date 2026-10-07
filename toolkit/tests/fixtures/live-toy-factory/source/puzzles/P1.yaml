@@ -1,0 +1,86 @@
+format_version: 1
+id: P1
+title: Little Clocks on the Tape Box
+stage: A
+mechanic: clock-faces
+difficulty: easy
+depends_on: []
+in_world_reason: >-
+  Rudy reads every label in the crew van and rubs out what he does not like, so Fenna never writes times on
+  her tape boxes. She draws the moments that matter as small clock faces, and on the lid of the Night 2 box
+  she drew the moment when R. left the set.
+reveals: >-
+  On Night 2 (20 to 21 December) Rudy left the set at 23:40. The porter wrote him in at 23:55, which fits the
+  15-minute drive, so his "in bed at midnight" story starts true, and the players must look later in the night.
+answer: '2340'
+accepted:
+  - '23:40'
+  - '23.40'
+near_misses:
+  - answer: '23412'
+    message: Look again at the last clock. Fenna wrote what a short hand straight up stands for.
+  - answer: '0432'
+    message: Right numbers, wrong order. Fenna reads her clocks from left to right.
+  - answer: '234'
+    message: You need four figures. Do not forget the last clock.
+  - answer: '1140'
+    message: Fenna asks for the 24-hour clock, not the 12-hour clock.
+decoys:
+  - '2355'
+  - '0317'
+  - '2230'
+answer_format:
+  kind: digits
+  label: a 4-digit time (hours and minutes)
+  length: 4
+params:
+  mode: hour
+clues:
+  - id: lid-moment
+    document: D13
+    quote: R. off set, Night 2.
+    note: The clocks on the lid show when Rudy left the set on Night 2.
+  - id: lid-short-hands
+    document: D13
+    quote: Short hands only, left to right.
+  - id: lid-zero
+    document: D13
+    quote: A short hand that points straight up stands for 0.
+  - id: lid-time
+    document: D13
+    quote: 'The four figures make one time on the 24-hour clock: two for the hour, two for the minutes.'
+  - id: lid-hotel
+    document: D13
+    quote: Check it against his story about the hotel.
+  - id: rudy-bed
+    document: D4
+    quote: On the night of 20 December I went to bed at the Swan Hotel at midnight and slept until eight.
+  - id: rudy-porter
+    document: D4
+    quote: 'Ask the night porter: he wrote me in at five to midnight.'
+solution:
+  - text: The lid of the Night 2 tape box says that its four little clocks show the moment when R. (Rudy) left the set.
+    uses: [lid-moment]
+  - text: >-
+      Read only the short hand of each clock, from left to right. The first three short hands point at 2, 3,
+      and 4. The last short hand points straight up, so it stands for 0.
+    uses: [lid-short-hands, lid-zero]
+  - text: The four figures make one time on the 24-hour clock, hours then minutes, so Rudy left the set at 2340.
+    uses: [lid-time]
+  - text: >-
+      Rudy says that the night porter wrote him in at five to midnight. A short drive after he left the set fits
+      that, so his story of the early night holds, and the players must look later in the night.
+    uses: [lid-hotel, rudy-bed, rudy-porter]
+hints:
+  - level: 1
+    text: You need the lid of the Night 2 tape box. Rudy Platt's statement helps you check your result.
+    points_to: [lid-moment, rudy-porter]
+  - level: 2
+    text: The four clocks do not show four different times. Each clock gives you one figure.
+    points_to: [lid-short-hands]
+  - level: 3
+    text: >-
+      Read only the short hand of each clock, from left to right. Straight up means 0. Put the four figures
+      together: the first two are the hour, the last two are the minutes.
+    points_to: [lid-short-hands, lid-zero, lid-time]
+canary: canary-p1-qzvkrm

@@ -4,9 +4,11 @@
     <p class="sheet-kicker">{{ t("deduction_title") }}</p>
     <h1>{{ t("accusation_title") }}</h1>
   </header>
+  {% if content.first %}
   <p class="sheet-intro">{{ t("accusation_intro") }}</p>
   <p class="write-line"><span>{{ t("accusation_detectives") }}</span><span class="line"></span></p>
-  <ol class="accusation-questions">
+  {% endif %}
+  <ol class="accusation-questions" start="{{ content.start }}">
     {% for question in content.questions %}
     <li class="accusation-question">
       <div class="question-head"><span class="question-prompt">{{ question.prompt }}</span><span class="question-points">{{ t("accusation_points", points=question.points) }}</span></div>
@@ -17,5 +19,5 @@
     </li>
     {% endfor %}
   </ol>
-  <p class="accusation-total">{{ t("accusation_total", total=content.total_points) }}</p>
+  {% if content.last %}<p class="accusation-total">{{ t("accusation_total", total=content.total_points) }}</p>{% endif %}
 </div>

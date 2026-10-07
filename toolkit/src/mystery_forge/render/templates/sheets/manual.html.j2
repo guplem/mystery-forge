@@ -1,28 +1,32 @@
 {% from "macros.html.j2" import check_box, ornament %}
 <div class="safe manual-page">
-  {% if content.first %}
+  {% if not content.first %}
+  <header class="manual-running"><span>{{ content.title }}</span><span>{{ t("manual_title") }}</span></header>
+  {% endif %}
+  {% for block in content.blocks %}
+  {% if block.kind == "hero" %}
   <header class="manual-hero">
     <p class="sheet-kicker">{{ content.title }}</p>
     <h1>{{ t("manual_title") }}</h1>
     {% if content.tagline %}<p class="manual-tagline">{{ content.tagline }}</p>{% endif %}
   </header>
-  {% else %}
-  <header class="manual-running"><span>{{ content.title }}</span><span>{{ t("manual_title") }}</span></header>
+  {% elif block.kind == "heading" %}
+  <h2 class="section-title">{{ block.text }}</h2>
+  {% elif block.kind == "paragraph" %}
+  <p class="manual-paragraph">{{ block.text }}</p>
+  {% elif block.kind == "read_aloud" %}
+  <blockquote class="read-aloud-quote">{{ block.text }}</blockquote>
+  {% elif block.kind == "table" %}
+  <table class="manual-table">
+    <thead><tr>{% for header in block.table.headers %}<th>{{ header }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in block.table.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table>
+  {% elif block.kind == "step" %}
+  <div class="manual-step">{% if block.number %}<span class="step-number">{{ block.number }}</span>{% endif %}<p>{{ block.text }}</p></div>
+  {% elif block.kind == "checklist" %}
+  <ul class="manual-checklist">{% for item in block.items %}<li>{{ check_box() }}<span>{{ item }}</span></li>{% endfor %}</ul>
+  {% elif block.kind == "credit" %}
+  <footer class="manual-credit">{{ ornament() }}<p class="cover-credit">{{ t("made_with") }}</p></footer>
   {% endif %}
-  {% for section in content.sections %}
-  <section class="manual-section">
-    <h2 class="section-title">{{ section.heading }}</h2>
-    {% for paragraph in section.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
-    {% if section.read_aloud %}<blockquote class="read-aloud-quote">{{ section.read_aloud }}</blockquote>{% endif %}
-    {% if section.table %}
-    <table class="manual-table">
-      <thead><tr>{% for header in section.table.headers %}<th>{{ header }}</th>{% endfor %}</tr></thead>
-      <tbody>{% for row in section.table.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
-    </table>
-    {% endif %}
-    {% if section.steps %}<ol class="manual-steps">{% for step in section.steps %}<li>{{ step }}</li>{% endfor %}</ol>{% endif %}
-    {% if section.checklist %}<ul class="manual-checklist">{% for item in section.checklist %}<li>{{ check_box() }}<span>{{ item }}</span></li>{% endfor %}</ul>{% endif %}
-  </section>
   {% endfor %}
-  {% if content.last %}<footer class="manual-credit">{{ ornament() }}<p class="cover-credit">{{ t("made_with") }}</p></footer>{% endif %}
 </div>

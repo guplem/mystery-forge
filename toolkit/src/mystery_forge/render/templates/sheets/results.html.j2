@@ -7,8 +7,8 @@
   <div class="results-columns">
     {% for paragraph in content.paragraphs %}
     <div class="result-paragraph">
-      <p class="result-number">§{{ paragraph.number }}</p>
-      <p class="result-message">{{ paragraph.message }}</p>
+      <p class="result-number">§{{ paragraph.number }}{% if paragraph.continued %} <span class="result-continued">({{ t("continued") }})</span>{% endif %}</p>
+      {% if paragraph.message %}<p class="result-message">{{ paragraph.message }}</p>{% endif %}
       {% if paragraph.reveals %}<p class="result-reveals">{{ paragraph.reveals }}</p>{% endif %}
       {% if paragraph.action %}<p class="result-action">{{ paragraph.action }}</p>{% endif %}
     </div>

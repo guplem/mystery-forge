@@ -1,0 +1,16 @@
+{
+  "puzzle_count": 6,
+  "stage_count": 2,
+  "parallel_width": 2,
+  "solver_count": 3,
+  "reading_words": 4500,
+  "printed_pages": 15,
+  "generation_minutes": 46,
+  "minutes_per_puzzle": 6,
+  "seed": 2026,
+  "language": "en",
+  "audience": "family",
+  "format": "both",
+  "difficulty": "easy",
+  "players": 3
+}

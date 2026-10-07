@@ -11,6 +11,7 @@ from mystery_forge.render.pdf import (
     SheetMeasurement,
     launch_first_available,
     overflow_findings,
+    overflowing_sheets,
     rendered_artifacts,
 )
 
@@ -65,19 +66,26 @@ def test_a_box_overflows_by_scroll_size_or_by_content_in_its_padding() -> None:
     assert box(overflow_right=4).overflows
 
 
-def test_overflow_findings_name_the_sheet_and_its_source_file() -> None:
+def test_document_overflow_goes_to_the_writer_and_toolkit_overflow_to_nobody() -> None:
     probe = PageProbe(
         sheets=[sheet(), sheet(scroll_height=1200), sheet(boxes=[box(overflow_bottom=30)]), sheet(escaped=2)],
         artifacts=[],
     )
+    assert overflowing_sheets(probe) == [
+        (1, ["the box 'sheet' overflows"]),
+        (2, ["the box 'prop' overflows"]),
+        (3, ["2 element(s) reach outside the sheet"]),
+    ]
     findings = overflow_findings(probe, "materials.html", [None, "documents/D2.md", None])
-    assert [finding.rule for finding in findings] == ["render.overflow"] * 3
-    assert [finding.file for finding in findings] == ["documents/D2.md", "materials.html", "materials.html"]
+    assert [(finding.rule, finding.file) for finding in findings] == [
+        ("render.overflow", "documents/D2.md"),
+        ("render.toolkit_overflow", None),
+        ("render.toolkit_overflow", None),
+    ]
     assert findings[0].path == "materials.html sheet 2"
-    assert "the box 'sheet' overflows" in findings[0].message
-    assert "the box 'prop' overflows" in findings[1].message
-    assert "2 element(s) reach outside the sheet" in findings[2].message
     assert findings[0].fix_hint is not None and "pagebreak" in findings[0].fix_hint
+    assert findings[1].fix_hint is not None and "toolkit bug" in findings[1].fix_hint
+    assert "2 element(s) reach outside the sheet" in findings[2].message
 
 
 def test_rendered_artifacts_keep_the_first_copy_of_each_puzzle() -> None:

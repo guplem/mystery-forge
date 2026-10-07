@@ -8,7 +8,10 @@ from pathlib import Path
 import pytest
 from test_render_support import configured, golden_game, showcase_game
 
+from mystery_forge.assemble import assemble_game
 from mystery_forge.game import Game
+from mystery_forge.mechanics.registry import all_implementations
+from mystery_forge.render import materials
 from mystery_forge.render.game_renderer import RenderReport, render_game
 from mystery_forge.render.pdf import PlaywrightSheetBrowser, open_sheet_browser
 from mystery_forge.spec.documents import ARTIFACT_MARK
@@ -132,3 +135,45 @@ def test_other_themes_and_modes_fit_their_pages(
     assert report.findings == []
     for output in report.outputs.values():
         assert output.pdf_file is not None and pdf_page_count(output.pdf_file) == output.sheet_count
+
+
+LIVE_GAME: Path = Path(__file__).parent / "fixtures" / "live-toy-factory"
+
+
+@pytest.fixture(scope="module")
+def live_game() -> Game:
+    result = assemble_game(LIVE_GAME, all_implementations())
+    assert result.game is not None, result.findings
+    return result.game
+
+
+def overflow_rules(report: RenderReport) -> list[tuple[str, str | None]]:
+    return [(finding.rule, finding.file) for finding in report.findings if "overflow" in finding.rule]
+
+
+@pytest.mark.parametrize(
+    ("theme", "paper"),
+    [("vintage", "A4"), ("kids", "Letter"), ("noir", "Letter")],
+)
+def test_the_live_game_has_no_toolkit_page_that_overflows(
+    browser: PlaywrightSheetBrowser, tmp_path: Path, live_game: Game, theme: str, paper: str
+) -> None:
+    # A real 6-puzzle game with 13 places, written by an agent. Some of its documents really are too long for one
+    # page (its letter D10 on A4, two more on the shorter Letter paper): those findings belong to the game writer.
+    game = configured(live_game, equipment={"paper": paper})
+    report = render_game(game, tmp_path, browser, theme)  # type: ignore[arg-type]
+    rules = overflow_rules(report)
+    assert ("render.overflow", "documents/D10.md") in rules
+    assert all(rule == "render.overflow" and (file or "").startswith("documents/") for rule, file in rules)
+    if paper == "A4":
+        assert rules == [("render.overflow", "documents/D10.md")]
+
+
+def test_the_browser_loop_repairs_an_estimate_that_is_too_optimistic(
+    browser: PlaywrightSheetBrowser, tmp_path: Path, live_game: Game, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(materials, "RESULT_CHARS_PER_LINE", 90)
+    first_plan = [sheet for sheet in materials.materials_sheets(live_game) if sheet.role == "register-results"]
+    report = render_game(live_game, tmp_path, browser)
+    assert overflow_rules(report) == [("render.overflow", "documents/D10.md")]
+    assert report.outputs["materials"].sheet_roles.count("register-results") > len(first_plan)

@@ -145,6 +145,7 @@ def config_summary(config: GameConfig) -> dict[str, Any]:
         "quality": config.generation.quality,
         "pick_concept": config.generation.pick_concept,
         "host": config.host,
+        "images": config.visuals.images,
     }
 
 

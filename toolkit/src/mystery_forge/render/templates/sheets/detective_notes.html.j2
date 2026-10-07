@@ -3,6 +3,7 @@
     <p class="sheet-kicker">{{ t("materials_title") }}</p>
     <h1>{{ t("notes_title") }}</h1>
   </header>
+  {% if content.first %}
   <p class="sheet-intro">{{ t("notes_intro") }}</p>
   <table class="notes-table">
     <thead><tr><th>{{ t("notes_suspect") }}</th><th>{{ t("notes_motive") }}</th><th>{{ t("notes_opportunity") }}</th><th>{{ t("notes_alibi") }}</th></tr></thead>
@@ -10,15 +11,18 @@
       {% for suspect in content.suspects %}<tr><th scope="row">{{ suspect }}</th><td></td><td></td><td></td></tr>{% endfor %}
     </tbody>
   </table>
+  {% endif %}
   {% if content.locations %}
   <h2 class="notes-subtitle">{{ t("notes_where") }}</h2>
   <table class="notes-grid">
-    <thead><tr><th></th>{% for location in content.locations %}<th>{{ location }}</th>{% endfor %}</tr></thead>
+    <thead><tr><th></th>{% for suspect in content.suspects %}<th>{{ suspect }}</th>{% endfor %}</tr></thead>
     <tbody>
-      {% for suspect in content.suspects %}<tr><th scope="row">{{ suspect }}</th>{% for location in content.locations %}<td></td>{% endfor %}</tr>{% endfor %}
+      {% for location in content.locations %}<tr><th scope="row">{{ location }}</th>{% for suspect in content.suspects %}<td></td>{% endfor %}</tr>{% endfor %}
     </tbody>
   </table>
   {% endif %}
+  {% if content.last %}
   <h2 class="notes-subtitle">{{ t("notes_free") }}</h2>
   <div class="notes-lines"></div>
+  {% endif %}
 </div>

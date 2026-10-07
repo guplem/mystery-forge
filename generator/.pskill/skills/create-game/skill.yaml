@@ -166,7 +166,7 @@ blocks:
     description: Check the story and fix its errors
     skill: game-check-loop
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: story}
-    max_visits: 3
+    max_visits: 4
     on_max_visits: plan
     next:
       - when: "{{ steps.story_check.outputs.ok }}"
@@ -194,7 +194,7 @@ blocks:
     next:
       - when: >-
           {{ (steps.review_story.results[0].findings | selectattr('severity', 'equalto', 'required') | list | length) > 0
-          and (history.revise_story | length) < 2 }}
+          and (history.revise_story | length) < 3 }}
         to: revise_story
       - to: plan
 
@@ -263,6 +263,22 @@ blocks:
       status: {type: string, enum: [written, failed], description: "failed only when you could not write the puzzle."}
       files: {type: array, items: {type: string}, description: "The files that you wrote."}
       summary: {type: string, description: "One line, with no answer."}
+    next:
+      - when: "{{ steps.setup.json.summary.images == 'svg' }}"
+        to: illustrate
+      - to: game_check
+
+  illustrate:
+    type: parallel
+    description: Draw SVG illustrations for the documents that need a picture
+    for_each:
+      - {name: illustrations}
+    task_name: "{{ item.name }}"
+    agent: illustrator
+    instruction: instructions/illustrate.md
+    output:
+      images: {type: array, items: {type: string}, description: "The image files that you wrote."}
+      summary: {type: string, description: "One line, with no spoiler."}
     next: game_check
 
   game_check:

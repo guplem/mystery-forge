@@ -32,22 +32,22 @@ Every command runs from this folder as `uv run --project ../toolkit forge <verb>
 | `forge schema <story\|flow\|puzzle\|document\|references>` | The fields of a source file, or the reference forms and directives of a document body.        |
 | `forge assemble --game <dir>`                              | Load and build the game, and write `game.json`. Reports problems as findings.                 |
 
-The skill's steps run the other verbs (setup, check, packets, judge, render, export) for you.
+The skill's steps run the other verbs (doctor, setup, check, writer-tasks, packets, judge, render, status, export) for you.
 
 ## A game folder
 
 `games/<date>-<slug>/` (git-ignored). The agents write `source/`; the toolkit writes the rest.
 
-| Path                                            | Written by                  | Holds                                                                                                                           |
-| ----------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `source/config.json`, `brief.json`, `draw.json` | toolkit                     | The user's config, the derived numbers (puzzle count, stages), and the drawn story ingredients and mechanic candidates.         |
-| `source/concepts.yaml`                          | concept writer              | Three story concepts.                                                                                                           |
-| `source/story.yaml`                             | story writer                | The fact registry (characters, places, objects, timeline), the truth, the clues of the deduction, the intro, and the epilogues. |
-| `source/plan.yaml`, `source/flow.yaml`          | puzzle planner              | The puzzle plan and the stages (envelopes).                                                                                     |
-| `source/puzzles/<id>.yaml`                      | puzzle writers              | One puzzle each: answer, params, clues, solution, hints.                                                                        |
-| `source/documents/<id>.md`                      | puzzle and document writers | One player document each: front matter plus a Markdown body.                                                                    |
-| `source/images/<id>.svg`                        | document writers            | Simple SVG illustrations.                                                                                                       |
-| `game.json`, `reports/`, `render/`              | toolkit                     | The assembled game, the check reports, and the rendered files.                                                                  |
+| Path                                            | Written by                    | Holds                                                                                                                           |
+| ----------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `source/config.json`, `brief.json`, `draw.json` | toolkit                       | The user's config, the derived numbers (puzzle count, stages), and the drawn story ingredients and mechanic candidates.         |
+| `source/concepts.yaml`                          | concept writer                | Three story concepts.                                                                                                           |
+| `source/story.yaml`                             | story writer                  | The fact registry (characters, places, objects, timeline), the truth, the clues of the deduction, the intro, and the epilogues. |
+| `source/plan.yaml`, `source/flow.yaml`          | puzzle planner                | The puzzle plan and the stages (envelopes).                                                                                     |
+| `source/puzzles/<id>.yaml`                      | puzzle writers                | One puzzle each: answer, params, clues, solution, hints.                                                                        |
+| `source/documents/<id>.md`                      | puzzle and document writers   | One player document each: front matter plus a Markdown body.                                                                    |
+| `source/images/<id>.svg`                        | document writers, illustrator | Simple SVG illustrations. The illustrator runs only when the config asks for SVG images.                                        |
+| `game.json`, `reports/`, `render/`              | toolkit                       | The assembled game, the check reports, and the rendered files.                                                                  |
 
 ## Writing rules for every writer
 

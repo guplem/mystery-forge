@@ -1,0 +1,76 @@
+format_version: 1
+id: P2
+title: Rudy's Scrambled Reminders
+stage: A
+mechanic: anagram
+difficulty: easy
+depends_on: []
+in_world_reason: >-
+  Rudy keeps his tricks secret even from his own crew, so that their scared faces look real on camera. In his
+  pocket notebook he jumbles the key word of each trick. Fenna found this torn-out page under the seat of the van.
+reveals: >-
+  For Night 2 Rudy planned to park his car in Mill Lane behind the factory, out of range of the gate microphone,
+  and to walk in through the back yard door.
+answer: MILL LANE
+accepted:
+  - MILL LN
+  - MILLLANE
+near_misses:
+  - answer: LANE MILL
+    message: Right letters, but the street name reads the other way round.
+  - answer: MALL LINE
+    message: Right letters, but that is not a street name. Try again with a common English street word.
+  - answer: NILE MALL
+    message: Right letters, but Wickfold is a small English town. Think of a plain old street behind a works.
+  - answer: GATE HUT
+    message: Rudy wanted to stay away from the gate. Use the eight letters on his page.
+decoys:
+  - SWAN HOTEL
+  - GATE HUT
+  - FACTORY YARD
+answer_format:
+  kind: phrase
+  label: Two words of 4 letters each
+  length: 8
+params:
+  letters: NELIALML
+clues:
+  - id: jumbled-line
+    document: D14
+    quote: 'Night 2: park the car in the jumbled street below (4 letters, 4 letters), so the gate mic does not hear it.'
+  - id: jumble-rule
+    document: D14
+    quote: 'The eight letters under Night 2 make the name of a street in Wickfold, two words of four letters each.'
+  - id: key-words-jumbled
+    document: D14
+    quote: 'Key words jumbled, as always, so that nobody spoils a scared face on camera.'
+  - id: gate-mic-snoring
+    document: D2
+    quote: '21 December, 02:30 to 04:00, mic 2 by the gate hut: loud snoring, without a break.'
+solution:
+  - text: >-
+      Rudy's page says that he jumbles the key words of his tricks, and the Night 2 line says that he parks his car
+      somewhere so that the gate microphone does not hear it.
+    uses: [key-words-jumbled, jumbled-line]
+  - text: >-
+      Fenna's note says that the eight letters under Night 2 make a street name of two words with four letters
+      each. Rearrange N E L I A L M L into a common street word of four letters (LANE) and the four letters that
+      are left (M, I, L, L): MILL LANE.
+    uses: [jumble-rule]
+  - text: >-
+      Fenna's tape log confirms the plan: on Night 2 the microphone by the gate hut heard only snoring from 02:30
+      to 04:00, so no car came to the gate. Rudy parked in a street away from it.
+    uses: [gate-mic-snoring]
+hints:
+  - level: 1
+    text: Look at the torn page from Rudy's notebook and Fenna's note under it.
+    points_to: [jumbled-line]
+  - level: 2
+    text: The eight letter tiles under Night 2 are a street name with its letters mixed up. Two words, four letters each.
+    points_to: [jumble-rule]
+  - level: 3
+    text: >-
+      Rearrange the tiles. First find a common English word for a small street that uses four of the letters. The
+      four letters that are left make the first word, a building where grain is ground.
+    points_to: [jumble-rule]
+canary: canary-p2-qhvzrk

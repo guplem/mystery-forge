@@ -173,23 +173,45 @@ def sheet_overflow_problems(sheet: SheetMeasurement) -> list[str]:
     return problems
 
 
+def overflowing_sheets(probe: PageProbe) -> list[tuple[int, list[str]]]:
+    """The index and the problems of each sheet whose content does not fit."""
+    measured = ((index, sheet_overflow_problems(sheet)) for index, sheet in enumerate(probe.sheets))
+    return [(index, problems) for index, problems in measured if problems]
+
+
 def overflow_findings(probe: PageProbe, output_file: str, sheet_files: list[str | None]) -> list[Finding]:
-    """One `render.overflow` finding per sheet whose content does not fit. `sheet_files` names each sheet's source."""
+    """One finding per sheet whose content does not fit. `sheet_files` names the document file of each sheet.
+
+    A document sheet gets `render.overflow` on its document file, because the game writer can shorten or split it.
+    The toolkit builds every other sheet from game data, so its overflow is a toolkit bug: it gets
+    `render.toolkit_overflow` with no file, which the fix groups never send to a game writer.
+    """
     findings: list[Finding] = []
-    for index, sheet in enumerate(probe.sheets):
-        problems: list[str] = sheet_overflow_problems(sheet)
-        if problems:
-            source: str | None = sheet_files[index] if index < len(sheet_files) else None
+    for index, problems in overflowing_sheets(probe):
+        source: str | None = sheet_files[index] if index < len(sheet_files) else None
+        message: str = f"Sheet {index + 1} of {output_file} does not fit its page: {'; '.join(problems)}."
+        path: str = f"{output_file} sheet {index + 1}"
+        if source is None:
             findings.append(
                 Finding(
                     severity="error",
-                    rule="render.overflow",
-                    message=f"Sheet {index + 1} of {output_file} does not fit its page: {'; '.join(problems)}.",
-                    file=source or output_file,
-                    path=f"{output_file} sheet {index + 1}",
-                    fix_hint="Shorten the text, or split the document with a `::: pagebreak` directive.",
+                    rule="render.toolkit_overflow",
+                    message=message,
+                    path=path,
+                    fix_hint="The toolkit builds this page. Report it as a toolkit bug; the game files cannot fix it.",
                 )
             )
+            continue
+        findings.append(
+            Finding(
+                severity="error",
+                rule="render.overflow",
+                message=message,
+                file=source,
+                path=path,
+                fix_hint="Shorten the text, or split the document with a `::: pagebreak` directive.",
+            )
+        )
     return findings
 
 

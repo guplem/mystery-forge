@@ -8,3 +8,9 @@ Look for these problems, in this order:
 5. **A dull frame.** The intro does not set a clear goal; an epilogue does not pay off what the players did.
 
 A finding is `required` when it is a contradiction, unfair, against the audience rule, or a cliché from the list. Everything else is a `suggestion`. Give each finding a concrete fix. Return an empty list when the story is ready. Do not change any file.
+{% if history.review_story | length > 0 %}
+This is review round {{ (history.review_story | length) + 1 }}. The writer already revised the story for these earlier findings:
+{% for round in history.review_story %}{% for finding in round.results[0].findings %}{% if finding.severity == 'required' %}- {{ finding.problem | truncate(160) }}
+{% endif %}{% endfor %}{% endfor %}
+Check that each one is fixed. Report as `required` only a problem that is still there or a new contradiction or unfair step. Do not repeat suggestions, and do not raise the bar: a story that is coherent and fair is ready.
+{% endif %}

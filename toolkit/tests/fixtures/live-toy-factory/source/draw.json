@@ -1,0 +1,276 @@
+{
+  "tone": {
+    "id": "adventure",
+    "name": "Adventure",
+    "description": "Movement and discovery. Maps, journeys, ticking clocks, and brave choices. Short, active sentences."
+  },
+  "settings": [
+    {
+      "id": "school-science-fair",
+      "name": "High school science fair",
+      "era_hints": ["nineteen-fifties", "nineteen-eighties", "present-day"],
+      "audiences": ["kids", "family", "teens", "puzzle_fans"],
+      "tones": ["cozy", "comedic", "adventure"]
+    },
+    {
+      "id": "toy-factory",
+      "name": "Toy factory before the holidays",
+      "era_hints": ["nineteen-fifties", "nineteen-eighties", "present-day"],
+      "audiences": ["kids", "family", "teens", "puzzle_fans"],
+      "tones": ["cozy", "comedic", "adventure"]
+    },
+    {
+      "id": "moon-base-school",
+      "name": "School on a moon base during the eclipse week",
+      "era_hints": ["far-future"],
+      "audiences": ["kids", "family", "teens", "adults", "puzzle_fans"],
+      "tones": ["cozy", "adventure", "comedic", "dramatic"]
+    }
+  ],
+  "goals": [
+    {
+      "id": "stop-sabotage",
+      "name": "Stop a sabotage before a deadline",
+      "description": "Someone plans to ruin an event or a machine. Find the plan before it happens.",
+      "formats": ["envelopes", "case_file"],
+      "audiences": ["kids", "family", "teens", "adults", "puzzle_fans"]
+    },
+    {
+      "id": "secret-admirer",
+      "name": "Identify a secret admirer",
+      "description": "Anonymous gifts and notes arrive. Find out who sends them.",
+      "formats": ["envelopes", "case_file"],
+      "audiences": ["kids", "family", "teens"]
+    }
+  ],
+  "twists": [
+    {
+      "id": "heir-in-plain-sight",
+      "name": "The heir in plain sight",
+      "description": "The missing heir works in the house as a member of staff.",
+      "formats": ["envelopes", "case_file"],
+      "audiences": ["family", "teens", "adults", "puzzle_fans"]
+    },
+    {
+      "id": "animal-did-it",
+      "name": "The animal did it",
+      "description": "An animal caused the mess or the loss. For kids, it is a harmless and funny version.",
+      "formats": ["envelopes", "case_file"],
+      "audiences": ["kids", "family", "teens"]
+    },
+    {
+      "id": "victim-set-trail",
+      "name": "The victim set the trail",
+      "description": "The victim left the puzzle trail on purpose, before it happened.",
+      "formats": ["envelopes"],
+      "audiences": ["family", "teens", "adults", "puzzle_fans"]
+    }
+  ],
+  "frames": [
+    {
+      "id": "ghost-hunter-show",
+      "name": "The ghost hunter show",
+      "description": "You review the material of a ghost hunting TV show.",
+      "audiences": ["family", "teens", "adults", "puzzle_fans"]
+    },
+    {
+      "id": "secret-society",
+      "name": "The secret society initiation",
+      "description": "A secret society invites you, and the puzzles are your initiation.",
+      "audiences": ["family", "teens", "adults", "puzzle_fans"]
+    }
+  ],
+  "motifs": [
+    {
+      "id": "clocks",
+      "name": "Clocks",
+      "puzzle_skins": "Clock hands as codes, stopped times as alibis, chimes as counts, and a timetable as the final lock."
+    },
+    {
+      "id": "lighthouses",
+      "name": "Lighthouses",
+      "puzzle_skins": "Light patterns as Morse, a keeper's log as a timeline, and tide tables as calendar math."
+    }
+  ],
+  "cliches": {
+    "names": [
+      "Elara",
+      "Silas",
+      "Thorne",
+      "Blackwood",
+      "Voss",
+      "Ravenwood",
+      "Hawthorne",
+      "Whitmore",
+      "Aris",
+      "Kael",
+      "Lyra",
+      "Seraphina",
+      "Vance",
+      "Ashford",
+      "Marlowe",
+      "Evangeline",
+      "Isadora",
+      "Cassius",
+      "Zephyr",
+      "Thaddeus",
+      "Barnaby",
+      "Mortimer",
+      "Lucian",
+      "Ophelia",
+      "Montgomery"
+    ],
+    "phrases": [
+      "a tapestry of",
+      "whispers of",
+      "shadows danced",
+      "little did they know",
+      "testament to",
+      "a chill ran down",
+      "the air was thick with",
+      "delve into",
+      "a symphony of",
+      "palpable tension",
+      "a web of lies",
+      "the plot thickens",
+      "time stood still",
+      "an eerie silence",
+      "the game is afoot",
+      "every shadow held a secret",
+      "hung heavy in the air",
+      "a sense of foreboding",
+      "nestled",
+      "in the dead of night"
+    ],
+    "plots": [
+      "A stormy night in a gothic mansion, with a butler.",
+      "A rich old man poisoned at the reading of his will.",
+      "The butler did it.",
+      "The greedy nephew who inherits.",
+      "Poison in the wine glass at a dinner party.",
+      "The culprit is an evil twin that nobody mentioned.",
+      "It was all a dream.",
+      "The culprit has amnesia and did it without knowing.",
+      "The detective's long-lost relative is the culprit.",
+      "The famous riddle with a changed answer.",
+      "A secret passage that the floor plan never shows."
+    ]
+  },
+  "audience_rule": {
+    "max_words_per_document": 250,
+    "allow_murder": false,
+    "themes_to_avoid": ["gore", "detailed violence", "romance plots", "death of a child"],
+    "decoders_preprinted": false,
+    "notes": "Ages 10 to 13 with adults. Theft, sabotage, a kidnapping with a safe return, or a faked death. Easy to medium puzzles. 11 to 12 pt type and a moderate amount of text."
+  },
+  "mechanics": [
+    {
+      "id": "word-search",
+      "name": "Word Search With Leftover Message",
+      "category": "wordplay",
+      "player_action": "search",
+      "verification": "built",
+      "summary": "Find the theme words, then the unused letters spell a message.",
+      "minutes": 8
+    },
+    {
+      "id": "maze",
+      "name": "Maze With Letters on the Path",
+      "category": "spatial",
+      "player_action": "spatial",
+      "verification": "built",
+      "summary": "Solve a maze, and the letters on the true path spell the answer.",
+      "minutes": 5
+    },
+    {
+      "id": "pigpen-cipher",
+      "name": "Pigpen Cipher",
+      "category": "cipher",
+      "player_action": "decode",
+      "verification": "built",
+      "summary": "Letters become pieces of tic-tac-toe and X grids, with or without dots.",
+      "minutes": 5
+    },
+    {
+      "id": "clock-faces",
+      "name": "Clock Hands Code",
+      "category": "spatial",
+      "player_action": "observation",
+      "verification": "built",
+      "summary": "Clock times encode digits, letters, or numbers to add.",
+      "minutes": 5
+    },
+    {
+      "id": "deduction",
+      "name": "Whodunit Deduction",
+      "category": "deduction",
+      "player_action": "deduction",
+      "verification": "panel",
+      "summary": "Players use all the evidence to name the culprit, the method, and the motive.",
+      "minutes": 10
+    },
+    {
+      "id": "arithmetic-lock",
+      "name": "Arithmetic Lock",
+      "category": "math",
+      "player_action": "arithmetic",
+      "verification": "verified",
+      "summary": "Numbers found in several documents combine by a stated formula into the lock code.",
+      "minutes": 5
+    },
+    {
+      "id": "cut-strips",
+      "name": "Shredded Document Strips",
+      "category": "spatial",
+      "player_action": "physical",
+      "verification": "built",
+      "summary": "A document cut into vertical strips goes back into order.",
+      "minutes": 6
+    },
+    {
+      "id": "nonogram",
+      "name": "Nonogram",
+      "category": "logic",
+      "player_action": "logic",
+      "verification": "built",
+      "summary": "Number clues for each row and column reveal a picture of a digit, letter, or object.",
+      "minutes": 8
+    },
+    {
+      "id": "anagram",
+      "name": "Anagram",
+      "category": "wordplay",
+      "player_action": "wordplay",
+      "verification": "verified",
+      "summary": "The letters of a phrase rearrange into the answer.",
+      "minutes": 5
+    },
+    {
+      "id": "book-cipher",
+      "name": "Book Cipher Over Kit Documents",
+      "category": "cipher",
+      "player_action": "cross-reference",
+      "verification": "built",
+      "summary": "Number triples point to a document, a line, and a word in the kit.",
+      "minutes": 7
+    },
+    {
+      "id": "grid-coordinates",
+      "name": "Map Grid Coordinates",
+      "category": "spatial",
+      "player_action": "spatial",
+      "verification": "built",
+      "summary": "Coordinates such as C4 point to map places, and their initials spell the answer.",
+      "minutes": 5
+    },
+    {
+      "id": "morse-code",
+      "name": "Visual Morse Code",
+      "category": "cipher",
+      "player_action": "decode",
+      "verification": "built",
+      "summary": "Short and long marks hidden in a picture or a log spell letters in Morse code.",
+      "minutes": 5
+    }
+  ]
+}

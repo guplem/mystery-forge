@@ -4,31 +4,36 @@ The Python package `mystery_forge` and its CLI `forge`. It loads configs, builds
 
 ## Module map
 
-| Module              | Concern                                                                                                              |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `answers.py`        | Answer normalization and the salted SHA-256 hash. The JavaScript copy must match `contracts/answer-vectors.json`.    |
-| `config.py`         | Load and validate a user config against `contracts/game-config.schema.json`, fill the defaults, return `GameConfig`. |
-| `brief.py`          | The numbers that drive a generation (puzzle count, stages, solvers). Must match `contracts/estimate-vectors.json`.   |
-| `draw.py`           | The seeded draw of story ingredients and mechanic candidates, filtered by the config.                                |
-| `paths.py`          | The real Desktop and Downloads folders (Windows known folders, XDG), safe folder names, the newest config file.      |
-| `findings.py`       | `Finding`: the one shape of every problem that the loader and the checks report.                                     |
-| `yaml_loading.py`   | YAML where every scalar stays text (so `0420` keeps its zero), with the line of every value.                         |
-| `i18n.py`           | The fixed output texts in every game language, plus long dates and weekday names.                                    |
-| `catalog/`          | Package data: 91 mechanics, story ingredient decks, evidence types, the design rules for writers; typed loader.      |
-| `spec/models.py`    | Pydantic models of `story.yaml`, `flow.yaml`, `puzzles/*.yaml`, and the document front matter.                       |
-| `spec/loader.py`    | Read a game's `source/` folder into the models, with one finding per problem.                                        |
-| `spec/documents.py` | Document bodies: `{{kind:id}}` references, Markdown directives, and plain text.                                      |
-| `mechanics/`        | One module per mechanic family. `base.py` is the interface; `registry.py` maps catalog ids to builders.              |
-| `game.py`           | `Game`: the assembled, validated model that `game.json` holds.                                                       |
-| `assemble.py`       | Load the source, build each puzzle, render each document body, and return `Game` plus findings.                      |
-| `story_checks.py`   | Checks of `story.yaml` alone, before any puzzle exists.                                                              |
-| `plan.py`           | The puzzle plan model (`plan.yaml`) and its checks: ownership, graph, mechanics, variety, budget.                    |
-| `checks/`           | The whole-game checks, one module per rule family; `runner.py` runs them.                                            |
-| `fix_groups.py`     | Group findings by the writer that owns their files, for parallel fixer subagents.                                    |
-| `panel/`            | Solver packets per stage, the guesser packet, and the judge with the panel thresholds.                               |
-| `verification.py`   | Content hashes per puzzle and the ledger that tells fresh checks from stale ones.                                    |
-| `render/`           | HTML and PDF outputs: materials, manual, hints, solutions, companion. `game_renderer.py` is the entry point.         |
-| `cli.py`            | The `forge` command line. Every verb prints one JSON object.                                                         |
+| Module              | Concern                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `answers.py`        | Answer normalization and the salted SHA-256 hash. The JavaScript copy must match `contracts/answer-vectors.json`.      |
+| `config.py`         | Load and validate a user config against `contracts/game-config.schema.json`, fill the defaults, return `GameConfig`.   |
+| `brief.py`          | The numbers that drive a generation (puzzle count, stages, solvers). Must match `contracts/estimate-vectors.json`.     |
+| `draw.py`           | The seeded draw of story ingredients and mechanic candidates, filtered by the config.                                  |
+| `paths.py`          | The real Desktop and Downloads folders (Windows known folders, XDG), safe folder names, the newest config file.        |
+| `findings.py`       | `Finding`: the one shape of every problem that the loader and the checks report.                                       |
+| `yaml_loading.py`   | YAML where every scalar stays text (so `0420` keeps its zero), with the line of every value.                           |
+| `i18n.py`           | The fixed output texts in every game language, plus long dates and weekday names.                                      |
+| `catalog/`          | Package data: 91 mechanics, story ingredient decks, evidence types, the design rules for writers; typed loader.        |
+| `spec/models.py`    | Pydantic models of `story.yaml`, `flow.yaml`, `puzzles/*.yaml`, and the document front matter.                         |
+| `spec/loader.py`    | Read a game's `source/` folder into the models, with one finding per problem.                                          |
+| `spec/documents.py` | Document bodies: `{{kind:id}}` references, Markdown directives, and plain text.                                        |
+| `mechanics/`        | One module per mechanic family. `base.py` is the interface; `registry.py` maps catalog ids to builders.                |
+| `game.py`           | `Game`: the assembled, validated model that `game.json` holds.                                                         |
+| `assemble.py`       | Load the source, build each puzzle, render each document body, and return `Game` plus findings.                        |
+| `story_checks.py`   | Checks of `story.yaml` alone, before any puzzle exists.                                                                |
+| `plan.py`           | The puzzle plan model (`plan.yaml`) and its checks: ownership, graph, mechanics, variety, budget.                      |
+| `checks/`           | The whole-game checks, one module per rule family; `runner.py` runs them.                                              |
+| `fix_groups.py`     | Group findings by the writer that owns their files, for parallel fixer subagents.                                      |
+| `panel/`            | Solver packets per stage, the guesser packet, and the judge with the panel thresholds.                                 |
+| `verification.py`   | Content hashes per puzzle and the ledger that tells fresh checks from stale ones.                                      |
+| `render/`           | HTML and PDF outputs: materials, manual, hints, solutions, companion. `game_renderer.py` is the entry point.           |
+| `render/layout.py`  | Page height estimates and the split of a long text, so that toolkit-built lists flow over as many sheets as they need. |
+| `render_checks.py`  | Checks of the rendered pages: the round-trip decode of each artifact, and answer leaks on a printed sheet.             |
+| `export.py`         | Copy the rendered outputs to the user's output folder, with the spoilers in their own folder.                          |
+| `cli.py`            | The `forge` command line: the parser and the verbs that need no game. Every verb prints one JSON object.               |
+| `cli_game.py`       | The `forge` verbs that work on one game folder: check, writer-tasks, packets, judge, status, render, export.           |
+| `cli_output.py`     | The output helpers of every verb: the JSON object, the capped findings, and the report files.                          |
 
 ## Conventions
 

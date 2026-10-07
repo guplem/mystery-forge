@@ -6,7 +6,7 @@ An LLM writes the game. Long prose inside one big JSON file is hard for an LLM t
 
 ## Decision
 
-- A game work folder is `generator/games/<slug>/`. Its `source/` folder holds the files that agents write, and the toolkit writes the rest.
+- A game work folder is `generator/games/<date>-<slug>/`. Its `source/` folder holds the files that agents write, and the toolkit writes the rest.
   - `config.json` and `brief.json`: the normalized user config and the derived numbers. The toolkit writes both.
   - `story.yaml`: the fact registry (characters, locations, objects, timeline events), the truth, the deduction, the intro, and the epilogues.
   - `flow.yaml`: the stages (envelopes) in order and what opens each one.

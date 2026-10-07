@@ -86,3 +86,12 @@ def test_write_fix_groups_writes_one_findings_file_per_group(game_dir: Path) -> 
     first = json.loads(Path(entries[0]["findings_file"]).read_text(encoding="utf-8"))
     assert first["findings"][0]["file"] == "puzzles/P1.yaml"
     assert entries[0]["files"] == ["puzzles/P1.yaml", "documents/D2.md"]
+
+
+def test_findings_on_toolkit_pages_make_no_group(game_dir: Path) -> None:
+    assert group_findings([finding("materials.html"), finding("solutions.html")], game_dir) == []
+
+
+def test_toolkit_overflow_findings_make_no_group(game_dir: Path) -> None:
+    toolkit_bug = Finding(severity="error", rule="render.toolkit_overflow", message="m", file=None)
+    assert group_findings([toolkit_bug], game_dir) == []

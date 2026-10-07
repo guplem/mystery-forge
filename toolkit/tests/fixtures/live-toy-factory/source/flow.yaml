@@ -1,0 +1,17 @@
+format_version: 1
+structure: funnel
+stages:
+  - id: A
+    label: Fenna's tapes
+    opens_with: start
+    opening_text: >-
+      Greta shuts her office door. "Fenna left all this for me at nine, and she would not say a word in front of
+      Mr Platt. The show goes live at three. Read everything, and tell me what you find."
+  - id: B
+    label: The tape case
+    opens_with: P3
+    opening_text: >-
+      Fenna's tape case clicks open. On top lies the clock log of Hubert, open at the page that he wrote yesterday
+      after he climbed the tower. Greta adds the papers from her own desk drawer.
+final_puzzle: P6
+accusation: true

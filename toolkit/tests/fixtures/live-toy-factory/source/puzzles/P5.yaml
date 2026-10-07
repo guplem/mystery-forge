@@ -1,0 +1,83 @@
+format_version: 1
+id: P5
+title: A Picture by Wire
+stage: B
+mechanic: nonogram
+difficulty: easy
+depends_on: [P3]
+in_world_reason: >-
+  Crown Television sends small pictures to its crews by wire, as rows and columns of numbers that say how many
+  squares to fill. The station wired Rudy's van the target figure for the Christmas special, and Fenna kept the
+  blank grid with its numbers.
+reveals: >-
+  Crown Television wants 13 million viewers for the Christmas special. Without them, After Hours Haunts ends in
+  January, so Rudy needs a story big enough for every newspaper.
+answer: '13'
+accepted: ['thirteen', '13 million', 'thirteen million', '13000000']
+near_misses:
+  - answer: '12'
+    message: Look again at the lower half of the second figure. Check each row against its numbers.
+  - answer: '18'
+    message: Check the left side of the second figure against the row numbers. Is it closed, or open?
+  - answer: '31'
+    message: Read the two digits from left to right, as the row numbers run.
+decoys: ['64', '2400', '7']
+answer_format:
+  kind: digits
+  label: The target figure, in millions of viewers (2 digits)
+  length: 2
+params: {}
+clues:
+  - id: wire-rule
+    document: D17
+    quote: 'THE NUMBERS BESIDE EACH ROW AND ABOVE EACH COLUMN GIVE THE RUNS OF BLACK SQUARES, IN ORDER.'
+  - id: wire-read
+    document: D17
+    quote: 'BLACKEN THE SQUARES AND READ THE FIGURE.'
+  - id: wire-target
+    document: D17
+    quote: 'Target for 23 December: ______ million viewers.'
+  - id: wire-impossible
+    document: D17
+    quote: 'He only said that the number was "impossible".'
+  - id: station-threat
+    document: D8
+    quote: 'Unless your Christmas special on 23 December brings the viewers back, After Hours Haunts will end in January.'
+  - id: station-promise
+    document: D8
+    quote: 'Our engineers will wire the target figure to your van once you have a location.'
+solution:
+  - text: >-
+      The Crown Television letter promises a target figure by wire, and the wire picture is that figure, sent as a
+      grid of numbers.
+    uses: [station-promise, wire-target]
+  - text: >-
+      Each number beside a row or above a column is the length of a run of black squares, in order. Fill the rows
+      and columns where the runs leave no choice first, mark the squares that must stay white, and work across.
+    uses: [wire-rule]
+  - text: >-
+      The filled grid shows two digits side by side. Read them left to right: that is the target, in millions of
+      viewers.
+    uses: [wire-read, wire-target]
+  - text: >-
+      This is why Rudy called the number "impossible": unless the special reaches that many viewers, his show ends
+      in January. He needs a story that every newspaper will print.
+    uses: [wire-impossible, station-threat]
+hints:
+  - level: 1
+    text: >-
+      Look at the wire picture from Crown Television, and at the letter from the same station. The letter says what
+      the wire picture holds.
+    points_to: [station-promise, wire-target]
+  - level: 2
+    text: >-
+      The numbers beside each row and above each column are lengths of runs of black squares. Blacken the grid, and
+      a picture appears.
+    points_to: [wire-rule]
+  - level: 3
+    text: >-
+      Start with the columns whose number is as long as the column itself: blacken them fully. Mark the empty column
+      as white. Then work across the rows, square by square. The picture shows two digits; read them left to right
+      as the number of millions.
+    points_to: [wire-rule, wire-read]
+canary: canary-p5-vuxkcf
