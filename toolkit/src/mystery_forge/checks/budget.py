@@ -2,18 +2,18 @@
 
 `estimate_play_minutes` is the one time estimate: the plan step (`plan.py`), the game checks, and the cover all use it,
 so they can never disagree. Catalog minutes per puzzle are for a group of 3 or 4; parallel play divides them, and solo
-players and kids take longer. Reading time and a few minutes per envelope come on top.
+players and kids take longer. Reading time and a few minutes per envelope come on top. Each parallel team reads its own
+papers, so the reading splits over the teams, the same way as the reading budget in `brief.py`.
 """
 
 from collections.abc import Mapping, Sequence
 from typing import Final
 
+from mystery_forge.brief import READING_WORDS_PER_MINUTE
 from mystery_forge.catalog import Mechanic
 from mystery_forge.findings import Finding, Severity
 from mystery_forge.game import Game
 
-# One reading speed for the plan and the game. It is slow on purpose: players read for clues, not for the story.
-READING_WORDS_PER_MINUTE: Final[int] = 120
 MINUTES_PER_STAGE: Final[int] = 5
 SOLO_FACTOR: Final[float] = 1.25
 KIDS_FACTOR: Final[float] = 1.4
@@ -39,8 +39,7 @@ def estimate_play_minutes(
         solving *= SOLO_FACTOR
     if audience == "kids":
         solving *= KIDS_FACTOR
-    # The players share out the papers, so each one reads only a part of the words.
-    reading: float = reading_words / READING_WORDS_PER_MINUTE / players
+    reading: float = reading_words / READING_WORDS_PER_MINUTE / parallel_width
     return solving + reading + MINUTES_PER_STAGE * stage_count
 
 
