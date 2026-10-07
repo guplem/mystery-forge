@@ -204,8 +204,9 @@ def test_logic_grid_writes_spanish_clues_and_falls_back_to_english() -> None:
 def test_logic_grid_solver_text_lists_categories_clues_and_question() -> None:
     artifact: Artifact = build(LARGE, make_context("horse"))
     assert artifact.solver_text.startswith("House: 1, 2, 3, 4, 5\nName: Ana, Bruno, Carla, Dario, Elena")
-    assert "\nClues:\n1. " in artifact.solver_text
-    assert artifact.solver_text.endswith("Question: Which Pet goes with Elena?")
+    assert "\n\n1. " in artifact.solver_text
+    assert "Clues" not in artifact.solver_text
+    assert artifact.solver_text.endswith("\n\nWhich Pet goes with Elena?")
 
 
 @pytest.mark.parametrize(("raw_params", "answer"), [(SMALL, "tea"), (LARGE, "Horse")])

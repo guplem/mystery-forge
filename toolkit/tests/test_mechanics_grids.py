@@ -276,7 +276,9 @@ def test_grid_coordinates_letters_at_the_coordinates_spell_the_answer() -> None:
     assert len(set(coordinates)) == 4
     letters: str = "".join(grid[int(code[1:]) - 1][ord(code[0]) - ord("A")] for code in coordinates)
     assert letters == "FARO"
-    assert "Coordinates: " + ", ".join(coordinates) in artifact.solver_text
+    # The sheet does not print the list, so the packet must not show it: a document of the writer prints it.
+    assert "Coordinates" not in artifact.solver_text
+    assert artifact.needs_in_documents == tuple(coordinates)
     assert re.search(r"<th>6</th>", artifact.html)
 
 

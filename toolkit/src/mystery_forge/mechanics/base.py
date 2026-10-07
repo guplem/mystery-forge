@@ -44,6 +44,8 @@ class Artifact(BaseModel):
     solver_text: str
     # Instructions printed next to the material, such as "Cut along the dashed lines".
     print_notes: tuple[str, ...] = ()
+    # Texts that the material needs but does not print, such as a coordinate list: a document must print each one.
+    needs_in_documents: tuple[str, ...] = ()
 
 
 class RenderedArtifact(BaseModel):

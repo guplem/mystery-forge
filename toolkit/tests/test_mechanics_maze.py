@@ -139,10 +139,12 @@ def test_maze_svg_is_safe_and_uses_the_current_color() -> None:
 def test_maze_solver_text_draws_the_maze_in_ascii() -> None:
     artifact: Artifact = build({"size": 6}, make_context("key"))
     lines: list[str] = artifact.solver_text.splitlines()
-    assert lines[0] == "Enter at the top left. Leave at the bottom right."
+    # The arrows of the printed maze, above the entry and below the exit: no words, so no language.
+    assert lines[0] == "  v"
     assert lines[1].startswith("+   +")
-    assert len(lines) == 1 + 2 * 6 + 1
-    assert lines[-1].endswith("+   +")
+    assert len(lines) == 1 + 2 * 6 + 1 + 1
+    assert lines[-2].endswith("+   +")
+    assert lines[-1] == " " * (4 * 5 + 2) + "v"
     assert all(letter in artifact.solver_text for letter in "KEY")
 
 
