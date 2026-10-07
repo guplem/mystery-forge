@@ -13,13 +13,8 @@ from typing import Final, Literal
 from mystery_forge.game import Game
 from mystery_forge.i18n import text
 from mystery_forge.render.layout import Tightness, page_budget, split_text, text_height, tightness
-from mystery_forge.render.sheets import OUTPUT_FILES, OutputId, Sheet, paginate
+from mystery_forge.render.sheets import OutputFileNames, OutputId, Sheet, output_file_names, paginate
 
-# The companion page keeps this name from the render folder to the exported folder, so the manual can name it.
-COMPANION_FILE: str = "Game companion.html"
-# The export puts the hints and the solutions in this folder, so the manual names their real paths.
-SPOILER_FOLDER: Final[str] = "HOST ONLY - spoilers"
-SPOILER_OUTPUTS: Final[frozenset[OutputId]] = frozenset({"hints", "solutions"})
 PRINT_SETTING_KEYS: Final[tuple[str, ...]] = (
     "manual_print_box_chrome",
     "manual_print_box_edge",
@@ -66,12 +61,6 @@ class ManualSection:
     box_lines: list[str] = field(default_factory=list)
 
 
-def output_path(output: OutputId) -> str:
-    """The path of an output PDF in the exported folder."""
-    name: str = OUTPUT_FILES[output].pdf
-    return f"{SPOILER_FOLDER}/{name}" if output in SPOILER_OUTPUTS else name
-
-
 def checklist_section(game: Game, page_counts: Mapping[OutputId, int]) -> ManualSection:
     language: str = game.config.language
     config = game.config
@@ -82,11 +71,12 @@ def checklist_section(game: Game, page_counts: Mapping[OutputId, int]) -> Manual
         "hints": optional,
         "solutions": optional,
     }
+    names: OutputFileNames = output_file_names(language)
     rows: list[list[str]] = [
-        [output_path(output), str(count), printed[output]] for output, count in page_counts.items()
+        [names.exported_path(output), str(count), printed[output]] for output, count in page_counts.items()
     ]
     if config.assistance.companion_page:
-        rows.append([COMPANION_FILE, "-", text(language, "manual_print_companion_file")])
+        rows.append([names.companion, "-", text(language, "manual_print_companion_file")])
     paragraphs: list[str] = [
         text(language, "manual_print_actual_size", paper=config.equipment.paper),
         text(language, "manual_print_bw" if config.equipment.printer == "black_and_white" else "manual_print_color"),

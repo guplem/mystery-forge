@@ -3,7 +3,6 @@ from test_render_support import configured, golden_game, with_story
 from mystery_forge.game import Game
 from mystery_forge.mechanics.base import Artifact
 from mystery_forge.render.manual import (
-    COMPANION_FILE,
     MANUAL_GROUP,
     ManualBlock,
     ManualPage,
@@ -65,7 +64,7 @@ def test_the_first_page_is_the_printing_checklist_with_exact_page_counts() -> No
         ["2 - PRINT THIS (game materials).pdf", "13", "Yes"],
         ["HOST ONLY - spoilers/3 - Hints.pdf", "3", "Only if you play without a phone or computer"],
         ["HOST ONLY - spoilers/4 - Solutions.pdf", "7", "Only if you play without a phone or computer"],
-        [COMPANION_FILE, "-", "No: open it on a phone or computer"],
+        ["Game companion.html", "-", "No: open it on a phone or computer"],
     ]
     assert "Print at 100% (actual size), single-sided, on A4 paper." in checklist.paragraphs[0]
     assert checklist.paragraphs[1].startswith("Color looks best")
@@ -188,6 +187,18 @@ def test_a_game_master_gets_a_timing_section() -> None:
 def test_the_manual_speaks_the_game_language() -> None:
     game = configured(golden_game(), {"language": "es"})
     assert pages(game)[0].blocks[1].text == "Lista de impresión"
+
+
+def test_the_printing_checklist_names_the_files_in_the_game_language() -> None:
+    checklist = section(configured(golden_game(), {"language": "es"}), "Lista de impresión")
+    assert checklist.table is not None
+    assert [row[0] for row in checklist.table.rows] == [
+        "1 - EMPIEZA AQUÍ (manual).pdf",
+        "2 - IMPRIME ESTO (materiales del juego).pdf",
+        "SOLO ANFITRIÓN - spoilers/3 - Pistas.pdf",
+        "SOLO ANFITRIÓN - spoilers/4 - Soluciones.pdf",
+        "Compañero de juego.html",
+    ]
 
 
 def test_every_section_flows_in_order_and_a_heading_never_ends_a_page() -> None:

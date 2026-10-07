@@ -24,6 +24,8 @@ A folder on your Desktop (`Mystery Forge/<game title>`) with:
 | `HOST ONLY - spoilers/3 - Hints.pdf`     | Fold-over hint cards, for groups with no device.                                                                                                     |
 | `HOST ONLY - spoilers/4 - Solutions.pdf` | Every answer and the full truth, behind a warning page.                                                                                              |
 
+The file and folder names follow the game language. A Spanish game, for example, starts with `1 - EMPIEZA AQUÍ (manual).pdf`.
+
 ## What you need
 
 - **A paid Claude plan (Pro or Max), or Anthropic API credits.** Claude Code runs on it. Mystery Forge itself is free.
@@ -37,7 +39,7 @@ A folder on your Desktop (`Mystery Forge/<game title>`) with:
 
 1. **Configure.** Open `configurator/index.html` with a double-click. It opens in your browser, with no internet needed. Pick who plays, how long, the story mood, what you can print, and so on. Click **Download config**: your browser saves a `.mystery-config.json` file in your Downloads folder.
 2. **Generate.** Open Claude Code in the `generator` folder of this repository (see [Never used a terminal?](#never-used-a-terminal) below). The first time, Claude Code asks whether you trust the folder: say yes, so that its settings and hooks load. Say: **"create a game"**. The agent finds the newest config in your Downloads folder, shows you a summary, and asks you to pick one of three story teasers. After that it asks nothing more, so you can leave. A game takes about 1 to 2 hours, and it uses a large part of an AI usage window.
-3. **Print and play.** Open `1 - START HERE (manual).pdf` and follow its printing checklist.
+3. **Print and play.** Open the manual (the file whose name starts with `1 -`) and follow its printing checklist.
 
 To change a finished game ("make puzzle B2 easier", "print it in black and white"), ask the agent in the same `generator` folder. If a generation stops halfway (for example at a usage limit), open Claude Code in `generator` again and say "continue".
 

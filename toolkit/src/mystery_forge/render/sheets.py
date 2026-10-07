@@ -9,6 +9,8 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from typing import Final, Literal
 
+from mystery_forge.i18n import text
+
 OutputId = Literal["manual", "materials", "hints", "solutions"]
 SheetRole = Literal[
     "cover",
@@ -35,18 +37,39 @@ REMAINDER_SHARE: Final[float] = 0.25
 REMAINDER_STRETCHES: Final[tuple[float, ...]] = (1.05, 1.1, 1.15)
 
 
-@dataclass(frozen=True)
-class OutputFiles:
-    html: str
-    pdf: str
-
-
-OUTPUT_FILES: Final[dict[OutputId, OutputFiles]] = {
-    "manual": OutputFiles("manual.html", "1 - START HERE (manual).pdf"),
-    "materials": OutputFiles("materials.html", "2 - PRINT THIS (game materials).pdf"),
-    "hints": OutputFiles("hints.html", "3 - Hints.pdf"),
-    "solutions": OutputFiles("solutions.html", "4 - Solutions.pdf"),
+# The HTML files stay inside the render folder, so their names never change. The user opens only the PDF files, the
+# companion page, and the spoiler folder, so `output_file_names` names those in the game language.
+OUTPUT_HTML_FILES: Final[dict[OutputId, str]] = {
+    "manual": "manual.html",
+    "materials": "materials.html",
+    "hints": "hints.html",
+    "solutions": "solutions.html",
 }
+# The export puts these outputs in the spoiler folder, so the manual names their real paths.
+SPOILER_OUTPUTS: Final[frozenset[OutputId]] = frozenset({"hints", "solutions"})
+
+
+@dataclass(frozen=True)
+class OutputFileNames:
+    # The PDF file of each output. The leading number sorts the files in the order that a host reads them.
+    pdfs: dict[OutputId, str]
+    # The companion page keeps this name from the render folder to the exported folder.
+    companion: str
+    spoiler_folder: str
+
+    def exported_path(self, output: OutputId) -> str:
+        """The path of an output PDF in the exported folder, with a forward slash."""
+        name: str = self.pdfs[output]
+        return f"{self.spoiler_folder}/{name}" if output in SPOILER_OUTPUTS else name
+
+
+def output_file_names(language: str) -> OutputFileNames:
+    """The names of the files and the folder that a user sees, in the game language."""
+    return OutputFileNames(
+        pdfs={output: f"{text(language, f'file_{output}')}.pdf" for output in OUTPUT_HTML_FILES},
+        companion=f"{text(language, 'file_companion')}.html",
+        spoiler_folder=text(language, "folder_spoilers"),
+    )
 
 
 @dataclass(frozen=True)
@@ -70,8 +93,8 @@ class OutputPlan:
     sheets: list[Sheet]
 
     @property
-    def files(self) -> OutputFiles:
-        return OUTPUT_FILES[self.id]
+    def html_file(self) -> str:
+        return OUTPUT_HTML_FILES[self.id]
 
 
 def fill_pages[Item](

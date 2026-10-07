@@ -1,4 +1,18 @@
-from mystery_forge.render.sheets import OUTPUT_FILES, OutputPlan, Sheet, number_sheets, number_sheets_by_stage, paginate
+import pytest
+
+from mystery_forge.i18n import LANGUAGES
+from mystery_forge.render.sheets import (
+    OutputFileNames,
+    OutputPlan,
+    Sheet,
+    number_sheets,
+    number_sheets_by_stage,
+    output_file_names,
+    paginate,
+)
+
+# Windows refuses these characters in a file or folder name.
+WINDOWS_FORBIDDEN: str = r'<>:"/\|?*'
 
 
 def sheet(stage: str | None) -> Sheet:
@@ -40,6 +54,49 @@ def test_number_sheets_by_stage_counts_inside_each_stage() -> None:
     assert [item.corner for item in numbered] == ["1/2", "A · 1/2", "A · 2/2", "B · 1/1", "2/2"]
 
 
-def test_an_output_plan_knows_its_file_names() -> None:
-    assert OutputPlan(id="hints", sheets=[]).files.pdf == "3 - Hints.pdf"
-    assert OUTPUT_FILES["materials"].html == "materials.html"
+def test_an_output_plan_keeps_a_language_neutral_html_file() -> None:
+    assert OutputPlan(id="hints", sheets=[]).html_file == "hints.html"
+    assert OutputPlan(id="materials", sheets=[]).html_file == "materials.html"
+
+
+def test_the_output_file_names_follow_the_game_language() -> None:
+    assert output_file_names("en") == OutputFileNames(
+        pdfs={
+            "manual": "1 - START HERE (manual).pdf",
+            "materials": "2 - PRINT THIS (game materials).pdf",
+            "hints": "3 - Hints.pdf",
+            "solutions": "4 - Solutions.pdf",
+        },
+        companion="Game companion.html",
+        spoiler_folder="HOST ONLY - spoilers",
+    )
+    spanish = output_file_names("es")
+    assert spanish.pdfs == {
+        "manual": "1 - EMPIEZA AQUÍ (manual).pdf",
+        "materials": "2 - IMPRIME ESTO (materiales del juego).pdf",
+        "hints": "3 - Pistas.pdf",
+        "solutions": "4 - Soluciones.pdf",
+    }
+    assert spanish.companion == "Compañero de juego.html"
+    assert spanish.spoiler_folder == "SOLO ANFITRIÓN - spoilers"
+
+
+def test_the_exported_path_puts_the_hints_and_the_solutions_in_the_spoiler_folder() -> None:
+    names = output_file_names("es")
+    assert names.exported_path("manual") == "1 - EMPIEZA AQUÍ (manual).pdf"
+    assert names.exported_path("solutions") == "SOLO ANFITRIÓN - spoilers/4 - Soluciones.pdf"
+
+
+@pytest.mark.parametrize("language", LANGUAGES)
+def test_every_language_names_the_files_in_reading_order_with_names_that_windows_accepts(language: str) -> None:
+    names = output_file_names(language)
+    pdfs = list(names.pdfs.values())
+    assert [name[:4] for name in pdfs] == ["1 - ", "2 - ", "3 - ", "4 - "]
+    assert all(name.endswith(".pdf") for name in pdfs)
+    assert names.companion.endswith(".html")
+    for name in (*pdfs, names.companion, names.spoiler_folder):
+        assert not set(name) & set(WINDOWS_FORBIDDEN), name
+        assert name == name.strip() and not name.endswith(".")
+    if language != "en":
+        assert pdfs != list(output_file_names("en").pdfs.values())
+        assert names.spoiler_folder != output_file_names("en").spoiler_folder
