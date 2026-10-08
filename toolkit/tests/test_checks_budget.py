@@ -15,6 +15,7 @@ from mystery_forge.checks.budget import (
     game_play_minutes,
 )
 from mystery_forge.game import Game
+from mystery_forge.text_measure import count_words
 
 ESTIMATE_VECTORS: Path = Path(__file__).parents[2] / "contracts" / "estimate-vectors.json"
 
@@ -46,7 +47,7 @@ def test_group_size_solo_play_and_kids_change_the_puzzle_minutes() -> None:
 
 def test_the_game_estimate_reads_the_words_of_the_documents() -> None:
     words: int = document_words(golden_game())
-    assert words == sum(len(document.text.split()) for document in golden_game().documents)
+    assert words == sum(count_words(document.text) for document in golden_game().documents)
     # caesar-cipher easy 5 + arithmetic-lock easy 5 + deduction easy 10, then reading, then 5 minutes per stage.
     expected: float = 20 + words / 120 / 1 + 10
     assert game_play_minutes(golden_game(), golden_mechanics()) == pytest.approx(expected)

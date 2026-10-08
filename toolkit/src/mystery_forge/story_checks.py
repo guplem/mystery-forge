@@ -19,6 +19,7 @@ from mystery_forge.findings import Finding
 from mystery_forge.game import Game
 from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
 from mystery_forge.spec.models import Flow, Stage, Story
+from mystery_forge.text_measure import count_words
 
 STORY_FILE: Final[str] = "story.yaml"
 STORY_RULES: Final[tuple[str, ...]] = (
@@ -102,7 +103,7 @@ def structure_findings(story: Story, config: GameConfig) -> list[Finding]:
                 "Add an epilogue with min_score_percent: 0.",
             )
         )
-    words: int = len(story.intro.split())
+    words: int = count_words(story.intro)
     if not INTRO_WORDS[0] <= words <= INTRO_WORDS[1]:
         findings.append(
             story_finding(

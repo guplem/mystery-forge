@@ -13,6 +13,7 @@ from mystery_forge.brief import READING_WORDS_PER_MINUTE
 from mystery_forge.catalog import Mechanic
 from mystery_forge.findings import Finding, Severity
 from mystery_forge.game import Game
+from mystery_forge.text_measure import count_words
 
 MINUTES_PER_STAGE: Final[int] = 5
 SOLO_FACTOR: Final[float] = 1.25
@@ -99,7 +100,7 @@ def difficulty_findings(game: Game) -> list[Finding]:
 
 
 def document_words(game: Game) -> int:
-    return sum(len(document.text.split()) for document in game.documents)
+    return sum(count_words(document.text) for document in game.documents)
 
 
 def game_play_minutes(game: Game, mechanics: Mapping[str, Mechanic]) -> float:

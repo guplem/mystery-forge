@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from typing import Final
 
 from mystery_forge.config import Paper
+from mystery_forge.text_measure import display_length
 
 # The height of the safe area of one sheet: the paper height minus the 12 mm margin at the top and at the bottom.
 SAFE_HEIGHT_MM: Final[dict[Paper, float]] = {"A4": 297 - 24, "Letter": 279.4 - 24}
@@ -34,7 +35,7 @@ def page_budget(paper: Paper, reserved_mm: float, level: int) -> float:
 
 def text_height(text: str, chars_per_line: int, line_mm: float) -> float:
     """Estimate the height of a text: its wrapped lines, with each line break starting a new line."""
-    lines: int = sum(max(1, math.ceil(len(line) / chars_per_line)) for line in text.split("\n"))
+    lines: int = sum(max(1, math.ceil(display_length(line) / chars_per_line)) for line in text.split("\n"))
     return lines * line_mm
 
 
