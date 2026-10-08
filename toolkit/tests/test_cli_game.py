@@ -574,3 +574,22 @@ def test_strings_writes_the_template_for_a_language_without_a_checked_table(
     assert (second["ok"], second["needed"]) == (True, True)
     config_path.unlink()
     assert run(["strings", "--game", str(game_dir)])["ok"] is False
+
+
+def test_material_shows_what_the_page_of_one_puzzle_prints(game_dir: Path) -> None:
+    shown = run(["material", "--game", str(game_dir), "--puzzle", "P1"])
+    assert shown["ok"] is True
+    assert shown["code"] == "A1"
+    # The caesar builder prints the plaintext shifted by 3.
+    assert "NHBV LQ WKH ERDWKRXVH" in shown["material"]
+    assert shown["print_notes"] == []
+    missing = run(["material", "--game", str(game_dir), "--puzzle", "P9"])
+    assert missing["ok"] is False
+    assert "P1, P2, P3" in missing["message"]
+    path = game_dir / "source" / "puzzles" / "P1.yaml"
+    path.write_text(path.read_text(encoding="utf-8").replace("shift: 3", "shift: 99"), encoding="utf-8")
+    broken = run(["material", "--game", str(game_dir), "--puzzle", "P1"])
+    assert broken["ok"] is False
+    assert broken["findings"][0]["rule"] == "mechanic.params"
+    (game_dir / "source" / "story.yaml").unlink()
+    assert run(["material", "--game", str(game_dir), "--puzzle", "P1"])["ok"] is False

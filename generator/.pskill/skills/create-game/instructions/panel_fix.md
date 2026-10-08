@@ -19,4 +19,6 @@ What each verdict asks:
 - `puzzles_not_needed` (the deduction item): solvers who solved no puzzle still proved this accusation answer from the plain documents. The `puzzles_not_needed` list of the report quotes the sentences that they used. Remove or blur those facts in the plain documents, so that the proof needs the hidden clue that a puzzle reveals. A fact can leak in other words, or from two documents together: blur every route that the solvers quoted. Keep every plain clue that `story.yaml` cites word for word; when a plain clue itself gives the answer away, change the clue in `story.yaml`, in its document, and in the `must_contain` of `plan.yaml` together. When every innocent suspect is cleared by plain documents, make one clearance depend on a hidden clue.
 - `insufficient_solvers`: too few solvers ran. Change nothing, and answer `kept`.
 
+When you change the params or the mechanic, run `uv run --project ../toolkit forge material --game {{ steps.setup.json.game_dir }} --puzzle <puzzle id>` and check that the hints and the solution still describe the material that it prints.
+
 When you are sure that the solvers missed a clue that is clearly there, answer `kept`, and quote the sentence in your summary. Then run `uv run --project ../toolkit forge assemble --game {{ steps.setup.json.game_dir }}` and fix the errors in your files.

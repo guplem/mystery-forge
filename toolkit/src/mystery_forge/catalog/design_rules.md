@@ -103,6 +103,7 @@ Every puzzle has 3 hints and a separate answer card.
 - Hint 1 never names the method. Hint 2 never gives the answer. Hint 3 never gives the full answer.
 - Each hint stands alone. A player who reads only hint 2 still understands it.
 - A hint cites only material that the solution uses.
+- A hint or a solution step describes the printed page, not the plan. It names only a picture, a mark, an arrow, or a position that the page shows: `forge material` prints the built material as text.
 - For long work (a cipher, a sudoku), add a check to hint 3, such as "if your third letter is not a vowel, check row 2 again".
 - A hint never contains a later answer.
 
