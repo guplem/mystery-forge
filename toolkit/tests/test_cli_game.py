@@ -593,3 +593,45 @@ def test_material_shows_what_the_page_of_one_puzzle_prints(game_dir: Path) -> No
     assert broken["findings"][0]["rule"] == "mechanic.params"
     (game_dir / "source" / "story.yaml").unlink()
     assert run(["material", "--game", str(game_dir), "--puzzle", "P1"])["ok"] is False
+
+
+def plain_answer(option: str, quote: str) -> dict[str, Any]:
+    evidence = [{"document": "D4", "quote": quote}]
+    return {
+        "status": "done",
+        "answers": [],
+        "accusation": [{"question": "who", "option": option, "evidence": evidence}],
+    }
+
+
+def test_plain_test_writes_the_packet_and_judges_the_answers(game_dir: Path) -> None:
+    written = run(["plain-test", "--game", str(game_dir)])
+    assert written["ok"] is True
+    tasks = written["solver_tasks"]
+    assert [task["name"] for task in tasks] == ["plain clues 1", "plain clues 2", "plain clues 3"]
+    assert "wet boot prints" in Path(tasks[0]["packet_file"]).read_text(encoding="utf-8")
+    proof = plain_answer("felix", "wet boot prints on the lamp room stairs, too big for Ana")
+    judge_input = json.dumps({"solver_tasks": tasks, "solver_results": [proof, proof, proof]})
+    judged = run(["plain-test", "--game", str(game_dir), "--judge", "--input", judge_input])
+    assert judged["ok"] is False
+    assert judged["failing"] == ["who: the plain clues prove the answer without a puzzle"]
+    assert judged["failing_questions"] == [
+        {"question": "who", "quotes": ["wet boot prints on the lamp room stairs, too big for Ana"]}
+    ]
+    assert Path(judged["report"]).is_file()
+    stuck = plain_answer("", "")
+    clean_input = json.dumps({"solver_tasks": tasks, "solver_results": [stuck, stuck, stuck]})
+    assert run(["plain-test", "--game", str(game_dir), "--judge", "--input", clean_input])["ok"] is True
+    broken = run(["plain-test", "--game", str(game_dir), "--judge", "--input", "{}"])
+    assert broken["ok"] is False and broken["failing"]
+
+
+def test_plain_test_without_an_accusation_or_a_story(game_dir: Path) -> None:
+    story_path = game_dir / "source" / "story.yaml"
+    story = yaml.safe_load(story_path.read_text(encoding="utf-8"))
+    del story["deduction"]
+    story_path.write_text(yaml.safe_dump(story, allow_unicode=True), encoding="utf-8")
+    assert run(["plain-test", "--game", str(game_dir)]) == {"ok": True, "solver_tasks": [], "failing": []}
+    story_path.unlink()
+    missing = run(["plain-test", "--game", str(game_dir)])
+    assert missing["ok"] is False and missing["findings"]

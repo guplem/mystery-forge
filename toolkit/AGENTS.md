@@ -26,7 +26,7 @@ The Python package `mystery_forge` and its CLI `forge`. It loads configs, builds
 | `plan.py`                | The puzzle plan (`plan.yaml`) and its checks: ownership, graph, mechanics, variety, budget, written-game drift.        |
 | `checks/`                | The whole-game checks, one module per rule family; `runner.py` runs them.                                              |
 | `fix_groups.py`          | Group findings by the writer that owns their files, for parallel fixer subagents.                                      |
-| `panel/`                 | Solver packets per stage, the story-only packet, the guesser packet, and the judge with the panel thresholds.          |
+| `panel/`                 | Solver packets per stage, the story-only packet, the guesser packet, the judge, and the plain clue test of the story.  |
 | `verification.py`        | Content hashes per puzzle, and the ledger that tells fresh checks from stale ones and the panel stages to run.         |
 | `render/`                | HTML and PDF outputs: materials, manual, hints, solutions, companion. `game_renderer.py` is the entry point.           |
 | `render/layout.py`       | Page height estimates and the split of a long text, so that toolkit-built lists flow over as many sheets as they need. |

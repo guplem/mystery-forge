@@ -262,7 +262,72 @@ blocks:
           {{ (steps.review_story.results[0].findings | selectattr('severity', 'equalto', 'required') | list | length) > 0
           and (history.revise_story | length) < 3 }}
         to: revise_story
+      - to: plain_test
+
+  plain_test:
+    type: script
+    description: Write the plain clue test, which checks that the accusation needs the puzzles
+    run: [uv, run, --project, ../toolkit, forge, plain-test, --game, "{{ steps.setup.json.game_dir }}"]
+    parse: json
+    max_visits: 3
+    on_max_visits: plan
+    next:
+      - when: "{{ (steps.plain_test.json.solver_tasks | default([]) | length) > 0 }}"
+        to: plain_test_solve
       - to: plan
+
+  plain_test_solve:
+    type: parallel
+    description: Answer the accusation from the plain clues alone, in fresh solvers
+    for_each: "{{ steps.plain_test.json.solver_tasks }}"
+    task_name: "{{ item.name }}"
+    agent: solver
+    instruction: instructions/plain_test_solve.md
+    output:
+      status: {type: string, enum: [done, failed], description: "failed only when you could not read your packet."}
+      accusation:
+        type: array
+        description: "One entry per question of the final accusation."
+        items:
+          type: object
+          properties:
+            question: {type: string}
+            option: {type: string}
+            evidence:
+              type: array
+              items:
+                type: object
+                properties:
+                  document: {type: string}
+                  quote: {type: string}
+    next: plain_test_judge
+
+  plain_test_judge:
+    type: script
+    description: Judge whether the plain clues alone prove an accusation answer
+    run: [uv, run, --project, ../toolkit, forge, plain-test, --game, "{{ steps.setup.json.game_dir }}", --judge]
+    input:
+      solver_tasks: "{{ steps.plain_test.json.solver_tasks }}"
+      solver_results: "{{ steps.plain_test_solve.results }}"
+    parse: json
+    next:
+      - when: "{{ steps.plain_test_judge.json.ok }}"
+        to: plan
+      - when: "{{ (history.revise_story_plain | length) < 2 }}"
+        to: revise_story_plain
+      - to: plan
+
+  revise_story_plain:
+    type: parallel
+    description: Revise the story so that the accusation needs the puzzles
+    for_each:
+      - {name: story revision}
+    task_name: "{{ item.name }}"
+    agent: story-writer
+    instruction: instructions/revise_story_plain.md
+    output:
+      summary: {type: string, description: "At most 5 lines: what you changed, with no spoiler."}
+    next: story_check
 
   revise_story:
     type: parallel
