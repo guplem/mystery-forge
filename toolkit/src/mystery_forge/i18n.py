@@ -180,10 +180,15 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_tape": "Tape or glue",
         "manual_setup_title": "Setup",
         "manual_setup_split": "Do not read the game materials. Split the stack at each page that says STOP.",
-        "manual_setup_outside": (
-            "The pages before the first STOP page stay outside the envelopes: the cover, the envelope labels, the "
-            "answer register, and the detective notes."
-        ),
+        "manual_setup_outside": "The pages before the first STOP page stay outside the envelopes: {pages}.",
+        "manual_setup_outside_piles": "The pages before the first STOP page stay on the table: {pages}.",
+        "manual_outside_cover": "the cover",
+        "manual_outside_labels": "the envelope labels",
+        "manual_outside_register": "the answer register",
+        "manual_outside_notes": "the detective notes",
+        "list_separator": ", ",
+        "list_two": "{first} and {last}",
+        "list_many": "{items}, and {last}",
         "manual_setup_envelopes": (
             "Put each part in its own envelope, with its STOP page on top. Stick the matching label on each envelope "
             "and close it."
@@ -407,9 +412,18 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_setup_title": "Preparación",
         "manual_setup_split": "No leas el material del juego. Separa el montón por cada página que dice ALTO.",
         "manual_setup_outside": (
-            "Las páginas anteriores a la primera página de ALTO quedan fuera de los sobres: la portada, las etiquetas, "
-            "el registro de respuestas y las notas del detective."
+            "Las páginas anteriores a la primera página de ALTO quedan fuera de los sobres: {pages}."
         ),
+        "manual_setup_outside_piles": (
+            "Las páginas anteriores a la primera página de ALTO quedan sobre la mesa: {pages}."
+        ),
+        "manual_outside_cover": "la portada",
+        "manual_outside_labels": "las etiquetas",
+        "manual_outside_register": "el registro de respuestas",
+        "manual_outside_notes": "las notas del detective",
+        "list_separator": ", ",
+        "list_two": "{first} y {last}",
+        "list_many": "{items} y {last}",
         "manual_setup_envelopes": (
             "Mete cada parte en su propio sobre, con su página de ALTO encima. Pega la etiqueta correspondiente en "
             "cada sobre y ciérralo."
@@ -633,10 +647,17 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_tape": "Cinta adhesiva o cola",
         "manual_setup_title": "Preparació",
         "manual_setup_split": "No llegeixis el material del joc. Separa la pila per cada pàgina que diu ATURA'T.",
-        "manual_setup_outside": (
-            "Les pàgines anteriors a la primera pàgina d'ATURA'T queden fora dels sobres: la portada, les etiquetes, "
-            "el registre de respostes i les notes del detectiu."
+        "manual_setup_outside": "Les pàgines anteriors a la primera pàgina d'ATURA'T queden fora dels sobres: {pages}.",
+        "manual_setup_outside_piles": (
+            "Les pàgines anteriors a la primera pàgina d'ATURA'T queden sobre la taula: {pages}."
         ),
+        "manual_outside_cover": "la portada",
+        "manual_outside_labels": "les etiquetes",
+        "manual_outside_register": "el registre de respostes",
+        "manual_outside_notes": "les notes del detectiu",
+        "list_separator": ", ",
+        "list_two": "{first} i {last}",
+        "list_many": "{items} i {last}",
         "manual_setup_envelopes": (
             "Posa cada part en el seu sobre, amb la seva pàgina d'ATURA'T a sobre. Enganxa l'etiqueta corresponent a "
             "cada sobre i tanca'l."
@@ -861,10 +882,15 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_tape": "Du ruban adhésif ou de la colle",
         "manual_setup_title": "Préparation",
         "manual_setup_split": "Ne lisez pas le matériel du jeu. Séparez la pile à chaque page marquée STOP.",
-        "manual_setup_outside": (
-            "Les pages avant la première page STOP restent hors des enveloppes : la couverture, les étiquettes, le "
-            "registre des réponses et les notes du détective."
-        ),
+        "manual_setup_outside": "Les pages avant la première page STOP restent hors des enveloppes : {pages}.",
+        "manual_setup_outside_piles": "Les pages avant la première page STOP restent sur la table : {pages}.",
+        "manual_outside_cover": "la couverture",
+        "manual_outside_labels": "les étiquettes",
+        "manual_outside_register": "le registre des réponses",
+        "manual_outside_notes": "les notes du détective",
+        "list_separator": ", ",
+        "list_two": "{first} et {last}",
+        "list_many": "{items} et {last}",
         "manual_setup_envelopes": (
             "Mettez chaque partie dans sa propre enveloppe, sa page STOP au-dessus. Collez l'étiquette correspondante "
             "sur chaque enveloppe et fermez-la."
@@ -1090,10 +1116,15 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_tape": "Klebeband oder Kleber",
         "manual_setup_title": "Vorbereitung",
         "manual_setup_split": "Lest das Spielmaterial nicht. Teilt den Stapel bei jeder Seite mit STOPP.",
-        "manual_setup_outside": (
-            "Die Seiten vor der ersten STOPP-Seite kommen in keinen Umschlag: das Deckblatt, die Etiketten, das "
-            "Antwortregister und die Ermittlungsnotizen."
-        ),
+        "manual_setup_outside": "Die Seiten vor der ersten STOPP-Seite kommen in keinen Umschlag: {pages}.",
+        "manual_setup_outside_piles": "Die Seiten vor der ersten STOPP-Seite bleiben auf dem Tisch: {pages}.",
+        "manual_outside_cover": "das Deckblatt",
+        "manual_outside_labels": "die Etiketten",
+        "manual_outside_register": "das Antwortregister",
+        "manual_outside_notes": "die Ermittlungsnotizen",
+        "list_separator": ", ",
+        "list_two": "{first} und {last}",
+        "list_many": "{items} und {last}",
         "manual_setup_envelopes": (
             "Legt jeden Teil in einen eigenen Umschlag, mit seiner STOPP-Seite oben. Klebt das passende Etikett auf "
             "jeden Umschlag und verschließt ihn."
@@ -1316,10 +1347,15 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_tape": "Nastro adesivo o colla",
         "manual_setup_title": "Preparazione",
         "manual_setup_split": "Non leggere il materiale di gioco. Dividi la pila a ogni pagina con scritto STOP.",
-        "manual_setup_outside": (
-            "Le pagine prima della prima pagina STOP restano fuori dalle buste: la copertina, le etichette, il "
-            "registro delle risposte e gli appunti del detective."
-        ),
+        "manual_setup_outside": "Le pagine prima della prima pagina STOP restano fuori dalle buste: {pages}.",
+        "manual_setup_outside_piles": "Le pagine prima della prima pagina STOP restano sul tavolo: {pages}.",
+        "manual_outside_cover": "la copertina",
+        "manual_outside_labels": "le etichette",
+        "manual_outside_register": "il registro delle risposte",
+        "manual_outside_notes": "gli appunti del detective",
+        "list_separator": ", ",
+        "list_two": "{first} e {last}",
+        "list_many": "{items} e {last}",
         "manual_setup_envelopes": (
             "Metti ogni parte nella sua busta, con la sua pagina STOP sopra. Incolla l'etichetta giusta su ogni busta "
             "e chiudila."
@@ -1542,10 +1578,15 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_tape": "Fita-cola ou cola",
         "manual_setup_title": "Preparação",
         "manual_setup_split": "Não leia o material do jogo. Separe a pilha em cada página que diz PARE.",
-        "manual_setup_outside": (
-            "As páginas antes da primeira página PARE ficam fora dos envelopes: a capa, as etiquetas, o registo de "
-            "respostas e as notas do detetive."
-        ),
+        "manual_setup_outside": "As páginas antes da primeira página PARE ficam fora dos envelopes: {pages}.",
+        "manual_setup_outside_piles": "As páginas antes da primeira página PARE ficam em cima da mesa: {pages}.",
+        "manual_outside_cover": "a capa",
+        "manual_outside_labels": "as etiquetas",
+        "manual_outside_register": "o registo de respostas",
+        "manual_outside_notes": "as notas do detetive",
+        "list_separator": ", ",
+        "list_two": "{first} e {last}",
+        "list_many": "{items} e {last}",
         "manual_setup_envelopes": (
             "Coloque cada parte no seu envelope, com a sua página PARE por cima. Cole a etiqueta certa em cada "
             "envelope e feche-o."
@@ -2261,6 +2302,15 @@ def text(language: str, key: str, solo: bool = False, **values: str) -> str:
         raise KeyError(f"No fixed text named '{key}'.")
     chosen: str = f"{key}_solo" if solo and f"{key}_solo" in strings else key
     return strings[chosen].format(**values)
+
+
+def join_list(language: str, items: list[str]) -> str:
+    """Return the items as one phrase, such as "a, b, and c" in English or "a, b y c" in Spanish."""
+    if len(items) <= 1:
+        return "".join(items)
+    if len(items) == 2:
+        return text(language, "list_two", first=items[0], last=items[1])
+    return text(language, "list_many", items=text(language, "list_separator").join(items[:-1]), last=items[-1])
 
 
 def format_date(moment: datetime, language: str) -> str:

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field, replace
 from typing import Final, Literal
 
 from mystery_forge.game import Game
-from mystery_forge.i18n import text
+from mystery_forge.i18n import join_list, text
 from mystery_forge.render.layout import Tightness, page_budget, split_text, text_height, tightness
 from mystery_forge.render.sheets import OutputFileNames, OutputId, Sheet, output_file_names, paginate
 
@@ -120,9 +120,26 @@ def needs_section(game: Game) -> ManualSection:
     return ManualSection(heading=text(language, "manual_need_title"), checklist=items)
 
 
+def outside_pages(game: Game) -> list[str]:
+    """The pages before the first STOP page, in the order of `materials_sheets`."""
+    config = game.config
+    keys: list[str] = ["manual_outside_cover"]
+    if config.equipment.envelopes:
+        keys.append("manual_outside_labels")
+    if config.assistance.paper_answer_check:
+        keys.append("manual_outside_register")
+    if config.format in ("case_file", "both"):
+        keys.append("manual_outside_notes")
+    return [text(config.language, key) for key in keys]
+
+
 def setup_section(game: Game) -> ManualSection:
     language: str = game.config.language
-    steps: list[str] = [text(language, "manual_setup_split"), text(language, "manual_setup_outside")]
+    outside_key: str = "manual_setup_outside" if game.config.equipment.envelopes else "manual_setup_outside_piles"
+    steps: list[str] = [
+        text(language, "manual_setup_split"),
+        text(language, outside_key, pages=join_list(language, outside_pages(game))),
+    ]
     steps.append(text(language, "manual_setup_envelopes" if game.config.equipment.envelopes else "manual_setup_piles"))
     steps.append(text(language, "manual_setup_spoilers"))
     return ManualSection(heading=text(language, "manual_setup_title"), steps=steps)

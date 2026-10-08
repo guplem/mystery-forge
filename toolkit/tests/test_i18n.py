@@ -126,3 +126,13 @@ def test_arabic_hebrew_persian_and_urdu_read_from_right_to_left() -> None:
         "ltr",
         "ltr",
     ]
+
+
+def test_join_list_follows_the_language() -> None:
+    from mystery_forge.i18n import join_list
+
+    assert join_list("en", []) == ""
+    assert join_list("en", ["a"]) == "a"
+    assert join_list("en", ["a", "b"]) == "a and b"
+    assert join_list("en", ["a", "b", "c"]) == "a, b, and c"
+    assert join_list("ca", ["a", "b", "c"]) == "a, b i c"
