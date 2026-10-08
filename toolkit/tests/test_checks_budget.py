@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from test_checks_support import edit_puzzle, golden_game, golden_mechanics, rules
+from test_checks_support import edit_document, edit_puzzle, golden_game, golden_mechanics, rules
 
 from mystery_forge.checks.budget import (
     check_budget,
@@ -14,6 +14,7 @@ from mystery_forge.checks.budget import (
     estimate_play_minutes,
     game_play_minutes,
 )
+from mystery_forge.findings import Finding
 from mystery_forge.game import Game
 from mystery_forge.text_measure import count_words
 
@@ -122,3 +123,41 @@ def test_the_game_warns_when_its_puzzles_drift_below_the_config_difficulty() -> 
     drift = [finding for finding in findings if finding.rule == "budget.difficulty_drift"]
     assert [finding.severity for finding in drift] == ["warning"]
     assert "0 of 3" in drift[0].message
+
+
+def for_audience(game: Game, audience: str) -> Game:
+    return game.model_copy(update={"config": game.config.model_copy(update={"audience": audience})})
+
+
+def word_findings(game: Game) -> list[Finding]:
+    return [finding for finding in check_budget(game, golden_mechanics()) if finding.rule == "budget.document_words"]
+
+
+def test_a_kids_document_over_the_audience_word_limit_is_an_error() -> None:
+    long_letter = edit_document(golden_game(), "D1", text=" ".join(["word"] * 130))
+    (finding,) = word_findings(for_audience(long_letter, "kids"))
+    assert (finding.severity, finding.file) == ("error", "documents/D1.md")
+    assert "130 words" in finding.message and "120" in finding.message
+    # A family game allows 250 words per document, and an older audience only gets a warning.
+    assert word_findings(long_letter) == []
+    longer = edit_document(golden_game(), "D1", text=" ".join(["word"] * 260))
+    assert [finding.severity for finding in word_findings(longer)] == ["warning"]
+
+
+def test_the_word_limit_counts_scripts_without_spaces_and_skips_the_built_material() -> None:
+    japanese = edit_document(golden_game(), "D1", text="雪" * 260)
+    assert len(word_findings(for_audience(japanese, "kids"))) == 1
+    game = golden_game()
+    p1 = next(puzzle for puzzle in game.puzzles if puzzle.source.id == "P1")
+    assert p1.artifact is not None
+    material = " ".join(["XQZ"] * 200)
+    puzzles = [
+        puzzle.model_copy(update={"artifact": p1.artifact.model_copy(update={"solver_text": material})})
+        if puzzle is p1
+        else puzzle
+        for puzzle in game.puzzles
+    ]
+    with_material = edit_document(
+        game.model_copy(update={"puzzles": puzzles}), "D2", text=f"Ten short words. {material}"
+    )
+    assert word_findings(for_audience(with_material, "kids")) == []
