@@ -22,4 +22,3 @@ One game takes hours of agent work and dozens of files. One agent session cannot
 
 - Claude Code is the supported harness. Codex runs the skill with no hooks in a subfolder project, so a stop there is not caught.
 - Claude Code ignores the project settings of `generator/` (permissions and hooks) until the user trusts the folder once; the README says so.
-- pskill v0.30.0 prints an absolute cache path in its commands, so `generator/.claude/settings.json` also allows `Bash(uv run *pskill.py *)`.

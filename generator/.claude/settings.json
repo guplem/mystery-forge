@@ -27,7 +27,6 @@
   "permissions": {
     "allow": [
       "Bash(uv run .pskill/pskill.py *)",
-      "Bash(uv run *pskill.py *)",
       "Bash(uv run --project ../toolkit forge *)",
       "Bash(uv run --project ../toolkit playwright install chromium)",
       "Read",

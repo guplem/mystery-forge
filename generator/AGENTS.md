@@ -23,7 +23,7 @@ When a run already exists (the user says "continue"), run `uv run .pskill/pskill
 - **Never change the toolkit or the skills** (`../toolkit/`, `.pskill/`) to make a game pass a check. Fix the game files instead. A real toolkit bug goes to the user as a short note at the end.
 - **Never read the toolkit's source code** to learn what a check wants. The finding messages, `forge catalog rules`, and `forge schema` say everything that you need.
 - **Never pause an autonomous run because a subagent stopped.** In an autonomous run nobody can interrupt you. A subagent that fails, stalls, or returns "Request interrupted by user" lost its connection: run the same task again. Pause only when the user really asks for it.
-- **Never run a shell command longer than about 5,000 characters.** On Windows it fails or gets cut. Write files with the Write tool, and submit a long pskill answer from a file: `uv run .pskill/pskill.py submit <run> < answer.yaml`.
+- **Never run a shell command longer than about 5,000 characters.** On Windows it fails or gets cut. Write files with the Write tool. For a long pskill answer, use the `--file` command that the packet gives.
 
 ## The toolkit
 
