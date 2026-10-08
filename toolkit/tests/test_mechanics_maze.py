@@ -183,3 +183,23 @@ def test_maze_rejects_an_answer_without_letters() -> None:
 def test_maze_rejects_a_size_out_of_range() -> None:
     with pytest.raises(MechanicBuildError):
         parse_params(implementation(), {"size": "21"})
+
+
+def test_a_kana_maze_takes_its_decoys_from_the_kana_of_the_documents() -> None:
+    context = MechanicContext(
+        puzzle_id="P1", answer="ゆきやま", language="ja", seed=5, documents={"D1": "ふるいやまごやに、ゆきがふる。"}
+    )
+    params = parse_params(implementation(), {"size": 8})
+    artifact = implementation().build(params, context)
+    letters = re.findall(r"<text[^>]*>([^<]*)</text>", artifact.html)
+    assert set(letters) <= set("ゆきやまふるいごにがる")
+    assert len(letters) > 4
+    decoder = implementation().decode_rendered
+    assert decoder is not None
+    assert decoder(RenderedArtifact(text="", html=artifact.html), params, context) == "ゆきやま"
+
+
+def test_a_maze_refuses_letters_that_combine_with_marks() -> None:
+    context = MechanicContext(puzzle_id="P1", answer="किताब", language="hi", seed=5, documents={})
+    with pytest.raises(MechanicBuildError, match="combine with marks"):
+        implementation().build(parse_params(implementation(), {"size": 8}), context)
