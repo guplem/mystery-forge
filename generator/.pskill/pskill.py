@@ -29,9 +29,9 @@ from pathlib import Path
 # The pin. `pskill init` and `pskill update` write these three lines. No version means the latest
 # release (the first install runs this file alone, from a URL). "dev" runs the pskill checkout that
 # holds this project: only the pskill repository uses it.
-PSKILL_VERSION = "0.30.0"
-PSKILL_URL = "https://github.com/guplem/pskill/releases/download/v0.30.0/pskill.zip"
-PSKILL_SHA256 = "314b8b813b71d03bf50c0e6f3ad927ddce8327beafdbf96cd4111141f13cea11"
+PSKILL_VERSION = "0.32.0"
+PSKILL_URL = "https://github.com/guplem/pskill/releases/download/v0.32.0/pskill.zip"
+PSKILL_SHA256 = "586d7a68bea5f2b6695f0e534cf6ec0ec49b37f702380d608685801df21d19d0"
 
 # pskill_runner/release.py and pskill_runner/install.py hold the same values; tests check that they are equal.
 DEFAULT_RELEASE_URL = "https://github.com/guplem/pskill/releases/latest/download/pskill.zip"
