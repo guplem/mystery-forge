@@ -2448,6 +2448,16 @@ class LanguagePack(BaseModel):
 
 
 DATE_FIELDS: Final[frozenset[str]] = frozenset({"day", "month", "year"})
+# A Japanese pack may print era years instead (昭和33年), when the story counts years by era too.
+ERA_DATE_FIELDS: Final[frozenset[str]] = frozenset({"day", "month", "era_year"})
+# The first day of each Japanese era, newest first.
+JAPANESE_ERAS: Final[tuple[tuple[datetime, str], ...]] = (
+    (datetime(2019, 5, 1), "令和"),
+    (datetime(1989, 1, 8), "平成"),
+    (datetime(1926, 12, 25), "昭和"),
+    (datetime(1912, 7, 30), "大正"),
+    (datetime(1868, 10, 23), "明治"),
+)
 # The texts that name the exported files. Windows refuses these characters in a file name.
 FILE_NAME_PREFIX: Final[str] = "file_"
 FORBIDDEN_FILE_CHARACTERS: Final[frozenset[str]] = frozenset(r'<>:"/\|?*')
@@ -2484,8 +2494,8 @@ def language_pack_problems(pack: LanguagePack) -> list[str]:
             if forbidden:
                 listed_characters: str = ", ".join(f"'{character}'" for character in forbidden)
                 problems.append(f"The file name '{key}' holds a character that file names forbid: {listed_characters}.")
-    if set(placeholders(pack.date_pattern)) != DATE_FIELDS:
-        problems.append("The date pattern must hold {day}, {month}, and {year}.")
+    if set(placeholders(pack.date_pattern)) not in (DATE_FIELDS, ERA_DATE_FIELDS):
+        problems.append("The date pattern must hold {day}, {month}, and {year} (or {era_year}, the Japanese era year).")
     return problems
 
 
@@ -2538,10 +2548,29 @@ def join_list(language: str, items: list[str]) -> str:
 
 
 def format_date(moment: datetime, language: str) -> str:
-    """Return a long date such as "14 de marzo de 1931"."""
+    """Return a long date such as "14 de marzo de 1931", or "昭和33年3月14日" for a pattern with {era_year}."""
     chosen: str = known_language(language)
     month: str = MONTHS[chosen][moment.month - 1]
-    return DATE_PATTERNS[chosen].format(day=moment.day, month=month, year=moment.year)
+    return DATE_PATTERNS[chosen].format(
+        day=moment.day, month=month, year=moment.year, era_year=japanese_era_year(moment)
+    )
+
+
+def uses_era_years(language: str) -> bool:
+    """True when the toolkit prints the dates of this language with Japanese era years."""
+    return "era_year" in placeholders(DATE_PATTERNS[known_language(language)])
+
+
+def japanese_era_year(moment: datetime) -> str:
+    """The Japanese era and the year in it, such as "昭和33". The first year of an era is "元".
+
+    A date before the Meiji era gets the plain year.
+    """
+    for start, era in JAPANESE_ERAS:
+        if moment >= start:
+            number: int = moment.year - start.year + 1
+            return f"{era}{'元' if number == 1 else number}"
+    return str(moment.year)
 
 
 def weekday_name(moment: datetime, language: str) -> str:

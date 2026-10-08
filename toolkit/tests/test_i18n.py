@@ -98,8 +98,29 @@ def test_a_pack_must_keep_every_key_and_every_placeholder() -> None:
         "The key 'continued' is missing.",
         "The key 'made_up_key' is not a fixed text.",
         "The text 'envelope_label' must keep the fields {stage}, not {etapa}.",
-        "The date pattern must hold {day}, {month}, and {year}.",
+        "The date pattern must hold {day}, {month}, and {year} (or {era_year}, the Japanese era year).",
     ]
+    era = template.model_copy(update={"date_pattern": "{era_year}年{month}{day}日"})
+    assert language_pack_problems(era) == []
+
+
+@pytest.mark.parametrize(
+    ("moment", "expected"),
+    [
+        (datetime(1958, 3, 14), "昭和33"),
+        (datetime(1926, 12, 24), "大正15"),
+        (datetime(1926, 12, 25), "昭和元"),
+        (datetime(1989, 1, 8), "平成元"),
+        (datetime(2019, 5, 1), "令和元"),
+        (datetime(1912, 7, 29), "明治45"),
+        (datetime(1850, 1, 1), "1850"),
+    ],
+)
+def test_a_date_pattern_may_print_the_japanese_era_year(restored_tables: None, moment: datetime, expected: str) -> None:
+    pack = language_pack_template().model_copy(update={"date_pattern": "{era_year}年{month}{day}日"})
+    pack = pack.model_copy(update={"months": [f"{number}月" for number in range(1, 13)]})
+    register_language("ja", pack)
+    assert format_date(moment, "ja") == f"{expected}年{moment.month}月{moment.day}日"
 
 
 def test_a_registered_pack_serves_its_language(restored_tables: None) -> None:

@@ -5,7 +5,7 @@ Read the English template `{{ steps.texts.json.template }}`. Write `{{ steps.tex
 - Keys that start with `file_` name the exported files: keep them short, keep their number at the start, and use none of these characters: `< > : " / \ | ? *`.
 - Keys that start with `list_` join a list, such as "a, b, and c": write the separator and the word "and" of the game language (for example `、` and `と` in Japanese).
 - `months`: the 12 month names, January first. `weekdays`: the 7 day names, Monday first.
-- `date_pattern`: the long date of the language, with `{day}`, `{month}`, and `{year}`.
+- `date_pattern`: the long date of the language, with `{day}`, `{month}`, and `{year}`. Japanese may use `{era_year}` instead of `{year}`, which prints the era year (昭和33): choose it when the story will count years by era, because every document must then use the same style.
 
 Then run `uv run --project ../toolkit forge strings --game {{ steps.setup.json.game_dir }}` and fix every finding that it reports.
 {% if history.translate_texts | length > 0 %}
