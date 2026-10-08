@@ -29,5 +29,12 @@ def test_the_windows_launcher_keeps_windows_line_endings() -> None:
     assert content.count(b"\n") == content.count(b"\r\n")
 
 
+def test_the_windows_launcher_opens_the_configurator_in_the_web_browser() -> None:
+    """Many users set an editor as the default app for .html files, so the launcher asks for the http handler."""
+    text: str = WINDOWS_LAUNCHER.read_text(encoding="utf-8")
+    assert r"UrlAssociations\http\UserChoice" in text
+    assert 'start "" "%~dp0configurator\\index.html"' not in text
+
+
 def test_the_mac_launcher_is_a_bash_script() -> None:
     assert MAC_LAUNCHER.read_text(encoding="utf-8").startswith("#!/bin/bash\n")
