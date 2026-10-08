@@ -12,6 +12,7 @@ The Python package `mystery_forge` and its CLI `forge`. It loads configs, builds
 | `draw.py`                | The seeded draw of story ingredients and mechanic candidates, filtered by the config.                                  |
 | `paths.py`               | The real Desktop and Downloads folders (Windows known folders, XDG), safe folder names, the newest config file.        |
 | `findings.py`            | `Finding`: the one shape of every problem that the loader and the checks report.                                       |
+| `text_measure.py`        | Word counts and text widths that work in every script, also in Japanese, Chinese, and Thai, which use no spaces.       |
 | `yaml_loading.py`        | YAML where every scalar stays text (so `0420` keeps its zero), with the line of every value.                           |
 | `i18n.py`                | The fixed output texts, dates, and weekdays: 7 checked tables, plus a translated pack per game for other languages.    |
 | `catalog/`               | Package data: 91 mechanics, story ingredient decks, evidence types, the design rules for writers; typed loader.        |
