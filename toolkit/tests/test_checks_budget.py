@@ -154,7 +154,8 @@ def test_the_word_limit_counts_scripts_without_spaces_and_skips_the_built_materi
     puzzles = [
         puzzle.model_copy(update={"artifact": p1.artifact.model_copy(update={"solver_text": material})})
         if puzzle is p1
-        else puzzle
+        # A puzzle whose material failed to build has no artifact, and nothing to leave out.
+        else puzzle.model_copy(update={"artifact": None})
         for puzzle in game.puzzles
     ]
     with_material = edit_document(

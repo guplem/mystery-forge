@@ -170,8 +170,7 @@ def prose_words(game: Game, text: str) -> int:
     for puzzle in game.puzzles:
         if puzzle.artifact is not None:
             for material in (puzzle.artifact.solver_text, *(part.solver_text for part in puzzle.artifact.parts)):
-                if material:
-                    text = text.replace(material, "")
+                text = text.replace(material, "")
     return count_words(text)
 
 
