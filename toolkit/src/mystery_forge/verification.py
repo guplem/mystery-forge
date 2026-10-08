@@ -194,6 +194,24 @@ def stale_panel_codes(ledger: VerificationLedger, hashes: dict[str, str]) -> lis
     ]
 
 
+def unjudged_panel_codes(ledger: VerificationLedger, hashes: dict[str, str]) -> list[str]:
+    """Return the codes that the solver panel never judged on their current content.
+
+    A code that failed the panel on its current content is stale but not unjudged: the same packet would get the same
+    verdict, so a run gains nothing by sending it to the panel again before a fix changes it.
+    """
+    return [code for code, current in hashes.items() if ledger.entries.get(code, LedgerEntry()).panel_hash != current]
+
+
+def panel_tested_stages(game: Game, ledger: VerificationLedger) -> set[str]:
+    """Return the packet stages that the panel judged before, on any content: a re-test of them needs fewer solvers."""
+    tested: set[str] = {code for code, entry in ledger.entries.items() if entry.panel_hash is not None}
+    stages: set[str] = {puzzle.source.stage for puzzle in game.puzzles if puzzle.code in tested}
+    if DEDUCTION_KEY in tested:
+        stages.add(STORY_ONLY_STAGE)
+    return stages
+
+
 def panel_stages_to_run(game: Game, ledger: VerificationLedger) -> set[str]:
     """Return the packet stages that hold an item with no panel pass on its current content.
 

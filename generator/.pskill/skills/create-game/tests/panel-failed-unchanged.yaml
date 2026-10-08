@@ -1,7 +1,6 @@
-name: with no panel, a stale verification still exports, with warnings
+name: a panel failure on unchanged content exports with warnings, with no new panel round
 inputs:
   config: c.json
-  panel: false
 scripts:
   doctor:
   - exit_code: 0
@@ -26,7 +25,7 @@ scripts:
       []}'
   status:
   - exit_code: 0
-    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"], "panel_unjudged": ["A1"]}'
+    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"], "panel_unjudged": []}'
   plain_test:
   - exit_code: 0
     stdout: '{"ok": true, "failing": [], "solver_tasks": [{"name": "plain clues 1", "stage": "story-only", "packet_file":
@@ -37,8 +36,9 @@ scripts:
     stdout: '{"ok": true, "failing": [], "failing_questions": [], "report": "r.json"}'
   export_with_warnings:
   - exit_code: 0
-    stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
-      materials).pdf"]}'
+    stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["0 - READ FIRST (warnings).txt", "1 - START HERE
+      (manual).pdf", "2 - PRINT THIS (game materials).pdf"], "warnings": ["Puzzle B1: the test players found more than one
+      answer that fits."]}'
 calls:
   story_check:
   - &id001
@@ -53,6 +53,13 @@ calls:
   - *id001
   game_check:
   - *id001
+  panel:
+  - status: succeeded
+    outputs:
+      ok: true
+      failing: []
+      failing_items: []
+      report: p.json
 answers:
   confirm_config:
   - choice: go
@@ -136,6 +143,7 @@ expect:
   - illustrate
   - game_check
   - review_documents
+  - panel
   - render
   - visual_review
   - status

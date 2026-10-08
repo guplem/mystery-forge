@@ -202,6 +202,11 @@ def test_judge_reports_failing_items_with_their_files(game_dir: Path, monkeypatc
     status = run(["status", "--game", str(game_dir), "--panel", "false"])
     assert status["ok"] is False
     assert status["stale"]
+    # The panel failed these codes on their current content: they are stale, but a new panel round would only repeat
+    # the same verdicts, so none of them is unjudged.
+    judged_status = run(["status", "--game", str(game_dir)])
+    assert "A1" in judged_status["panel_stale"]
+    assert judged_status["panel_unjudged"] == []
 
 
 def test_packets_skip_the_stages_that_passed_on_their_current_content(game_dir: Path) -> None:
@@ -215,7 +220,8 @@ def test_packets_skip_the_stages_that_passed_on_their_current_content(game_dir: 
     path.write_text(path.read_text(encoding="utf-8") + "\nThe gulls were loud that night.\n", encoding="utf-8")
     assert run(["check", "--game", str(game_dir)])["ok"] is True
     payload = packets_and_payload(game_dir)
-    assert {task["stage"] for task in payload["solver_tasks"]} == {"B", "story-only"}
+    # The panel judged these stages before, so the re-test of the fix gets 3 solvers, not the 5 of the first round.
+    assert [task["stage"] for task in payload["solver_tasks"]] == ["B"] * 3 + ["story-only"] * 3
     judged = run(["judge", "--game", str(game_dir), "--input", json.dumps(payload)])
     assert judged["ok"] is True
     report = json.loads((game_dir / "reports" / "panel" / "panel.json").read_text(encoding="utf-8"))
@@ -499,9 +505,10 @@ def test_status_lists_stale_checks_and_stale_panel_codes_apart(game_dir: Path) -
     status = run(["status", "--game", str(game_dir), "--panel", "True"])
     assert status["checks_stale"] == []
     assert status["panel_stale"] == ["A1", "A2", "B1", "deduction"]
+    assert status["panel_unjudged"] == ["A1", "A2", "B1", "deduction"]
     status = run(["status", "--game", str(game_dir), "--panel", "0"])
     assert status["ok"] is True
-    assert status["panel_stale"] == []
+    assert status["panel_stale"] == status["panel_unjudged"] == []
 
 
 def break_story_and_puzzle(game_dir: Path) -> None:

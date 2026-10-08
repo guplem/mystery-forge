@@ -27,7 +27,7 @@ scripts:
   - *id001
   status:
   - exit_code: 0
-    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"]}'
+    stdout: '{"ok": false, "stale": ["A1"], "checks_stale": [], "panel_stale": ["A1"], "panel_unjudged": ["A1"]}'
   - exit_code: 0
     stdout: '{"ok": true, "stale": []}'
   export:
