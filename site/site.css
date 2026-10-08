@@ -1,0 +1,322 @@
+/* The project page on GitHub Pages. The same paper, ink, and wax seal as the configurator (configurator/styles.css). */
+
+:root {
+  --paper: #f3ebdb;
+  --card: #fffcf5;
+  --ink: #2a2018;
+  --ink-soft: #4a3c2f;
+  --muted: #69584a;
+  --line: #e2d5bd;
+  --accent: #8e2b1f;
+  --accent-dark: #6c1e14;
+  --focus: #1f5fa6;
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Times New Roman', serif;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --radius: 16px;
+  --shadow: 0 1px 2px rgba(70, 45, 20, 0.08), 0 12px 28px -18px rgba(70, 45, 20, 0.45);
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse at 12% 18%, rgba(255, 255, 255, 0.65), transparent 45%),
+    radial-gradient(ellipse at 88% 62%, rgba(150, 105, 55, 0.1), transparent 50%),
+    repeating-linear-gradient(0deg, rgba(90, 60, 30, 0.022) 0 1px, transparent 1px 4px);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.1rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3.2vw, 2rem);
+}
+
+h3 {
+  font-size: 1.15rem;
+}
+
+p,
+ul,
+ol {
+  margin: 0 0 1em;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.top,
+main,
+.bottom {
+  width: min(1080px, 100% - 32px);
+  margin-inline: auto;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.brand {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.seal {
+  width: 40px;
+  height: 40px;
+  color: var(--accent);
+}
+
+.top nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.top nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.top nav a:hover {
+  color: var(--accent);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 40px;
+  align-items: center;
+  padding: 32px 0 48px;
+}
+
+.kicker {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lead {
+  color: var(--ink-soft);
+  font-size: 1.15rem;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0 14px;
+}
+
+.button {
+  display: inline-block;
+  padding: 12px 22px;
+  border: 1.5px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--card);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.button:hover {
+  background: #f4dfd7;
+}
+
+.button.primary {
+  color: #fffaf2;
+  background: var(--accent);
+}
+
+.button.primary:hover {
+  background: var(--accent-dark);
+}
+
+figure {
+  margin: 0;
+}
+
+.hero-shot img,
+.shots img {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+  padding-bottom: 48px;
+}
+
+.shots figure {
+  width: 240px;
+}
+
+.shots figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.band,
+.card,
+.cta {
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  margin-bottom: 32px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.steps li {
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  color: #fffaf2;
+  background: var(--accent);
+  font-family: var(--serif);
+  font-weight: 700;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.columns .card {
+  margin-bottom: 32px;
+}
+
+.card ul,
+.checks {
+  padding-left: 1.2em;
+}
+
+.card li,
+.checks li {
+  margin-bottom: 0.5em;
+}
+
+.cta {
+  text-align: center;
+}
+
+.cta .actions {
+  justify-content: center;
+}
+
+.bottom {
+  padding: 8px 0 40px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+@media (max-width: 820px) {
+  .hero,
+  .columns {
+    grid-template-columns: 1fr;
+  }
+
+  .steps {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .band,
+  .card,
+  .cta {
+    padding: 22px;
+  }
+}
+
+/* The last paragraph or list of a card needs no space under it: the card's padding already gives it. */
+.band > :last-child,
+.card > :last-child,
+.cta > :last-child {
+  margin-bottom: 0;
+}

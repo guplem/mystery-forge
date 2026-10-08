@@ -10,11 +10,12 @@ name: Auto-merge PRs
 # It forces changes through a PR and blocks direct pushes, but asks for no
 # approval. A real approval count would make auto-merge wait forever.
 #
-# The token is the plain GITHUB_TOKEN. That is correct here because nothing
-# fires on the merge push: this repo has no
-# deploy workflow. A repo whose merge must trigger a push-based deploy needs a
-# GitHub App token instead, because GitHub does not trigger workflows from a
-# push made with GITHUB_TOKEN.
+# The token is the plain GITHUB_TOKEN. GitHub starts no workflow from a merge
+# made with it, and it closes no linked issue. So the project page deploy
+# (pages.yml) also runs daily, and an agent queues auto-merge under the user's
+# own account right after it opens a PR (AGENTS.md): such a merge starts the
+# deploy and closes the issue. A GitHub App token here would fix both for
+# every PR, but it needs a one-time manual setup.
 
 on:
   pull_request:

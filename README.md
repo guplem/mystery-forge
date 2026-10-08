@@ -1,5 +1,7 @@
 # Mystery Forge
 
+**Project page: [guplem.github.io/mystery-forge](https://guplem.github.io/mystery-forge/)**. You can also [try the settings page online](https://guplem.github.io/mystery-forge/configurator/index.html).
+
 Make your own printable mystery game for a party, a family dinner, or a quiet evening alone. You choose who plays, how long it lasts, and the language. An AI writes a new story with suspects, clues, and puzzles, tests it, and gives you files to print. You play at the table with paper, pencils, and envelopes.
 
 ![The configurator: you choose who plays, the length, the story, and the look](docs/images/configurator.png)

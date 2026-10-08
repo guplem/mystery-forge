@@ -17,3 +17,4 @@ htmlcov/
 
 # Games generated inside the repo by mistake or by tests
 generator/games/
+_site/
