@@ -1,0 +1,14 @@
+<div class="safe story-cards-page">
+  <header class="sheet-header">
+    <h1>{{ t("story_cards_title") }}</h1>
+  </header>
+  {% if content.first %}<p class="sheet-intro">{{ t("story_cards_intro") }}</p>{% endif %}
+  <div class="story-cards">
+    {% for card in content.cards %}
+    <div class="story-card">
+      <p class="story-card-number">{{ card.number }}</p>
+      <p class="story-card-text">{{ card.text }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>

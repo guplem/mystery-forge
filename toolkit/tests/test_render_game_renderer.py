@@ -54,7 +54,7 @@ def test_without_a_browser_the_render_writes_only_html(tmp_path: Path) -> None:
     assert [path.name for path in report.files] == ["manual.html", "materials.html", "hints.html", "solutions.html"]
     assert all(path.is_file() for path in report.files)
     assert report.theme == "vintage"
-    assert report.outputs["materials"].sheet_count == 13
+    assert report.outputs["materials"].sheet_count == 14
     assert report.outputs["materials"].sheet_roles[2] == "register"
     assert report.outputs["materials"].sheet_stages[-1] == "B"
     assert report.outputs["materials"].pdf_file is None
