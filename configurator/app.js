@@ -426,6 +426,16 @@
       }
     });
     wrapper.append(fieldLabel(field), helpText(field, helpId), input);
+    if (isTextarea) {
+      const count = createElement('p', { class: 'field__count', id: `count-${domId(field.path)}` });
+      state.fieldSyncers.push(() => {
+        count.textContent = t('form.text_count', {
+          count: form.textLength(state.config, field.path),
+          max: field.maxLength,
+        });
+      });
+      wrapper.append(count);
+    }
     if (field.path === 'theme.idea') {
       const note = createElement('p', { class: 'field__note', id: 'surprise-note' }, [t('form.surprise')]);
       state.fieldSyncers.push(() => {

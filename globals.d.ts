@@ -208,6 +208,7 @@ interface MysteryForgeConfigFormApi {
   addListItem(config: MysteryForgeGameConfig, path: string, text: string): MysteryForgeGameConfig;
   removeListItem(config: MysteryForgeGameConfig, path: string, index: number): MysteryForgeGameConfig;
   isListFull(config: MysteryForgeGameConfig, path: string): boolean;
+  textLength(config: MysteryForgeGameConfig, path: string): number;
   applyAudiencePreset(config: MysteryForgeGameConfig, audience: string): MysteryForgeGameConfig;
   applyFieldChange(
     config: MysteryForgeGameConfig,
