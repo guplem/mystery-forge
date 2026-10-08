@@ -21,6 +21,7 @@ SheetRole = Literal[
     "register-results",
     "accusation",
     "envelope-labels",
+    "story-cards",
     "detective-notes",
     "manual",
     "hint-cards",

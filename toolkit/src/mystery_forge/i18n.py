@@ -87,6 +87,11 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "register_correct_keep": "Correct! Write this answer down: a later puzzle needs it.",
         "register_correct_accusation": "Correct! This was the last puzzle: turn to the accusation.",
         "register_correct_notes": "Correct! Write it in your notes.",
+        "register_story_card": "Before you go on, read story card {number} at the end of {envelope}.",
+        "story_cards_title": "Story cards",
+        "story_cards_intro": (
+            "Read a card only when the answer register sends you to it. Turn the page around to read it."
+        ),
         "print_cut_strips": "When you open this envelope, cut the strips apart along the dashed lines.",
         "manual_need_label_tape": "Tape or glue for the envelope labels (or write the letter on each envelope)",
         "manual_print_box_title": "Print at 100%",
@@ -341,6 +346,11 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "register_correct_keep": "¡Correcto! Apunta esta respuesta: un enigma posterior la necesita.",
         "register_correct_accusation": "¡Correcto! Era el último enigma: pasad a la acusación.",
         "register_correct_notes": "¡Correcto! Apúntalo en tus notas.",
+        "register_story_card": "Antes de seguir, lee la tarjeta de historia {number} al final del {envelope}.",
+        "story_cards_title": "Tarjetas de historia",
+        "story_cards_intro": (
+            "Lee una tarjeta solo cuando el registro de respuestas te envíe a ella. Gira la hoja para leerla."
+        ),
         "print_cut_strips": "Cuando abras este sobre, separa las tiras: recorta por las líneas discontinuas.",
         "manual_need_label_tape": (
             "Cinta adhesiva o pegamento para las etiquetas de los sobres (o escribe la letra en cada sobre)"
@@ -603,6 +613,11 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "register_correct_keep": "Correcte! Apunta aquesta resposta: un enigma posterior la necessita.",
         "register_correct_accusation": "Correcte! Era l'últim enigma: passeu a l'acusació.",
         "register_correct_notes": "Correcte! Apunta-ho a les teves notes.",
+        "register_story_card": "Abans de continuar, llegeix la targeta d'història {number} al final del {envelope}.",
+        "story_cards_title": "Targetes d'història",
+        "story_cards_intro": (
+            "Llegeix una targeta només quan el registre de respostes t'hi enviï. Gira el full per llegir-la."
+        ),
         "print_cut_strips": "Quan obris aquest sobre, separa les tires: retalla per les línies discontínues.",
         "manual_need_label_tape": (
             "Cinta adhesiva o cola per a les etiquetes dels sobres (o escriu la lletra a cada sobre)"
@@ -863,6 +878,11 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "register_correct_keep": "Bravo ! Notez cette réponse : une énigme plus loin en a besoin.",
         "register_correct_accusation": "Bravo ! C'était la dernière énigme : passez à l'accusation.",
         "register_correct_notes": "Bravo ! Notez-la dans vos notes.",
+        "register_story_card": "Avant de continuer, lisez la carte d'histoire {number} à la fin de l'{envelope}.",
+        "story_cards_title": "Cartes d'histoire",
+        "story_cards_intro": (
+            "Ne lisez une carte que lorsque le registre des réponses vous y envoie. Retournez la page pour la lire."
+        ),
         "print_cut_strips": (
             "Quand vous ouvrez cette enveloppe, séparez les bandes : découpez le long des lignes pointillées."
         ),
@@ -1125,6 +1145,11 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "register_correct_keep": "Richtig! Schreibt diese Antwort auf: Ein späteres Rätsel braucht sie.",
         "register_correct_accusation": "Richtig! Das war das letzte Rätsel: Weiter zur Anklage.",
         "register_correct_notes": "Richtig! Schreibt sie in eure Notizen.",
+        "register_story_card": "Bevor ihr weitermacht, lest die Story-Karte {number} am Ende von {envelope}.",
+        "story_cards_title": "Story-Karten",
+        "story_cards_intro": (
+            "Lest eine Karte erst, wenn das Antwortregister euch zu ihr schickt. Dreht die Seite um, um sie zu lesen."
+        ),
         "print_cut_strips": (
             "Wenn ihr diesen Umschlag öffnet, schneidet die Streifen entlang der gestrichelten Linien auseinander."
         ),
@@ -1387,6 +1412,13 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "register_correct_keep": "Esatto! Scrivete questa risposta: un enigma successivo ne ha bisogno.",
         "register_correct_accusation": "Esatto! Era l'ultimo enigma: passate all'accusa.",
         "register_correct_notes": "Esatto! Scrivetela nei vostri appunti.",
+        "register_story_card": (
+            "Prima di andare avanti, leggi la carta della storia {number} alla fine della {envelope}."
+        ),
+        "story_cards_title": "Carte della storia",
+        "story_cards_intro": (
+            "Leggi una carta solo quando il registro delle risposte ti manda lì. Gira il foglio per leggerla."
+        ),
         "print_cut_strips": "Quando aprite questa busta, separate le strisce: tagliate lungo le linee tratteggiate.",
         "manual_need_label_tape": (
             "Nastro adesivo o colla per le etichette delle buste (oppure scrivete la lettera su ogni busta)"
@@ -1644,6 +1676,11 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "register_correct_keep": "Correto! Anotem esta resposta: um enigma mais à frente precisa dela.",
         "register_correct_accusation": "Correto! Era o último enigma: passem à acusação.",
         "register_correct_notes": "Correto! Escrevam-na nas vossas notas.",
+        "register_story_card": "Antes de continuar, leia o cartão de história {number} no fim do {envelope}.",
+        "story_cards_title": "Cartões de história",
+        "story_cards_intro": (
+            "Leia um cartão só quando o registo de respostas o mandar para ele. Vire a folha para o ler."
+        ),
         "print_cut_strips": "Quando abrirem este envelope, separem as tiras: cortem pelas linhas tracejadas.",
         "manual_need_label_tape": (
             "Fita-cola ou cola para as etiquetas dos envelopes (ou escrevam a letra em cada envelope)"

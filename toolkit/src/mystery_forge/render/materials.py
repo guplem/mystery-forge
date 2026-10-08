@@ -18,7 +18,13 @@ from mystery_forge.checks.budget import estimate_game_minutes
 from mystery_forge.game import AssembledDocument, Game
 from mystery_forge.i18n import text
 from mystery_forge.mechanics.base import Artifact
-from mystery_forge.render.answer_register import AnswerRegister, RegisterEntry, ResultParagraph, build_answer_register
+from mystery_forge.render.answer_register import (
+    AnswerRegister,
+    RegisterEntry,
+    ResultParagraph,
+    build_answer_register,
+    story_card_numbers,
+)
 from mystery_forge.render.document_body import insert_artifacts, insert_images, split_pages
 from mystery_forge.render.kinds import DocumentKind, document_kind
 from mystery_forge.render.layout import Tightness, page_budget, split_text, text_height, tightness
@@ -32,6 +38,7 @@ RESULTS_GROUP: Final[str] = "results"
 NOTES_GROUP: Final[str] = "notes"
 ACCUSATION_GROUP: Final[str] = "accusation"
 LABELS_GROUP: Final[str] = "labels"
+STORY_CARDS_GROUP: Final[str] = "story-cards"
 # The sheet header (kicker and title) plus the intro paragraph under it.
 HEADER_MM: Final[float] = 46
 REGISTER_COLUMNS: Final[int] = 3
@@ -58,6 +65,10 @@ QUESTION_OPTION_CHARS_PER_ROW: Final[int] = 92
 QUESTION_OPTION_EXTRA_CHARS: Final[int] = 10
 QUESTION_OPTION_ROW_MM: Final[float] = 7
 LABEL_ROW_MM: Final[float] = 60
+# One story card: its frame and its label line, then its text across the full page width.
+STORY_CARD_FRAME_MM: Final[float] = 18
+STORY_CARD_CHARS_PER_LINE: Final[int] = 88
+STORY_CARD_LINE_MM: Final[float] = 5.2
 # The cover rounds the estimated play time to this many minutes, so it reads as an estimate.
 PLAY_TIME_STEP: Final[int] = 5
 
@@ -130,6 +141,20 @@ class EnvelopeLabel:
 class EnvelopeLabelsContent:
     title: str
     labels: list[EnvelopeLabel]
+
+
+@dataclass(frozen=True)
+class StoryCard:
+    number: int
+    text: str
+
+
+@dataclass(frozen=True)
+class StoryCardsPage:
+    """The payoffs of a stage's puzzles, for players who check their answers on paper. The text prints upside down."""
+
+    cards: list[StoryCard]
+    first: bool
 
 
 @dataclass(frozen=True)
@@ -307,6 +332,36 @@ def envelope_labels_sheets(game: Game, levels: Tightness) -> list[Sheet]:
     ]
 
 
+def story_card_height(card: StoryCard) -> float:
+    return STORY_CARD_FRAME_MM + text_height(card.text, STORY_CARD_CHARS_PER_LINE, STORY_CARD_LINE_MM)
+
+
+def story_cards_sheets(game: Game, stage: Stage, levels: Tightness) -> list[Sheet]:
+    """The story cards of the stage's puzzles: the payoff that the companion page shows, for a group on paper."""
+    if not game.config.assistance.paper_answer_check:
+        return []
+    numbers: dict[str, int] = story_card_numbers(game)
+    cards: list[StoryCard] = sorted(
+        (
+            StoryCard(number=numbers[puzzle.source.id], text=puzzle.source.reveal_text)
+            for puzzle in game.puzzles
+            if puzzle.source.stage == stage.id and puzzle.source.reveal_text
+        ),
+        key=lambda card: card.number,
+    )
+    budget: float = page_budget(game.config.equipment.paper, HEADER_MM, tightness(levels, STORY_CARDS_GROUP))
+    return [
+        Sheet(
+            role="story-cards",
+            template="story_cards.html.j2",
+            content=StoryCardsPage(cards=items, first=index == 0),
+            stage=stage.id,
+            group=STORY_CARDS_GROUP,
+        )
+        for index, items in enumerate(paginate(cards, story_card_height, budget))
+    ]
+
+
 def notes_places(game: Game) -> list[str]:
     # A place whose name holds an answer ("the boathouse" for BOATHOUSE) stays off the grid: the notes page is in the
     # players' hands from the start. Every suspect stays, because a missing suspect would point at the culprit.
@@ -390,6 +445,7 @@ def materials_sheets(game: Game, levels: Tightness | None = None) -> list[Sheet]
         sheets.extend(detective_notes_sheets(game, tight))
     for stage in game.flow.stages:
         sheets.extend(stage_sheets(game, stage))
+        sheets.extend(story_cards_sheets(game, stage, tight))
     if game.story.deduction is not None:
         sheets.extend(accusation_sheets(game, game.story.deduction.questions, game.flow.stages[-1].id, tight))
     return sheets

@@ -131,7 +131,11 @@ def test_a_correct_paragraph_says_only_what_to_do_next() -> None:
     register = build_answer_register(golden_game())
     assert paragraph_for(register, "BOATHOUSE") == "correct|Correct! Open Envelope B now."
     assert paragraph_for(register, "0726") == "correct|Correct! Write it in your notes."
-    assert paragraph_for(register, "LOWTIDE") == "correct|Correct! This was the last puzzle: turn to the accusation."
+    # Only P3 has a payoff, so only its paragraph sends players to a story card, by the card's number.
+    assert paragraph_for(register, "LOWTIDE") == (
+        "correct|Correct! This was the last puzzle: turn to the accusation. Before you go on, read story card 37 at "
+        "the end of Envelope B."
+    )
     assert paragraph_for(register, "YXLXQEORPB") == (
         "near_miss|You moved the letters the wrong way. Count back, not forward."
     )
@@ -160,7 +164,7 @@ def test_an_answer_that_a_later_puzzle_needs_must_be_written_down() -> None:
 
 def test_the_final_puzzle_without_an_accusation_goes_to_the_notes() -> None:
     register = build_answer_register(with_flow(golden_game(), accusation=False))
-    assert paragraph_for(register, "LOWTIDE") == "correct|Correct! Write it in your notes."
+    assert paragraph_for(register, "LOWTIDE").startswith("correct|Correct! Write it in your notes. Before you go on")
 
 
 def test_name_answers_get_the_other_character_names_as_decoys() -> None:

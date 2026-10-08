@@ -1,4 +1,8 @@
-"""The hints: only the last hint may give the answer away, and no hint may give away a puzzle of a later stage."""
+"""The hints: only the last hint may give the answer away, and no hint may give away a puzzle of a later stage.
+
+The payoff (`reveal_text`) may not name its answer either when the paper register prints it on a story card: a player
+who reads the card early would learn which register entry is real.
+"""
 
 from typing import Final
 
@@ -16,6 +20,8 @@ def check_hints(game: Game) -> list[Finding]:
     for puzzle in game.puzzles:
         findings.extend(own_answer_findings(puzzle, game.config.language))
         findings.extend(later_answer_findings(game, puzzle))
+        if game.config.assistance.paper_answer_check:
+            findings.extend(reveal_answer_findings(puzzle))
         if game.config.assistance.hints:
             findings.extend(hint_count_findings(puzzle))
     return findings
@@ -42,6 +48,25 @@ def own_answer_findings(puzzle: AssembledPuzzle, language: str) -> list[Finding]
                 )
             )
     return findings
+
+
+def reveal_answer_findings(puzzle: AssembledPuzzle) -> list[Finding]:
+    found: str | None = next(
+        (answer for answer in puzzle.accepted_normalized if mentions(puzzle.source.reveal_text, answer)), None
+    )
+    if found is None:
+        return []
+    return [
+        Finding(
+            severity="error",
+            rule="hints.reveal_names_answer",
+            message=f"The reveal_text of {puzzle.source.id} contains its answer '{found}'. The story card prints it "
+            "for players on paper, who may read it before they solve the puzzle.",
+            file=puzzle.file,
+            path="reveal_text",
+            fix_hint="Tell what the answer means for the case without the answer itself.",
+        )
+    ]
 
 
 def later_answer_findings(game: Game, puzzle: AssembledPuzzle) -> list[Finding]:
