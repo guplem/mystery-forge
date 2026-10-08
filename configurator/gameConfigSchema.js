@@ -157,7 +157,7 @@ globalThis.MysteryForgeGameConfigSchema = {
         "idea": {
           "description": "A free description of the story. Empty means that the generator picks a surprise idea.",
           "type": "string",
-          "maxLength": 500,
+          "maxLength": 5000,
           "default": ""
         },
         "tone": {
