@@ -68,6 +68,7 @@ def test_the_output_file_names_follow_the_game_language() -> None:
             "solutions": "4 - Solutions.pdf",
         },
         companion="Game companion.html",
+        warnings="0 - READ FIRST (warnings).txt",
         spoiler_folder="HOST ONLY - spoilers",
     )
     spanish = output_file_names("es")

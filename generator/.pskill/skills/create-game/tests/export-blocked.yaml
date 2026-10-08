@@ -31,8 +31,9 @@ scripts:
     stdout: '{"ok": false, "findings": [], "errors": 1}'
   export_with_warnings:
   - exit_code: 0
-    stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
-      materials).pdf"]}'
+    stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["0 - READ FIRST (warnings).txt", "1 - START HERE
+      (manual).pdf", "2 - PRINT THIS (game materials).pdf"], "warnings": ["Puzzle B1: the test players found more than one
+      answer that fits."]}'
 calls:
   story_check:
   - &id001
