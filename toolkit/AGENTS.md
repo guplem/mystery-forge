@@ -34,7 +34,7 @@ The Python package `mystery_forge` and its CLI `forge`. It loads configs, builds
 | `export.py`              | Copy the rendered outputs to the user's output folder, with the spoilers in their own folder.                          |
 | `render/internal_ids.py` | Replace internal ids (P3, D12) with printed codes and titles in hints and solutions.                                   |
 | `cli.py`                 | The `forge` command line: the parser and the verbs that need no game. Every verb prints one JSON object.               |
-| `cli_game.py`            | The `forge` verbs that work on one game folder: check, writer-tasks, packets, judge, status, render, export.           |
+| `cli_game.py`            | The `forge` verbs that work on one game folder: check, writer-tasks, material, packets, judge, status, render, export. |
 | `cli_output.py`          | The output helpers of every verb: the JSON object, the capped findings, and the report files.                          |
 
 ## Conventions

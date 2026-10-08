@@ -1923,7 +1923,12 @@ mechanics:
     how_it_works: >-
       Players solve a maze. Letters on the one true path spell the answer. Dead ends carry decoy letters. Code
       generates a perfect maze, places the answer letters on the path, and checks that the decoys form no word.
-    material: A maze page dressed as catacombs, a hedge garden, or a sewer map.
+      The page shows only a square grid of walls, one letter in some cells, an arrow into the top-left cell (the
+      entrance), and an arrow out of the bottom-right cell (the exit). It shows no picture, character, or label:
+      the document around the maze gives the story.
+    material: >-
+      A plain square grid maze with an entrance arrow at the top left and an exit arrow at the bottom right, inside a
+      document that names it (a catacomb map, a hedge garden plan, a sewer map).
     answer_kinds: [word]
     needs: { scissors: false, tape: false, fold: false, color: false }
     solo: true
@@ -1938,7 +1943,9 @@ mechanics:
     hint_ladder:
       - Solve the maze on <document>.
       - Collect letters only on the true path.
-      - Start from the exit and work back. The letters on the path, from start to exit, spell the answer.
+      - >-
+        Find the one way from the arrow at the top left to the arrow at the bottom right (it is easier to work back
+        from the exit). Read the letters on that path, from the entrance to the exit.
     in_world_examples:
       - The catacomb map that the monk drew for the novices.
       - The hedge maze plan from the manor's gardener.
@@ -2204,11 +2211,13 @@ mechanics:
     category: spatial
     player_action: physical
     lookup_cipher: false
-    summary: A document cut into vertical strips goes back into order.
+    summary: A message cut into strips goes back into order.
     how_it_works: >-
-      A document is cut into 6 to 10 vertical strips. Players reorder them by the letters that continue across the
-      cuts, a page number fragment, or a shown order. Code slices the rendered page.
-    material: A page with vertical cut lines and letters across the cuts.
+      A message is split into strips (6 to 10 work best). Each strip shows a symbol, 1 to N dots next to it, and
+      a few whole letters of each text row: no letter is cut in half. The strips print in a shuffled order. Players
+      cut them apart, lay them from 1 dot to N dots, and read the message across them. "vertical" strips hold a few
+      columns of every row; "horizontal" strips hold one line each.
+    material: Labelled strips with order dots and dashed cut lines, in a shuffled order.
     answer_kinds: [phrase, word]
     needs: { scissors: true, tape: false, fold: false, color: false }
     solo: true
@@ -2224,8 +2233,8 @@ mechanics:
       - The reading direction in the note must match the printed orientation of the strips.
     hint_ladder:
       - Cut the strips on <document>.
-      - The letters continue across the strips.
-      - The strip with the letterhead goes first. Match the half letters at each edge.
+      - Count the dots next to the symbol on each strip.
+      - Lay the strips in order of their dots, from 1 dot to the most dots, and read across them.
     in_world_examples:
       - The memo that the accountant put through the shredder.
       - A bank statement cut into ribbons.

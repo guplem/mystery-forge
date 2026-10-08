@@ -318,6 +318,10 @@ def build_parser() -> argparse.ArgumentParser:
     writer_tasks = verbs.add_parser("writer-tasks", help="List one writing task per planned puzzle.")
     writer_tasks.add_argument("--game", required=True, help="The game folder.")
     writer_tasks.set_defaults(handler=cli_game.command_writer_tasks)
+    material = verbs.add_parser("material", help="Print the built material of one puzzle as text.")
+    material.add_argument("--game", required=True, help="The game folder.")
+    material.add_argument("--puzzle", required=True, help="The puzzle id, such as P1.")
+    material.set_defaults(handler=cli_game.command_material)
     strings = verbs.add_parser(
         "strings",
         help="Write the fixed-text template for a language without a checked table, and check its translation.",

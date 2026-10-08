@@ -35,7 +35,7 @@ from mystery_forge.fix_groups import (
     group_findings,
     write_fix_groups,
 )
-from mystery_forge.game import Game
+from mystery_forge.game import AssembledPuzzle, Game
 from mystery_forge.i18n import LANGUAGES, language_pack_template
 from mystery_forge.mechanics.registry import all_implementations
 from mystery_forge.panel.judge import judge_panel, report_summary
@@ -245,6 +245,40 @@ def command_writer_tasks(arguments: argparse.Namespace, output: TextIO) -> int:
         for puzzle in plan.puzzles
     ]
     emit(output, {"ok": True, "tasks": tasks})
+    return 0
+
+
+def command_material(arguments: argparse.Namespace, output: TextIO) -> int:
+    """Print the built material of one puzzle as text, so a writer writes hints for the page that players hold.
+
+    Other puzzles may still be missing or broken while subagents write them, so only this puzzle's findings count.
+    """
+    game_dir: Path = Path(arguments.game)
+    result: AssemblyResult = assemble_game(game_dir)
+    if result.game is None:
+        emit(output, {"ok": False, **capped_findings(result.findings)})
+        return 0
+    puzzle: AssembledPuzzle | None = next(
+        (puzzle for puzzle in result.game.puzzles if puzzle.source.id == arguments.puzzle), None
+    )
+    if puzzle is None:
+        known: str = ", ".join(puzzle.source.id for puzzle in result.game.puzzles)
+        emit(output, {"ok": False, "message": f"No puzzle '{arguments.puzzle}'. The game has: {known}."})
+        return 0
+    if puzzle.artifact is None:
+        own: list[Finding] = [finding for finding in result.findings if finding.file == puzzle.file]
+        emit(output, {"ok": False, **capped_findings(own)})
+        return 0
+    emit(
+        output,
+        {
+            "ok": True,
+            "code": puzzle.code,
+            "material": puzzle.artifact.solver_text,
+            "parts": {part.name: part.solver_text for part in puzzle.artifact.parts},
+            "print_notes": list(puzzle.artifact.print_notes),
+        },
+    )
     return 0
 
 
