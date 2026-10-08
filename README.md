@@ -10,9 +10,9 @@ Make your own printable mystery game for a party, a family dinner, or a quiet ev
 
 ## How it works, in four steps
 
-1. **Install two free programs, once** (about 10 minutes). See [Install, once](#install-once).
-2. **Choose your game** on a web page: who plays, how long, what kind of story. The page saves a small file.
-3. **Let the AI make the game** (about 1 to 2 hours, mostly waiting). You answer one or two questions at the start.
+1. **Download Mystery Forge** and unzip it.
+2. **Double-click `Start Mystery Forge`.** The first time, it installs what it needs by itself.
+3. **Choose your game** on a web page that opens, then let the AI make it (about 1 to 2 hours, mostly waiting).
 4. **Print and play.** Open the file whose name starts with `1 -`. It tells you what to print and how to set up the envelopes.
 
 ## What you need
@@ -22,82 +22,39 @@ Make your own printable mystery game for a party, a family dinner, or a quiet ev
 - **Google Chrome or Microsoft Edge** (Windows has Edge already). It turns the game into PDF files.
 - **A printer.** Black and white is fine.
 
-## Install, once
-
-You do this only the first time. You will copy a few commands into a **terminal**: a window where you type instructions to the computer. Copy each command exactly, paste it, and press **Enter**.
-
-### 1. Download Mystery Forge
+## Download Mystery Forge
 
 1. On the GitHub page of this project, click the green **Code** button, then **Download ZIP**.
 2. Find the downloaded file (usually in your **Downloads** folder) and unzip it: on Windows, right-click it and choose **Extract All**; on macOS, double-click it.
 3. Move the unzipped `mystery-forge` folder somewhere easy to find, such as your **Documents** folder.
 
-### 2. Open a terminal
-
-- **Windows:** click the Start button, type **PowerShell**, and press Enter.
-- **macOS:** press **Command + Space**, type **Terminal**, and press Enter.
-
-### 3. Install uv (it installs everything else that Mystery Forge needs)
-
-Paste the command for your computer and press Enter:
-
-- **Windows (PowerShell):**
-
-  ```powershell
-  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-  ```
-
-- **macOS (Terminal):**
-
-  ```bash
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  ```
-
-### 4. Install Claude Code (the AI that writes the game)
-
-- **Windows (PowerShell):**
-
-  ```powershell
-  irm https://claude.ai/install.ps1 | iex
-  ```
-
-- **macOS (Terminal):**
-
-  ```bash
-  curl -fsSL https://claude.ai/install.sh | bash
-  ```
-
-Then **close the terminal window**, so that the computer finds the new programs next time.
-
-If a command fails, the official pages always have the current one: [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Claude Code](https://claude.com/claude-code).
-
-### 5. Sign in to Claude
-
-Open a new terminal, type `claude`, and press Enter. Your browser opens: sign in with your Claude account. Then type `/exit` and press Enter to close Claude again.
-
 ## Make a game
 
-### Step 1: choose your game
+### Step 1: start Mystery Forge
 
-1. Open the `mystery-forge` folder, then the `configurator` folder.
-2. Double-click `index.html`. It opens in your browser. It needs no internet.
-3. Choose who plays, how long the game lasts, the language, the kind of story, and what your printer can do.
-4. Click **Review and save**, then **Download config**. Your browser saves a small file in your **Downloads** folder.
+Open the `mystery-forge` folder and double-click the launcher:
 
-### Step 2: let the AI make it
+- **Windows:** `Start Mystery Forge.cmd`. If Windows shows "Windows protected your PC", click **More info**, then **Run anyway**.
+- **macOS:** `Start Mystery Forge.command`. The first time, macOS may refuse to open it: right-click the file, choose **Open**, then click **Open** again.
 
-1. Open a terminal **inside the `generator` folder**:
-   - **Windows:** open the `mystery-forge` folder, then the `generator` folder. Click the address bar at the top of the window, type `powershell`, and press Enter.
-   - **macOS:** open the `mystery-forge` folder in Finder. Right-click the `generator` folder and choose **New Terminal at Folder**. (If you do not see it, it is under **Services**.)
-2. Type `claude` and press Enter.
-3. The first time, Claude asks whether you trust this folder. Choose **Yes**.
-4. Type **create a game** and press Enter.
-5. The AI shows a summary of your choices and asks you to confirm. Then it asks you to pick one of three story ideas.
-6. After that, it works alone for about 1 to 2 hours. You can leave the computer on and do something else.
+A window with text opens. The first time, it installs two free programs (uv and Claude Code). This takes a few minutes. Then it shows a short menu.
+
+### Step 2: choose your game
+
+1. Type **1** ("Choose a new game"). A settings page opens in your browser.
+2. Choose who plays, how long the game lasts, the language, the kind of story, and what your printer can do.
+3. Click **Review and save**, then **Download config**. Your browser saves a small file in your **Downloads** folder.
+4. Go back to the launcher window and press **Enter**.
+
+### Step 3: let the AI make it
+
+1. The first time only, the AI asks you to sign in with your Claude account (your browser opens), and it asks whether you trust the folder: choose **Yes**.
+2. The AI shows a summary of your choices and asks you to confirm. Then it asks you to pick one of three story ideas.
+3. After that, it works alone for about 1 to 2 hours. Leave the window open and the computer on. You can do something else.
 
 When it finishes, the AI tells you where the game is: a new folder in `Mystery Forge` on your **Desktop**.
 
-### Step 3: print and play
+### Step 4: print and play
 
 Open the file whose name starts with `1 -` (the manual). It has the printing checklist, how to prepare the envelopes, and the rules. Read it before you print.
 
@@ -123,8 +80,8 @@ The file names follow the game language. A Spanish game, for example, starts wit
 
 ## Change a game, or continue a stopped one
 
-- **To change a finished game**, open Claude in the `generator` folder again (see Step 2) and say what you want, for example "make the second puzzle easier" or "print it in black and white".
-- **If the AI stopped halfway** (for example because your plan's usage limit was reached), wait until your plan allows more use, open Claude in the `generator` folder again, and type **continue**.
+- **To change a finished game**, double-click the launcher, type **4** ("Talk to the AI"), and say what you want, for example "make the second puzzle easier" or "print it in black and white".
+- **If the AI stopped halfway** (for example because your plan's usage limit was reached), wait until your plan allows more use, double-click the launcher, and type **3** ("Continue a stopped game").
 
 ## Languages
 
@@ -133,6 +90,22 @@ A game can be in any of 50 languages, from Afrikaans to Chinese. The AI writes t
 - **English, Spanish, Catalan, French, German, Italian, and Portuguese** have hand-checked texts for the manual, the labels, and the companion page. For other languages, the AI translates those texts for each game.
 - **Japanese, Russian, Arabic, and other languages that do not use the letters A to Z** get fewer kinds of puzzles, because some puzzles (such as letter codes and Morse code) only work with A to Z.
 - **Arabic, Hebrew, Persian, and Urdu** pages read from right to left.
+
+## Install by hand
+
+Use this only if the launcher does not work. You copy two commands into a **terminal** (a window where you type instructions to the computer), paste each one, and press **Enter**.
+
+1. Open a terminal. **Windows:** click Start, type **PowerShell**, and press Enter. **macOS:** press **Command + Space**, type **Terminal**, and press Enter.
+2. Install uv:
+   - Windows: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+   - macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+3. Install Claude Code:
+   - Windows: `irm https://claude.ai/install.ps1 | iex`
+   - macOS: `curl -fsSL https://claude.ai/install.sh | bash`
+4. Close the terminal. Then open a terminal inside the `generator` folder: on Windows, open that folder, click the address bar, type `powershell`, and press Enter; on macOS, right-click the folder and choose **New Terminal at Folder** (it can be under **Services**).
+5. Type `claude` and press Enter. Sign in when your browser opens, answer **Yes** when it asks whether you trust the folder, and type **create a game**.
+
+If a command fails, the official pages always have the current one: [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Claude Code](https://claude.com/claude-code).
 
 ## Troubleshooting
 
