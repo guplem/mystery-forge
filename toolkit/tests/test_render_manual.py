@@ -11,10 +11,12 @@ from mystery_forge.render.manual import (
     block_height,
     manual_sections,
     manual_sheets,
+    outside_pages,
     section_blocks,
     table_blocks,
     text_blocks,
 )
+from mystery_forge.render.materials import materials_sheets
 from mystery_forge.render.sheets import OutputId
 from mystery_forge.spec.models import PrintOptions
 
@@ -246,3 +248,43 @@ def test_a_long_checklist_is_cut_into_blocks() -> None:
 def test_a_solo_game_fills_in_the_accusation_alone() -> None:
     play = section(configured(golden_game(), players={"count": 1}), "How to play")
     assert play.steps[-1] == "At the end, fill in the accusation form."
+
+
+def test_the_setup_names_only_the_outside_pages_that_the_game_prints() -> None:
+    assert section(golden_game(), "Setup").steps[1] == (
+        "The pages before the first STOP page stay outside the envelopes: the cover, the envelope labels, the answer "
+        "register, and the detective notes."
+    )
+    envelope_game = configured(golden_game(), {"format": "envelopes"}, assistance={"paper_answer_check": False})
+    assert section(envelope_game, "Setup").steps[1] == (
+        "The pages before the first STOP page stay outside the envelopes: the cover and the envelope labels."
+    )
+    piles = configured(envelope_game, equipment={"envelopes": False})
+    assert section(piles, "Setup").steps[1] == "The pages before the first STOP page stay on the table: the cover."
+
+
+def test_the_setup_list_follows_the_grammar_of_the_game_language() -> None:
+    spanish = configured(golden_game(), {"language": "es", "format": "envelopes"})
+    assert section(spanish, "Preparación").steps[1].endswith(": la portada, las etiquetas y el registro de respuestas.")
+
+
+def test_the_outside_pages_match_the_pages_that_the_materials_put_before_the_first_stop_page() -> None:
+    names: dict[str, str] = {
+        "cover": "the cover",
+        "envelope-labels": "the envelope labels",
+        "register": "the answer register",
+        "detective-notes": "the detective notes",
+    }
+    for game_format in ("envelopes", "case_file", "both"):
+        for envelopes in (True, False):
+            for register in (True, False):
+                game = configured(
+                    golden_game(),
+                    {"format": game_format},
+                    equipment={"envelopes": envelopes},
+                    assistance={"paper_answer_check": register},
+                )
+                sheets = materials_sheets(game)
+                first_stop = next(index for index, sheet in enumerate(sheets) if sheet.role == "stage-cover")
+                roles = dict.fromkeys(sheet.role for sheet in sheets[:first_stop] if sheet.role in names)
+                assert outside_pages(game) == [names[role] for role in roles]
