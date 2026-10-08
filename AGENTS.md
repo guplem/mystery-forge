@@ -52,6 +52,7 @@ Both layers cover prose only. Neither covers code identifiers or text you quote 
 | `generator/`                          | The workspace that a user opens in the agent to generate a game: the generation guide, the pskill skills, and the game work folders (`generator/games/`, git-ignored).                      |
 | `contracts/`                          | Data that both the JavaScript and the Python side read. Each file has shared test vectors that both sides must pass.                                                                        |
 | `scripts/`                            | Node development scripts. `generate-config-schema.js` copies the config schema into the configurator (`npm run generate:schema`).                                                           |
+| `site/`                               | The project page on GitHub Pages. `npm run build:site` (`scripts/build-site.js`) adds the configurator and the screenshots; `.github/workflows/pages.yml` deploys it.                       |
 | `examples/`                           | Example config files.                                                                                                                                                                       |
 | `adr/`                                | Architecture Decision Records.                                                                                                                                                              |
 | `Start Mystery Forge.cmd`, `.command` | Double-click launchers for players (Windows, macOS): install uv and Claude Code, then start the agent in `generator/`. Thin glue; `toolkit/tests/test_launchers.py` pins what they must do. |
@@ -145,7 +146,7 @@ ADRs live in `adr/`. Each records one architectural decision or cross-cutting st
 ## GitHub issues, PRs, and other artifacts
 
 - **Always self-assign PRs** when you create them.
-- **Always link PRs to issues** with `Closes #N` in the PR body. The link shows in the issue, but a merge by the auto-merge workflow (as `github-actions`) does not close the issue: close it with `gh issue close N --comment "Done in #PR."` once the PR has merged.
+- **Always link PRs to issues** with `Closes #N` in the PR body, and **queue the merge yourself** right after you open the PR: `gh pr merge --auto --merge <PR>`. A merge that the auto-merge workflow queues runs as `github-actions`: it closes no issue and starts no deploy. A merge queued under the user's account does both. If a merged PR still left its issue open, close it with `gh issue close N --comment "Done in #PR."`.
 - **Always add the `waiting-for-human-check` label** when you create a GitHub issue, PR, or any other reviewable artifact. It means no human has verified the content yet; a human removes it after reviewing. The label marks state (unreviewed), not origin. Here it does not block the auto-merge.
 
 If the repo has no `waiting-for-human-check` label, create it first:

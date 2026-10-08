@@ -1,0 +1,55 @@
+name: Deploy the project page
+
+# Publishes https://guplem.github.io/mystery-forge/: the project page from site/, the configurator page, and the
+# screenshots, as `npm run build:site` assembles them.
+#
+# The auto-merge workflow merges with the plain GITHUB_TOKEN, and GitHub starts no workflow from such a merge push.
+# So this workflow also runs once a day and on demand (Actions tab > Deploy the project page > Run workflow), and an
+# agent queues auto-merge under the user's own account (AGENTS.md), which makes the merge push start it.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer one waits instead of cancelling a deployment that is in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Clone repository to the runner machine
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Assemble the site
+        run: node scripts/build-site.js _site
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy the site
+        id: deployment
+        uses: actions/deploy-pages@v4

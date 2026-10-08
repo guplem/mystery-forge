@@ -9,3 +9,4 @@ generator/.agents/skills/
 .reviews/
 # Generated from contracts/game-config.schema.json by `npm run generate:schema`
 configurator/gameConfigSchema.js
+_site/
