@@ -25,6 +25,7 @@ from mystery_forge.catalog.models import (
     Twist,
 )
 from mystery_forge.config import GameConfig
+from mystery_forge.i18n import LANGUAGES, NON_LATIN_LANGUAGES
 
 SETTING_COUNT: int = 3
 GOAL_COUNT: int = 2
@@ -168,6 +169,10 @@ def mechanic_fits(
     if mechanic.needs.color and equipment.printer == "black_and_white":
         return False
     if config.audience not in mechanic.audiences:
+        return False
+    if mechanic.latin_letters and config.language in NON_LATIN_LANGUAGES:
+        return False
+    if mechanic.writes_sentences and config.language not in LANGUAGES:
         return False
     level: int = DIFFICULTY_ORDER.index(difficulty or config.difficulty)
     if not DIFFICULTY_ORDER.index(mechanic.difficulty.min) <= level <= DIFFICULTY_ORDER.index(mechanic.difficulty.max):

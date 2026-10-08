@@ -178,3 +178,44 @@ def test_craft_mechanics_are_excluded_when_crafts_are_avoided() -> None:
     for candidate in draw.mechanics:
         needs = catalog[candidate.id].needs
         assert not (needs.scissors or needs.tape or needs.fold)
+
+
+@pytest.mark.parametrize(("language", "fits"), [("en", True), ("pl", True), ("ja", False), ("ru", False)])
+def test_a_mechanic_on_the_latin_alphabet_fits_only_a_latin_script_language(language: str, fits: bool) -> None:
+    caesar = next(mechanic for mechanic in load_mechanics() if mechanic.id == "caesar-cipher")
+    base = {"audience": caesar.audiences[0], "difficulty": caesar.difficulty.min}
+    assert mechanic_fits(caesar, make_config(**base, language=language), ALL_IMPLEMENTED) is fits
+
+
+@pytest.mark.parametrize(("language", "fits"), [("es", True), ("nl", False)])
+def test_a_mechanic_that_writes_sentences_fits_only_a_language_with_a_checked_table(language: str, fits: bool) -> None:
+    logic = next(mechanic for mechanic in load_mechanics() if mechanic.id == "logic-grid")
+    base = {"audience": logic.audiences[0], "difficulty": logic.difficulty.min}
+    assert mechanic_fits(logic, make_config(**base, language=language), ALL_IMPLEMENTED) is fits
+
+
+def test_the_catalog_marks_every_mechanic_that_needs_the_latin_alphabet() -> None:
+    marked = {mechanic.id for mechanic in load_mechanics() if mechanic.latin_letters}
+    assert marked == {
+        "caesar-cipher",
+        "atbash-cipher",
+        "a1z26-cipher",
+        "vigenere-cipher",
+        "morse-code",
+        "phone-keypad",
+        "nato-alphabet",
+        "mirror-writing",
+        "cryptogram",
+        "pigpen-cipher",
+        "braille",
+        "symbol-substitution",
+        "acrostic",
+        "anagram",
+        "hidden-every-nth",
+        "word-search",
+        "grid-coordinates",
+        "overlay-mask",
+        "maze",
+        "nonogram",
+    }
+    assert {mechanic.id for mechanic in load_mechanics() if mechanic.writes_sentences} == {"logic-grid"}
