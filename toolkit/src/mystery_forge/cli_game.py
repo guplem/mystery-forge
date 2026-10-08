@@ -49,6 +49,7 @@ from mystery_forge.panel.models import (
     SolverStatus,
 )
 from mystery_forge.panel.packets import STORY_ONLY_STAGE, StagePacket, build_guesser_packet, build_panel_packets
+from mystery_forge.panel.plain_clues import PLAIN_CLUE_SOLVERS, build_plain_clue_packet, judge_plain_clue_test
 from mystery_forge.paths import SystemFolders
 from mystery_forge.plan import PLAN_FILE, Plan, check_plan_folder, planned_sentence_findings, stale_title_findings
 from mystery_forge.render.companion_data import build_companion_html
@@ -57,7 +58,8 @@ from mystery_forge.render.pdf import BrowserNotFoundError, open_sheet_browser
 from mystery_forge.render.sheets import output_file_names
 from mystery_forge.render_checks import check_rendered
 from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
-from mystery_forge.story_checks import check_story_folder
+from mystery_forge.spec.models import Story
+from mystery_forge.story_checks import STORY_FILE, check_story_folder
 from mystery_forge.verification import (
     DEDUCTION_KEY,
     ExportProblem,
@@ -79,6 +81,7 @@ from mystery_forge.verification import (
 
 RENDER_FOLDER: Final[str] = "render"
 PANEL_FOLDER: Final[str] = "panel"
+PLAIN_TEST_FOLDER: Final[str] = "plain-clue-test"
 PACKETS_FILE: Final[str] = "packets.json"
 TRUE_WORDS: Final[frozenset[str]] = frozenset({"true", "1", "yes"})
 SOLVER_PERSONAS: Final[tuple[str, ...]] = (
@@ -280,6 +283,82 @@ def command_material(arguments: argparse.Namespace, output: TextIO) -> int:
             "material": puzzle.artifact.solver_text,
             "parts": {part.name: part.solver_text for part in puzzle.artifact.parts},
             "print_notes": list(puzzle.artifact.print_notes),
+        },
+    )
+    return 0
+
+
+def command_plain_test(arguments: argparse.Namespace, output: TextIO) -> int:
+    """Write the plain clue test packet and its solver tasks, or (with --judge) judge the solver answers on stdin."""
+    game_dir: Path = Path(arguments.game)
+    findings: list[Finding] = []
+    story: Story | None = load_required_model(game_dir / SOURCE_FOLDER, STORY_FILE, Story, findings)
+    if story is None:
+        emit(output, {"ok": False, "solver_tasks": [], "failing": [], **capped_findings(findings)})
+        return 0
+    packet: StagePacket | None = build_plain_clue_packet(story)
+    folder: Path = game_dir / "reports" / PLAIN_TEST_FOLDER
+    if packet is None:
+        emit(output, {"ok": True, "solver_tasks": [], "failing": []})
+        return 0
+    if arguments.judge:
+        return judge_plain_test(story, packet, folder, arguments, output)
+    folder.mkdir(parents=True, exist_ok=True)
+    packet_file: Path = folder / "packet.md"
+    packet_file.write_text(packet.text, encoding="utf-8")
+    tasks: list[dict[str, Any]] = [
+        {"name": f"plain clues {number}", "stage": packet.stage, "packet_file": str(packet_file)}
+        for number in range(1, PLAIN_CLUE_SOLVERS + 1)
+    ]
+    emit(output, {"ok": True, "solver_tasks": tasks, "failing": []})
+    return 0
+
+
+def judge_plain_test(
+    story: Story, packet: StagePacket, folder: Path, arguments: argparse.Namespace, output: TextIO
+) -> int:
+    raw_input: str = sys.stdin.read() if arguments.input is None else arguments.input
+    try:
+        judge_input: JudgeInput = JudgeInput.model_validate_json(raw_input)
+    except ValidationError as error:
+        message: str = f"The judge input is not valid: {error.errors()[0]['msg']}."
+        emit(output, {"ok": False, "message": message, "failing": [message], "failing_questions": []})
+        return 0
+    results: list[SolverResult] = [
+        SolverResult(solver=task.name, stage=task.stage, accusation=result.accusation, status=result.status)
+        for task, result in zip(judge_input.solver_tasks, judge_input.solver_results, strict=True)
+    ]
+    verdicts: list[ItemVerdict] = judge_plain_clue_test(story, packet, results)
+    failing: list[dict[str, Any]] = [
+        {
+            "question": verdict.code,
+            # The plain sentences that the solvers who proved the answer quoted: the revision must blur them.
+            "quotes": sorted(
+                {
+                    evidence.quote
+                    for result in results
+                    for choice in result.accusation
+                    if choice.question == verdict.code
+                    for evidence in choice.evidence
+                }
+            ),
+        }
+        for verdict in verdicts
+        if verdict.verdict == "puzzles_not_needed"
+    ]
+    folder.mkdir(parents=True, exist_ok=True)
+    report_file: Path = folder / "report.json"
+    report_file.write_text(
+        json.dumps({"verdicts": [verdict.model_dump() for verdict in verdicts], "failing": failing}, indent=2),
+        encoding="utf-8",
+    )
+    emit(
+        output,
+        {
+            "ok": not failing,
+            "failing": [f"{item['question']}: the plain clues prove the answer without a puzzle" for item in failing],
+            "failing_questions": failing,
+            "report": str(report_file),
         },
     )
     return 0

@@ -427,6 +427,13 @@ def build_parser() -> argparse.ArgumentParser:
     writer_tasks = verbs.add_parser("writer-tasks", help="List one writing task per planned puzzle.")
     writer_tasks.add_argument("--game", required=True, help="The game folder.")
     writer_tasks.set_defaults(handler=cli_game.command_writer_tasks)
+    plain_test = verbs.add_parser(
+        "plain-test", help="Write the plain clue test of the story, or judge its solver answers (JSON on stdin)."
+    )
+    plain_test.add_argument("--game", required=True, help="The game folder.")
+    plain_test.add_argument("--judge", action="store_true", help="Judge the solver answers instead.")
+    plain_test.add_argument("--input", help="The JSON input of --judge as text, instead of stdin.")
+    plain_test.set_defaults(handler=cli_game.command_plain_test)
     material = verbs.add_parser("material", help="Print the built material of one puzzle as text.")
     material.add_argument("--game", required=True, help="The game folder.")
     material.add_argument("--puzzle", required=True, help="The puzzle id, such as P1.")

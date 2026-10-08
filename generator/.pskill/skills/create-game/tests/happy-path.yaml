@@ -30,6 +30,14 @@ scripts:
   - exit_code: 0
     stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
       materials).pdf"]}'
+  plain_test:
+  - exit_code: 0
+    stdout: '{"ok": true, "failing": [], "solver_tasks": [{"name": "plain clues 1", "stage": "story-only", "packet_file":
+      "games/g/reports/plain-clue-test/packet.md"}, {"name": "plain clues 2", "stage": "story-only", "packet_file": "games/g/reports/plain-clue-test/packet.md"},
+      {"name": "plain clues 3", "stage": "story-only", "packet_file": "games/g/reports/plain-clue-test/packet.md"}]}'
+  plain_test_judge:
+  - exit_code: 0
+    stdout: '{"ok": true, "failing": [], "failing_questions": [], "report": "r.json"}'
 calls:
   story_check:
   - &id001
@@ -75,6 +83,15 @@ answers:
   - summary: A ferry, five people, three envelopes.
   review_story:
   - findings: []
+  plain_test_solve:
+  - &id002
+    status: done
+    accusation:
+    - question: who
+      option: ''
+      evidence: []
+  - *id002
+  - *id002
   plan:
   - summary: Eight puzzles, six actions.
   review_plan:
@@ -113,6 +130,9 @@ expect:
   - write_story
   - story_check
   - review_story
+  - plain_test
+  - plain_test_solve
+  - plain_test_judge
   - plan
   - plan_check
   - review_plan

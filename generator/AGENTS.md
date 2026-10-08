@@ -37,7 +37,7 @@ Every command runs from this folder as `uv run --project ../toolkit forge <verb>
 | `forge schema <story\|flow\|puzzle\|document\|references>` | The fields of a source file, or the reference forms and directives of a document body.        |
 | `forge assemble --game <dir>`                              | Load and build the game, and write `game.json`. Reports problems as findings.                 |
 
-The skill's steps run the other verbs (doctor, setup, config, games, check, writer-tasks, material, packets, judge, render, status, export) for you.
+The skill's steps run the other verbs (doctor, setup, config, games, check, plain-test, writer-tasks, material, packets, judge, render, status, export) for you.
 
 ## A game folder
 

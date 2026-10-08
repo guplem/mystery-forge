@@ -30,6 +30,14 @@ scripts:
   - exit_code: 0
     stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
       materials).pdf"]}'
+  plain_test:
+  - exit_code: 0
+    stdout: '{"ok": true, "failing": [], "solver_tasks": [{"name": "plain clues 1", "stage": "story-only", "packet_file":
+      "games/g/reports/plain-clue-test/packet.md"}, {"name": "plain clues 2", "stage": "story-only", "packet_file": "games/g/reports/plain-clue-test/packet.md"},
+      {"name": "plain clues 3", "stage": "story-only", "packet_file": "games/g/reports/plain-clue-test/packet.md"}]}'
+  plain_test_judge:
+  - exit_code: 0
+    stdout: '{"ok": true, "failing": [], "failing_questions": [], "report": "r.json"}'
 calls: {}
 answers:
   browser_missing:

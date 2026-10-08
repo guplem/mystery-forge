@@ -1,4 +1,4 @@
-name: the copy to the output folder fails
+name: the plain clue test still fails after two revisions, so the run goes on
 inputs:
   config: c.json
 scripts:
@@ -28,21 +28,26 @@ scripts:
     stdout: '{"ok": true, "stale": []}'
   export:
   - exit_code: 0
-    stdout: '{"ok": false, "findings": [], "errors": 1}'
+    stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
+      materials).pdf"]}'
   plain_test:
-  - exit_code: 0
+  - &id001
+    exit_code: 0
     stdout: '{"ok": true, "failing": [], "solver_tasks": [{"name": "plain clues 1", "stage": "story-only", "packet_file":
       "games/g/reports/plain-clue-test/packet.md"}, {"name": "plain clues 2", "stage": "story-only", "packet_file": "games/g/reports/plain-clue-test/packet.md"},
       {"name": "plain clues 3", "stage": "story-only", "packet_file": "games/g/reports/plain-clue-test/packet.md"}]}'
+  - *id001
+  - *id001
   plain_test_judge:
-  - exit_code: 0
-    stdout: '{"ok": true, "failing": [], "failing_questions": [], "report": "r.json"}'
-  export_with_warnings:
-  - exit_code: 0
-    stdout: '{"ok": false, "message": "No space left on the disk."}'
+  - &id002
+    exit_code: 0
+    stdout: '{"ok": false, "failing": ["who: the plain clues prove the answer without a puzzle"], "report": "r.json", "failing_questions":
+      [{"question": "who", "quotes": ["wet boot prints on the stairs"]}]}'
+  - *id002
+  - *id002
 calls:
   story_check:
-  - &id001
+  - &id003
     status: succeeded
     outputs:
       ok: true
@@ -50,10 +55,12 @@ calls:
       warnings: 1
       rounds: 0
       report: r.json
+  - *id003
+  - *id003
   plan_check:
-  - *id001
+  - *id003
   game_check:
-  - *id001
+  - *id003
   panel:
   - status: succeeded
     outputs:
@@ -84,16 +91,25 @@ answers:
   write_story:
   - summary: A ferry, five people, three envelopes.
   review_story:
-  - findings: []
+  - &id004
+    findings: []
+  - *id004
+  - *id004
   plain_test_solve:
-  - &id002
+  - &id005
     status: done
     accusation:
     - question: who
       option: ''
       evidence: []
-  - *id002
-  - *id002
+  - *id005
+  - *id005
+  - *id005
+  - *id005
+  - *id005
+  - *id005
+  - *id005
+  - *id005
   plan:
   - summary: Eight puzzles, six actions.
   review_plan:
@@ -121,6 +137,9 @@ answers:
     summary: A map and two stamps.
   visual_review:
   - findings: []
+  revise_story_plain:
+  - summary: First try.
+  - summary: Second try.
 expect:
   path:
   - doctor
@@ -130,6 +149,18 @@ expect:
   - concepts
   - pick_concept
   - write_story
+  - story_check
+  - review_story
+  - plain_test
+  - plain_test_solve
+  - plain_test_judge
+  - revise_story_plain
+  - story_check
+  - review_story
+  - plain_test
+  - plain_test_solve
+  - plain_test_judge
+  - revise_story_plain
   - story_check
   - review_story
   - plain_test
@@ -149,8 +180,8 @@ expect:
   - visual_review
   - status
   - export
-  - export_with_warnings
-  - export_failed
-  status: failed
+  - done
+  status: succeeded
   outputs:
-    result: failed
+    result: exported
+    folder: D/Mystery Forge/The Game
