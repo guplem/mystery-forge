@@ -77,7 +77,7 @@ Baseline minutes per puzzle for a group of 3 or 4 adults. The catalog gives a va
 - **Confirmation:** partial results must look right, such as real words or a clear pattern. Players then know that they are on track.
 - **Signpost the extraction step (which letters, which order) in the world, never the decoding method, and never what the result means.** For example, a margin note "read the shaded letters". Do this always for kids and families.
 - **Match the method to the story object.** A lock log becomes a code-breaker puzzle. A train timetable becomes an alibi check.
-- **Never over-explain.** The material must not describe the full method. The hints do that.
+- **Never over-explain.** The material must not describe the full method. The hints do that. Kids' games are the exception: a child must start every puzzle without a hint, so the page states the rule in the story world, and the fun is in applying it.
 - **Never put the answer in a title, flavor text, or caption.** Code scans for it, also reversed and with spaces.
 - **Use one name for each thing.** A name, a number, or an id must be the same in every document. Take it from the fact registry.
 - **Check your own dates.** Code computes weekdays and date math. Never write a weekday for a real date by hand.

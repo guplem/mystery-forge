@@ -382,8 +382,9 @@ def command_packets(arguments: argparse.Namespace, output: TextIO) -> int:
     # A stage that the panel judged before needs only the smallest panel to confirm a fix (`adr/0004`).
     tested: set[str] = set() if arguments.all else panel_tested_stages(game, ledger)
     personas: list[str] = list(SOLVER_PERSONAS)
-    if game.config.audience == "kids":
-        personas[-1] = KIDS_PERSONA
+    kids: bool = game.config.audience == "kids"
+    if kids:
+        personas[0] = KIDS_PERSONA
     tasks: list[dict[str, Any]] = []
     for packet in packets:
         if packet.stage not in to_run:
@@ -401,6 +402,8 @@ def command_packets(arguments: argparse.Namespace, output: TextIO) -> int:
                     "packet_file": str(packet_file),
                     "has_accusation": bool(packet.questions),
                     "story_only": packet.stage == STORY_ONLY_STAGE,
+                    # A kids' puzzle must state its rule on the page: the solvers report each unstated rule as a gap.
+                    "kids": kids,
                 }
             )
     guesser_file: Path = folder / "guesser.md"
