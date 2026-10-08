@@ -13,6 +13,8 @@ from mystery_forge.render.materials import (
     RegisterPage,
     ResultsPage,
     StageCoverContent,
+    StoryCard,
+    StoryCardsPage,
     materials_sheets,
 )
 from mystery_forge.render.sheets import Sheet
@@ -42,9 +44,10 @@ def test_the_golden_stack_follows_the_setup_order() -> None:
         "stage-cover",
         "document",
         "document",
+        "story-cards",
         "accusation",
     ]
-    assert [sheet.stage for sheet in sheets[5:]] == ["A", "A", "A", "A", "B", "B", "B", "B"]
+    assert [sheet.stage for sheet in sheets[5:]] == ["A", "A", "A", "A", "B", "B", "B", "B", "B"]
     assert all(sheet.stage is None for sheet in sheets[:5])
 
 
@@ -250,6 +253,44 @@ def test_correct_result_paragraphs_carry_no_story_text() -> None:
     correct = [item.message for item in paragraphs if item.outcome == "correct"]
     assert correct and all(message.startswith("Correct!") for message in correct)
     assert not any(puzzle.source.reveals in message for puzzle in game.puzzles for message in correct)
+    reveals = [puzzle.source.reveal_text for puzzle in game.puzzles if puzzle.source.reveal_text]
+    assert reveals and not any(reveal in message for reveal in reveals for message in correct)
+    assert {message for message in correct if "story card 37 " in message} == {
+        "Correct! This was the last puzzle: turn to the accusation. Before you go on, read story card 37 at the end "
+        "of Envelope B."
+    }
+
+
+def story_card_pages(game: Game) -> list[StoryCardsPage]:
+    return [sheet.content for sheet in materials_sheets(game) if isinstance(sheet.content, StoryCardsPage)]
+
+
+def test_the_story_cards_close_the_envelope_of_their_puzzles() -> None:
+    game = golden_game()
+    b1 = next(puzzle for puzzle in game.puzzles if puzzle.code == "B1")
+    assert story_card_pages(game) == [
+        StoryCardsPage(
+            cards=[StoryCard(number=37, text=b1.source.reveal_text)],
+            first=True,
+        )
+    ]
+
+
+def test_a_game_without_the_paper_answer_check_has_no_story_cards() -> None:
+    assert story_card_pages(configured(golden_game(), assistance={"paper_answer_check": False})) == []
+
+
+def test_many_long_story_cards_spread_over_several_pages() -> None:
+    game = golden_game()
+    long_text = "The tide turns and the lamp goes dark. " * 30
+    puzzles = [
+        puzzle.model_copy(update={"source": puzzle.source.model_copy(update={"reveal_text": long_text})})
+        for puzzle in game.puzzles
+    ]
+    many = game.model_copy(update={"puzzles": [*puzzles, *puzzles, *puzzles]})
+    pages = story_card_pages(many)
+    assert len(pages) > 2
+    assert [page.first for page in pages[:2]] == [True, False]
 
 
 def cut_out_game(cut: bool) -> Game:

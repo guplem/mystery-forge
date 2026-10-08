@@ -271,8 +271,8 @@ class Puzzle(SourceModel):
     depends_on: list[PuzzleId] = []
     in_world_reason: Text
     reveals: Text
-    # What the companion page shows when players solve the puzzle: the story payoff, in the voice of the story.
-    # Paper players never see it, so it may add no fact that the accusation needs.
+    # The story payoff that players read when they solve the puzzle, on the companion page or on a story card.
+    # It may add no fact that the accusation needs: the accusation must work from the documents alone.
     reveal_text: str = ""
     answer: ShortText
     accepted: list[ShortText] = []

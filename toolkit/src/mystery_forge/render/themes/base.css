@@ -2044,6 +2044,25 @@ body.mode-low-ink .mf-artifact .mf-mask td.mf-mask-hole {
   color: var(--ink-soft);
 }
 
+/* ---------- Story cards ---------- */
+.story-card {
+  break-inside: avoid;
+  margin-bottom: 5mm;
+  padding: 3mm 4mm;
+  border: var(--line-weight) solid var(--rule);
+  border-radius: var(--radius);
+}
+.story-card-number {
+  font: 700 14pt var(--font-heading);
+  color: var(--accent);
+  margin: 0 0 2mm;
+}
+/* Upside down, so that a glance at the page while players work on the envelope does not read a payoff too early. */
+.story-card-text {
+  margin: 0;
+  transform: rotate(180deg);
+}
+
 /* ---------- Accusation form ---------- */
 .write-line {
   display: flex;

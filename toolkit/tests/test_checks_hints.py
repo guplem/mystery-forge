@@ -61,3 +61,11 @@ def test_a_hard_puzzle_with_one_hint_is_a_warning_when_hints_are_on() -> None:
     assert (findings[0].severity, findings[0].path) == ("warning", "hints")
     assert check_hints(edit_config(hard, "assistance", hints=False)) == []
     assert check_hints(edit_puzzle(hard, "P1", difficulty="medium")) == []
+
+
+def test_a_payoff_that_names_the_answer_is_an_error_when_the_paper_register_prints_it() -> None:
+    naming = edit_puzzle(golden_game(), "P1", reveal_text="The boathouse! That is where Tom hid the keys.")
+    findings = check_hints(naming)
+    assert rules(findings) == ["hints.reveal_names_answer"]
+    assert (findings[0].file, findings[0].path) == ("puzzles/P1.yaml", "reveal_text")
+    assert check_hints(edit_config(naming, "assistance", paper_answer_check=False)) == []

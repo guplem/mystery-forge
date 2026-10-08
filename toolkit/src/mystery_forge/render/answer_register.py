@@ -4,7 +4,8 @@ Players look up their answer in the register and read the paragraph that it poin
 table from the start, so it must not give the real answers away. Every entry has one printed form (capital letters
 and digits only), and every real answer hides among decoys of the same shape: codes with the same digit count, or
 words with about the same letter count. Every entry gets its own paragraph, because entries that share a paragraph
-would give the wrong ones away. A correct paragraph says only what to do next, never story text.
+would give the wrong ones away. A correct paragraph says only what to do next, never story text: the payoff of a puzzle
+sits on its story card, at the end of its envelope, where nobody reads it before that envelope is open.
 """
 
 import random
@@ -19,6 +20,8 @@ from mystery_forge.i18n import text
 
 Outcome = Literal["correct", "near_miss", "wrong"]
 PARAGRAPH_NUMBERS: Final[range] = range(100, 1000)
+# Two digits, so that a story card number never looks like a paragraph number.
+STORY_CARD_NUMBERS: Final[range] = range(10, 100)
 # Each real entry needs this many other entries of the same shape, so that a glance cannot pick it out.
 SAME_SHAPE_NEIGHBORS: Final[int] = 4
 # A word decoy may have this many letters more or fewer than the real answer.
@@ -100,7 +103,29 @@ def register_sort_key(entry_text: str) -> tuple[int, int, str]:
     return (1, 0, plain.casefold())
 
 
+def story_card_numbers(game: Game) -> dict[str, int]:
+    """A random number for the story card of each puzzle with a payoff, by puzzle id.
+
+    A card shows its number, never the puzzle code: a correct paragraph that named the code would tell an early reader
+    which puzzle an answer belongs to.
+    """
+    rng: random.Random = random.Random(f"{game.brief.seed}:story-cards")
+    puzzle_ids: list[str] = sorted(puzzle.source.id for puzzle in game.puzzles if puzzle.source.reveal_text)
+    return dict(zip(puzzle_ids, rng.sample(STORY_CARD_NUMBERS, len(puzzle_ids)), strict=True))
+
+
 def correct_message(game: Game, puzzle: AssembledPuzzle) -> str:
+    """What to do next. A puzzle with a payoff also sends players to its story card, which holds the story text."""
+    next_step: str = next_step_message(game, puzzle)
+    if not puzzle.source.reveal_text:
+        return next_step
+    language: str = game.config.language
+    number: str = str(story_card_numbers(game)[puzzle.source.id])
+    envelope: str = text(language, "envelope_label", stage=puzzle.source.stage)
+    return f"{next_step} {text(language, 'register_story_card', number=number, envelope=envelope)}"
+
+
+def next_step_message(game: Game, puzzle: AssembledPuzzle) -> str:
     language: str = game.config.language
     puzzle_id: str = puzzle.source.id
     for stage in game.flow.stages:
