@@ -184,7 +184,7 @@ Use the **review-pr** skill in `--no-verdict` mode. That mode runs unattended (i
 
 7. **Then finish:** delete the review file (and `.reviews/` if it is now empty) and tell the user.
 
-Merging is automatic once the required checks pass; do not merge manually.
+Merging is automatic once the required checks pass; do not merge manually. The auto-merge workflow merges as `github-actions`, which does not close the linked issue: after the merge, run `gh issue close <ISSUE> --comment "Done in #<PR>."`.
 
 ## 8. Completion
 
