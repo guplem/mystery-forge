@@ -339,6 +339,22 @@ test('showsSurpriseNote is true only while the story idea is blank', () => {
   assert.equal(configForm.showsSurpriseNote(configWith({ 'theme.idea': 'A heist' })), false);
 });
 
+test('textLength counts code points, as the schema limit does', () => {
+  assert.equal(configForm.textLength(defaults(), 'theme.idea'), 0);
+  assert.equal(configForm.textLength(configWith({ 'theme.idea': 'A heist 🎨' }), 'theme.idea'), 9);
+});
+
+test('the story idea shows its character limit', () => {
+  const idea = configForm
+    .buildFormModel('en')
+    .flatMap((section) => section.fields)
+    .find((field) => field.path === 'theme.idea');
+  assert.equal(idea?.maxLength, 5000);
+  for (const language of uiText.UI_LANGUAGES) {
+    assert.match(uiText.translate(language, 'form.text_count', { count: 9, max: 5000 }), /9.*5000/);
+  }
+});
+
 test('formatMinutes writes hours and minutes', () => {
   assert.equal(configForm.formatMinutes(45), '45 min');
   assert.equal(configForm.formatMinutes(60), '1 h');

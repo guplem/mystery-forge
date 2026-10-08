@@ -97,6 +97,7 @@
     'form.remove': 'Remove {item}',
     'form.list_full': 'The list is full: {max} at most.',
     'form.list_count': '{count} of {max}',
+    'form.text_count': '{count} of {max} characters',
     'form.surprise': 'Leave it empty and the agent invents a surprise story for you.',
 
     'field.players.names.placeholder': 'Type a name and press Enter',
@@ -573,6 +574,7 @@
     'form.remove': 'Quitar {item}',
     'form.list_full': 'La lista está llena: {max} como máximo.',
     'form.list_count': '{count} de {max}',
+    'form.text_count': '{count} de {max} caracteres',
     'form.surprise': 'Déjalo vacío y el agente inventará una historia sorpresa para ti.',
 
     'field.players.names.placeholder': 'Escribe un nombre y pulsa Intro',
@@ -1055,6 +1057,7 @@
     'form.remove': 'Treu {item}',
     'form.list_full': 'La llista és plena: {max} com a màxim.',
     'form.list_count': '{count} de {max}',
+    'form.text_count': '{count} de {max} caràcters',
     'form.surprise': 'Deixa-ho buit i l’agent s’inventarà una història sorpresa per a tu.',
 
     'field.players.names.placeholder': 'Escriu un nom i prem Retorn',

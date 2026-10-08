@@ -263,6 +263,13 @@ def test_a_warning_appears_for_a_bad_combination(opened: OpenedPage) -> None:
     assert page.locator('[data-warning-id="kids_death"]').count() == 1
 
 
+def test_the_story_idea_shows_its_character_limit(opened: OpenedPage) -> None:
+    page: Page = opened.page
+    assert page.inner_text("#count-theme-idea") == "0 of 5000 characters"
+    page.fill("#input-theme-idea", "A stolen violin")
+    assert page.inner_text("#count-theme-idea") == "15 of 5000 characters"
+
+
 def test_the_estimate_follows_the_players_and_the_duration(opened: OpenedPage) -> None:
     page: Page = opened.page
     puzzles_for_four: int = int(estimate_value(page, "puzzles"))

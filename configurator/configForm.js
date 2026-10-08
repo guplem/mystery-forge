@@ -395,6 +395,16 @@
   /**
    * @param {MysteryForgeGameConfig} config
    * @param {string} fieldPath
+   * @returns {number}
+   */
+  function textLength(config, fieldPath) {
+    // Count code points, as the schema validator does, so the counter and the limit agree on emoji.
+    return [...String(getAtPath(config, fieldPath))].length;
+  }
+
+  /**
+   * @param {MysteryForgeGameConfig} config
+   * @param {string} fieldPath
    * @returns {string[]}
    */
   function listAt(config, fieldPath) {
@@ -788,6 +798,7 @@
     addListItem,
     removeListItem,
     isListFull,
+    textLength,
     applyAudiencePreset,
     applyFieldChange,
     configWarnings,
