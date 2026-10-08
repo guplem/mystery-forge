@@ -1,0 +1,68 @@
+name: a change to an existing game runs the checks, the panel, the render, and the export
+inputs:
+  game: games/g
+  change: print it in black and white
+scripts:
+  doctor:
+  - exit_code: 0
+    stdout: '{"ok": true, "browser": "chrome", "desktop": "D", "downloads": "W"}'
+  setup:
+  - exit_code: 0
+    stdout: '{"ok": true, "game_dir": "games/g", "config_file": "c.json", "summary": {"players": 4, "duration_minutes": 90,
+      "difficulty": "medium", "language": "en", "audience": "family", "format": "both", "idea": "", "quality": "best", "pick_concept":
+      "ask", "host": "self_running", "images": "svg"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20,
+      "generation_minutes": 90}, "draw_file": "games/g/source/draw.json"}'
+  render:
+  - exit_code: 0
+    stdout: '{"ok": true, "report": "games/g/reports/render.json", "previews_dir": "games/g/render/previews", "fix_groups":
+      []}'
+  status:
+  - exit_code: 0
+    stdout: '{"ok": true, "stale": []}'
+  export:
+  - exit_code: 0
+    stdout: '{"ok": true, "folder": "D/Mystery Forge/The Game", "files": ["1 - START HERE (manual).pdf", "2 - PRINT THIS (game
+      materials).pdf"]}'
+calls:
+  game_check:
+  - status: succeeded
+    outputs:
+      ok: true
+      errors: 0
+      warnings: 1
+      rounds: 0
+      report: r.json
+  panel:
+  - status: succeeded
+    outputs:
+      ok: true
+      failing: []
+      failing_items: []
+      report: p.json
+answers:
+  apply_change:
+  - status: changed
+    changed_files:
+    - config.json
+    summary: Black and white.
+  review_documents:
+  - findings: []
+  visual_review:
+  - findings: []
+expect:
+  path:
+  - doctor
+  - setup
+  - apply_change
+  - game_check
+  - review_documents
+  - panel
+  - render
+  - visual_review
+  - status
+  - export
+  - done
+  status: succeeded
+  outputs:
+    result: exported
+    folder: D/Mystery Forge/The Game

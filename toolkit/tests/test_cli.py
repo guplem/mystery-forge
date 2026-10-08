@@ -269,3 +269,90 @@ def test_a_crash_inside_a_verb_is_one_json_line_with_exit_2(tmp_path: Path, monk
     code, result = run(["assemble", "--game", str(tmp_path)], monkeypatch)
     assert code == 2
     assert result == {"ok": False, "message": "KeyError: 'lost'"}
+
+
+def golden_copy(games: Path, name: str = "2026-01-02-the-lens") -> Path:
+    game_dir = games / name
+    shutil.copytree(GOLDEN_GAME / "source", game_dir / "source")
+    return game_dir
+
+
+def test_setup_with_an_existing_game_loads_it_and_creates_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    game_dir = golden_copy(tmp_path / "games")
+    code, result = run(["setup", "--game", str(game_dir), "--games-dir", str(tmp_path / "games")], monkeypatch)
+    assert code == 0
+    assert result["ok"] is True
+    assert result["game_dir"] == str(game_dir)
+    assert result["summary"]["players"] == 2
+    assert result["brief"]["puzzle_count"] >= 1
+    assert result["config_file"] is None
+    assert [path.name for path in (tmp_path / "games").iterdir()] == [game_dir.name]
+
+
+def test_setup_with_an_existing_game_reports_a_missing_brief(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    game_dir = golden_copy(tmp_path / "games")
+    (game_dir / "source" / "brief.json").unlink()
+    code, result = run(["setup", "--game", str(game_dir)], monkeypatch)
+    assert (code, result["ok"]) == (0, False)
+    assert result["findings"]
+
+
+def test_config_changes_a_print_setting_and_keeps_the_rest(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    game_dir = golden_copy(tmp_path / "games")
+    code, result = run(
+        [
+            "config",
+            "--game",
+            str(game_dir),
+            "--set",
+            "equipment.printer=black_and_white",
+            "--set",
+            "assistance.hints=false",
+            "--set",
+            'players.names=["Ana", "Bo"]',
+        ],
+        monkeypatch,
+    )
+    assert (code, result["ok"]) == (0, True)
+    config = json.loads((game_dir / "source" / "config.json").read_text(encoding="utf-8"))
+    assert config["equipment"]["printer"] == "black_and_white"
+    assert config["assistance"]["hints"] is False
+    assert config["players"] == {"count": 2, "names": ["Ana", "Bo"]}
+    assert config["duration_minutes"] == 40
+
+
+def test_config_refuses_a_setting_that_needs_a_new_game(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    game_dir = golden_copy(tmp_path / "games")
+    before = (game_dir / "source" / "config.json").read_text(encoding="utf-8")
+    for assignment in ("duration_minutes=90", "players.count=6", "equipment", "equipment.colour=x"):
+        code, result = run(["config", "--game", str(game_dir), "--set", assignment], monkeypatch)
+        assert (code, result["ok"]) == (0, False), assignment
+        assert "message" in result
+    code, result = run(["config", "--game", str(game_dir), "--set", "equipment.printer=sepia"], monkeypatch)
+    assert result["ok"] is False
+    assert result["findings"]
+    assert (game_dir / "source" / "config.json").read_text(encoding="utf-8") == before
+
+
+def test_games_lists_each_game_with_its_title_newest_first(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    games = tmp_path / "games"
+    older = golden_copy(games, "2026-01-02-the-lens")
+    newer = golden_copy(games, "2026-03-04-the-lens")
+    (newer / "render").mkdir()
+    (games / "notes.txt").write_text("not a game", encoding="utf-8")
+    (games / "2026-05-06-empty").mkdir()
+    broken = golden_copy(games, "2026-02-03-broken")
+    (broken / "source" / "story.yaml").write_text("title: [", encoding="utf-8")
+    code, result = run(["games", "--games-dir", str(games)], monkeypatch)
+    assert (code, result["ok"]) == (0, True)
+    assert [(Path(game["game_dir"]).name, game["rendered"]) for game in result["games"]] == [
+        ("2026-03-04-the-lens", True),
+        ("2026-02-03-broken", False),
+        ("2026-01-02-the-lens", False),
+    ]
+    assert result["games"][0]["title"] == result["games"][2]["title"] != ""
+    assert result["games"][1]["title"] == ""
+    assert older.is_dir()
+    assert run(["games", "--games-dir", str(tmp_path / "none")], monkeypatch)[1] == {"ok": True, "games": []}

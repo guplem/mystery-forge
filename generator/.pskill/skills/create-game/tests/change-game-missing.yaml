@@ -1,0 +1,22 @@
+name: a change to a game folder that does not load stops
+inputs:
+  game: games/gone
+  change: fix the warnings
+scripts:
+  doctor:
+  - exit_code: 0
+    stdout: '{"ok": true, "browser": "chrome", "desktop": "D", "downloads": "W"}'
+  setup:
+  - exit_code: 0
+    stdout: '{"ok": false, "findings": [{"severity": "error", "rule": "config.not_found", "message": "No config in W.", "fix_hint":
+      "Ask."}]}'
+calls: {}
+answers: {}
+expect:
+  path:
+  - doctor
+  - setup
+  - stopped
+  status: cancelled
+  outputs:
+    result: stopped

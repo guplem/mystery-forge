@@ -4,6 +4,8 @@ description: >-
   Generate a complete printable mystery game (envelope escape room, detective case file, or both) from a Mystery
   Forge config file: story, puzzles, documents, checks, a solver panel, PDFs, and a companion page, exported to the
   user's Desktop. Use when the user asks to create, make, or generate a game, a mystery, a case, or an escape room.
+  With the input game, it changes or fixes an existing game instead and runs the same checks, panel, render, and
+  export: use it when the user asks to change, fix, or reprint a finished game.
 goal: >-
   A game folder on the user's Desktop (or the config's output folder) with the manual, the materials to print, the
   hints, the solutions, and the companion page, for a game whose every puzzle passed the toolkit checks and the
@@ -20,6 +22,16 @@ inputs:
     optional: true
     default: true
     description: "false skips the solver panel (faster, less safe). Use false only when the user asks for it."
+  game:
+    type: string
+    optional: true
+    default: ""
+    description: "An existing game folder (from `forge games`) to change. Empty: make a new game."
+  change:
+    type: string
+    optional: true
+    default: ""
+    description: "With game: what the user wants to change, in their words, such as 'fix the warnings'."
 outputs:
   result: {type: string, enum: [exported, stopped, failed], description: "How the run ended."}
   folder: {type: string, optional: true, description: "The exported game folder, when there is one."}
@@ -74,14 +86,40 @@ blocks:
       - games
       - --config
       - "{{ (steps.ask_config.answer if steps.ask_config is defined else inputs.config) | default('', true) }}"
+      - --game
+      - "{{ inputs.game }}"
     parse: json
     timeout_s: 900
     max_visits: 4
     on_max_visits: stopped
     next:
+      - when: "{{ steps.setup.json.ok and inputs.game }}"
+        to: apply_change
+      - when: "{{ inputs.game }}"
+        to: stopped
       - when: "{{ steps.setup.json.ok }}"
         to: confirm_config
       - to: ask_config
+
+  apply_change:
+    type: parallel
+    description: Apply the user's change to the existing game
+    for_each:
+      - {name: change}
+    task_name: "{{ item.name }}"
+    agent: fixer
+    instruction: instructions/apply_change.md
+    output:
+      status:
+        type: string
+        enum: [changed, unchanged, new_game_needed]
+        description: "unchanged when the verification alone does the work (such as 'fix the warnings')."
+      changed_files: {type: array, items: {type: string}, description: "The files that you changed."}
+      summary: {type: string, description: "At most 3 lines, with no answer."}
+    next:
+      - when: "{{ steps.apply_change.results[0].status == 'new_game_needed' }}"
+        to: new_game_needed
+      - to: game_check
 
   ask_config:
     type: decision
@@ -558,6 +596,15 @@ blocks:
     status: cancelled
     outputs: {result: stopped}
     report: Tell the user that the run stopped, and why, in one or two sentences. Nothing was exported.
+
+  new_game_needed:
+    type: end
+    description: The change needs a new game
+    status: cancelled
+    outputs: {result: stopped}
+    report: >-
+      Tell the user that this change needs a new game, and why: {{ steps.apply_change.results[0].summary }}. Nothing
+      was changed. Offer to make a new game with the changed settings.
 
   export_failed:
     type: end
