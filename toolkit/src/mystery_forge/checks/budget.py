@@ -4,6 +4,10 @@
 so they can never disagree. Catalog minutes per puzzle are for a group of 3 or 4; parallel play divides them, and solo
 players and kids take longer. Reading time and a few minutes per envelope come on top. Each parallel team reads its own
 papers, so the reading splits over the teams, the same way as the reading budget in `brief.py`.
+
+Each document also stays within the words per document of its audience (`audience_rules` in the catalog). Long pages
+slow children down and hide the clues, so a kids' document over the limit is an error; for older players it is a
+warning. The built puzzle material does not count: the writer does not write it.
 """
 
 from collections.abc import Mapping, Sequence
@@ -11,6 +15,8 @@ from typing import Final
 
 from mystery_forge.brief import READING_WORDS_PER_MINUTE
 from mystery_forge.catalog import Mechanic
+from mystery_forge.catalog.loader import load_ingredients
+from mystery_forge.config import Audience
 from mystery_forge.findings import Finding, Severity
 from mystery_forge.game import Game
 from mystery_forge.text_measure import count_words
@@ -63,6 +69,7 @@ def check_budget(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]
         *reading_findings(game),
         *puzzle_count_findings(game),
         *difficulty_findings(game),
+        *document_length_findings(game),
     ]
 
 
@@ -156,6 +163,37 @@ def reading_findings(game: Game) -> list[Finding]:
             fix_hint="Shorten the longest documents. Keep every clue quote word for word.",
         )
     ]
+
+
+def prose_words(game: Game, text: str) -> int:
+    """The words that a writer wrote: the text without the solver text of each built material."""
+    for puzzle in game.puzzles:
+        if puzzle.artifact is not None:
+            for material in (puzzle.artifact.solver_text, *(part.solver_text for part in puzzle.artifact.parts)):
+                text = text.replace(material, "")
+    return count_words(text)
+
+
+def document_length_findings(game: Game) -> list[Finding]:
+    audience: Audience = game.config.audience
+    limit: int = load_ingredients().audience_rules[audience].max_words_per_document
+    severity: Severity = "error" if audience == "kids" else "warning"
+    findings: list[Finding] = []
+    for document in game.documents:
+        words: int = prose_words(game, document.text)
+        if words > limit:
+            findings.append(
+                Finding(
+                    severity=severity,
+                    rule="budget.document_words",
+                    message=f"The document {document.meta.id} has {words} words; the {audience} audience allows "
+                    f"{limit} words per document.",
+                    file=document.file,
+                    fix_hint="Shorten the document, or split it into two documents. Keep every clue quote word for "
+                    "word.",
+                )
+            )
+    return findings
 
 
 def puzzle_count_findings(game: Game) -> list[Finding]:
