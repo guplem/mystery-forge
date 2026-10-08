@@ -145,7 +145,7 @@ ADRs live in `adr/`. Each records one architectural decision or cross-cutting st
 ## GitHub issues, PRs, and other artifacts
 
 - **Always self-assign PRs** when you create them.
-- **Always link PRs to issues** with `Closes #N` in the PR body, so the issue auto-closes on merge.
+- **Always link PRs to issues** with `Closes #N` in the PR body. The link shows in the issue, but a merge by the auto-merge workflow (as `github-actions`) does not close the issue: close it with `gh issue close N --comment "Done in #PR."` once the PR has merged.
 - **Always add the `waiting-for-human-check` label** when you create a GitHub issue, PR, or any other reviewable artifact. It means no human has verified the content yet; a human removes it after reviewing. The label marks state (unreviewed), not origin. Here it does not block the auto-merge.
 
 If the repo has no `waiting-for-human-check` label, create it first:
