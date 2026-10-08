@@ -5,4 +5,3 @@ Then answer each question of the final accusation, the way a player who skips ev
 - Give the option id that the sentences support, and copy in `evidence` the exact sentences that prove it, with the document id that the packet shows above each one. Copy them character for character.
 - Reasoning by elimination is fine, with quoted evidence for each option that you rule out.
 - Leave `option` empty when the sentences give you no reason to prefer one option. Do not guess.
-- Write your answer to a file with the Write tool and submit it from that file (`... submit <run> --task <n> < answer.yaml`): a long shell command fails on Windows.
