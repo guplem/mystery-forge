@@ -45,15 +45,16 @@ Both layers cover prose only. Neither covers code identifiers or text you quote 
 
 ## Map
 
-| Path            | What it is                                                                                                                                                             |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `configurator/` | The config page that a user opens with a double-click. Plain JavaScript, no build. Area doc: `configurator/AGENTS.md`.                                                 |
-| `toolkit/`      | The Python toolkit (package `mystery_forge`, CLI `forge`): config, builders, checks, rendering. Area doc: `toolkit/AGENTS.md`.                                         |
-| `generator/`    | The workspace that a user opens in the agent to generate a game: the generation guide, the pskill skills, and the game work folders (`generator/games/`, git-ignored). |
-| `contracts/`    | Data that both the JavaScript and the Python side read. Each file has shared test vectors that both sides must pass.                                                   |
-| `scripts/`      | Node development scripts. `generate-config-schema.js` copies the config schema into the configurator (`npm run generate:schema`).                                      |
-| `examples/`     | Example config files.                                                                                                                                                  |
-| `adr/`          | Architecture Decision Records.                                                                                                                                         |
+| Path                                  | What it is                                                                                                                                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `configurator/`                       | The config page that a user opens with a double-click. Plain JavaScript, no build. Area doc: `configurator/AGENTS.md`.                                                                      |
+| `toolkit/`                            | The Python toolkit (package `mystery_forge`, CLI `forge`): config, builders, checks, rendering. Area doc: `toolkit/AGENTS.md`.                                                              |
+| `generator/`                          | The workspace that a user opens in the agent to generate a game: the generation guide, the pskill skills, and the game work folders (`generator/games/`, git-ignored).                      |
+| `contracts/`                          | Data that both the JavaScript and the Python side read. Each file has shared test vectors that both sides must pass.                                                                        |
+| `scripts/`                            | Node development scripts. `generate-config-schema.js` copies the config schema into the configurator (`npm run generate:schema`).                                                           |
+| `examples/`                           | Example config files.                                                                                                                                                                       |
+| `adr/`                                | Architecture Decision Records.                                                                                                                                                              |
+| `Start Mystery Forge.cmd`, `.command` | Double-click launchers for players (Windows, macOS): install uv and Claude Code, then start the agent in `generator/`. Thin glue; `toolkit/tests/test_launchers.py` pins what they must do. |
 
 ## Commands
 
