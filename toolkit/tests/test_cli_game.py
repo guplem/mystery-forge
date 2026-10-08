@@ -290,8 +290,13 @@ def set_config(game_dir: Path, **changes: Any) -> None:
 def test_kids_games_get_a_kids_solver_persona(game_dir: Path) -> None:
     set_config(game_dir, audience="kids")
     packets = run(["packets", "--game", str(game_dir)])
-    personas = {task["persona"] for task in packets["solver_tasks"]}
-    assert any("10-year-old" in persona for persona in personas)
+    tasks = packets["solver_tasks"]
+    # Solver 1 of every stage plays the child, so a 3-solver re-test still has one.
+    assert all("10-year-old" in task["persona"] for task in tasks if task["solver"] == 1)
+    assert all(task["kids"] for task in tasks)
+    set_config(game_dir, audience="family")
+    family = run(["packets", "--game", str(game_dir)])["solver_tasks"]
+    assert not any(task["kids"] or "10-year-old" in task["persona"] for task in family)
 
 
 def test_judge_on_a_broken_game_reports_findings(game_dir: Path) -> None:
