@@ -20,6 +20,7 @@ from mystery_forge.mechanics.base import (
     MechanicImplementation,
     RenderedArtifact,
 )
+from mystery_forge.mechanics.scripts import is_latin, require_standalone_letters, same_script_letters
 
 type Cell = tuple[int, int]
 type Walls = list[list[int]]
@@ -112,8 +113,10 @@ def maze_with_long_enough_path(size: int, answer: str, rng: random.Random) -> tu
     )
 
 
-def maze_letters(path: list[Cell], answer: str, size: int, distractors: bool, rng: random.Random) -> dict[Cell, str]:
-    """Spread the answer letters evenly along the path, and put distractor letters only off the path."""
+def maze_letters(
+    path: list[Cell], answer: str, size: int, distractors: bool, rng: random.Random, fill: str = FILL_LETTERS
+) -> dict[Cell, str]:
+    """Spread the answer letters evenly along the path, and put distractor letters from `fill` only off the path."""
     letters: dict[Cell, str] = {
         path[(2 * index + 1) * len(path) // (2 * len(answer))]: letter for index, letter in enumerate(answer)
     }
@@ -124,7 +127,7 @@ def maze_letters(path: list[Cell], answer: str, size: int, distractors: bool, rn
         ]
         distractor_count: int = min(len(off_path), round(len(answer) * len(off_path) / len(path)))
         for cell in rng.sample(off_path, distractor_count):
-            letters[cell] = rng.choice(FILL_LETTERS)
+            letters[cell] = rng.choice(fill)
     return letters
 
 
@@ -194,9 +197,14 @@ def build_maze(params: MazeParams, context: MechanicContext) -> Artifact:
             fix_hint="Give the puzzle an answer with at least one letter or digit.",
         )
     answer: str = context.normalized_answer.upper()
+    # The decoys come from the answer's own script, so a kana path does not stand out among Latin letters.
+    fill: str = FILL_LETTERS
+    if not is_latin(answer):
+        require_standalone_letters(answer, "a maze")
+        fill = same_script_letters(answer, list(context.documents.values()))
     rng: random.Random = random.Random(context.seed)
     walls, path = maze_with_long_enough_path(params.size, answer, rng)
-    letters: dict[Cell, str] = maze_letters(path, answer, params.size, params.distractors, rng)
+    letters: dict[Cell, str] = maze_letters(path, answer, params.size, params.distractors, rng, fill)
     return Artifact(
         html=maze_svg(walls, letters),
         solver_text="\n".join(["  v", *maze_ascii(walls, letters), " " * (4 * (params.size - 1) + 2) + "v"]),

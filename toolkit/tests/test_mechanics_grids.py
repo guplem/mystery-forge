@@ -376,3 +376,17 @@ def test_overlay_mask_rejects_an_answer_longer_than_the_grid() -> None:
 
 def test_overlay_mask_rejects_an_answer_without_letters() -> None:
     assert expect_build_error("overlay-mask", {}, make_context("?")).message == "The answer has no letters or digits."
+
+
+def test_a_word_search_works_in_kana() -> None:
+    words = ["さくらんぼ", "みかんばこ", "うみねこ", "かみなり", "たけのこ", "ひまわり", "こおろぎ", "すずめばち"]
+    words += ["あさがお", "おにぎり", "かたつむり", "なすび", "ふくろう", "とんぼ", "めだか"]
+    word_search = implementation("word-search")
+    params = parse_params(word_search, {"words": words, "directions": "medium"})
+    context = make_context("ゆきやま", seed=0, language="ja")
+    artifact = word_search.build(params, context)
+    assert word_search.decode_rendered is not None
+    decoded = word_search.decode_rendered(
+        RenderedArtifact(text=artifact.solver_text, html=artifact.html), params, context
+    )
+    assert decoded == "ゆきやま"

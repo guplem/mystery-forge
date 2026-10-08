@@ -506,6 +506,7 @@ mechanics:
     how_it_works: >-
       Each letter is a theme symbol: runes, star signs, gang tags, alien glyphs. Two to four partial keys sit on
       different props. Players combine them, and known words (a name, a translated sign) give the missing symbols.
+      In a script outside A to Z (kana, Cyrillic, Greek), the key holds the letters of the message, at most 32.
     material: Symbol text plus 2 to 4 partial keys. A full key for kids.
     answer_kinds: [word, phrase]
     needs: { scissors: false, tape: false, fold: false, color: false }
@@ -529,7 +530,6 @@ mechanics:
       - Alien glyphs on the crashed probe and in the lab notebook.
       - The street gang's tags on three walls of the same alley.
     combines_documents: true
-    latin_letters: true
 
   - id: binary-bits
     name: Binary Lamps
@@ -1076,7 +1076,6 @@ mechanics:
       - The activity page that the twins left in the car.
       - A word grid printed in the zoo's visitor guide.
     combines_documents: false
-    latin_letters: true
 
   - id: cryptic-clue
     name: Cryptic Crossword Clue
@@ -1923,6 +1922,7 @@ mechanics:
     how_it_works: >-
       Players solve a maze. Letters on the one true path spell the answer. Dead ends carry decoy letters. Code
       generates a perfect maze, places the answer letters on the path, and checks that the decoys form no word.
+      Outside A to Z, the decoys are letters of the answer's script from the game's documents.
       The page shows only a square grid of walls, one letter in some cells, an arrow into the top-left cell (the
       entrance), and an arrow out of the bottom-right cell (the exit). It shows no picture, character, or label:
       the document around the maze gives the story.
@@ -1951,7 +1951,6 @@ mechanics:
       - The hedge maze plan from the manor's gardener.
       - A sewer map that the thieves used to escape.
     combines_documents: false
-    latin_letters: true
 
   - id: jigsaw-reassembly
     name: Torn Document Jigsaw

@@ -208,14 +208,11 @@ def test_the_catalog_marks_every_mechanic_that_needs_the_latin_alphabet() -> Non
         "cryptogram",
         "pigpen-cipher",
         "braille",
-        "symbol-substitution",
         "acrostic",
         "anagram",
         "hidden-every-nth",
-        "word-search",
         "grid-coordinates",
         "overlay-mask",
-        "maze",
         "nonogram",
     }
     assert {mechanic.id for mechanic in load_mechanics() if mechanic.writes_sentences} == {"logic-grid"}

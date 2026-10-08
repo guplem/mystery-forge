@@ -6,12 +6,14 @@ only, so a grayscale or low-ink print keeps every glyph readable.
 """
 
 import random
+import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from mystery_forge.answers import normalize_answer
 from mystery_forge.mechanics.base import (
     Artifact,
     ArtifactPart,
@@ -20,9 +22,12 @@ from mystery_forge.mechanics.base import (
     MechanicImplementation,
     RenderedArtifact,
 )
+from mystery_forge.mechanics.scripts import is_latin, require_standalone_letters
 from mystery_forge.mechanics.text_tools import attribute_values, plaintext_for, require_no_digits
 
 ALPHABET: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+# The longest run of glyphs with no gap: a message in a language without spaces still wraps on the page.
+MAX_GLYPH_RUN: int = 8
 PLAINTEXT_DESCRIPTION: str = (
     "The message to encode. It must contain the answer. Leave it empty to encode the answer alone. "
     "Letters only: spell numbers as words. Punctuation is dropped."
@@ -56,7 +61,9 @@ def dot(x: float, y: float) -> str:
     return f'<circle cx="{x}" cy="{y}" r="3" fill="currentColor" stroke="none"/>'
 
 
-def message_html(mechanic_id: str, plaintext: str, glyphs: Mapping[str, Glyph], include_key: bool) -> str:
+def message_html(
+    mechanic_id: str, plaintext: str, glyphs: Mapping[str, Glyph], include_key: bool, alphabet: str = ALPHABET
+) -> str:
     words: list[str] = [
         '<span class="mf-glyph-word">'
         + "".join(glyph_svg(letter, glyphs[letter], "data-symbol") for letter in word)
@@ -65,7 +72,7 @@ def message_html(mechanic_id: str, plaintext: str, glyphs: Mapping[str, Glyph], 
     ]
     gap: str = '<span class="mf-glyph-gap" data-symbol=" "></span>'
     message: str = f'<div class="mf-glyph-message">{gap.join(words)}</div>'
-    key_html: str = key_chart_html(glyphs) if include_key else ""
+    key_html: str = key_chart_html(glyphs, alphabet) if include_key else ""
     return f'<div class="mf-symbols mf-{mechanic_id}">{message}{key_html}</div>'
 
 
@@ -82,15 +89,19 @@ def key_solver_text(glyphs: Mapping[str, Glyph], letters: str = ALPHABET) -> str
     return "Key: " + ", ".join(f"{letter} = {glyphs[letter].description}" for letter in letters)
 
 
-def message_solver_text(label: str, plaintext: str, glyphs: Mapping[str, Glyph], include_key: bool) -> str:
+def message_solver_text(
+    label: str, plaintext: str, glyphs: Mapping[str, Glyph], include_key: bool, alphabet: str = ALPHABET
+) -> str:
     words: list[str] = [" ".join(glyphs[letter].description for letter in word) for word in plaintext.split(" ")]
     text: str = f"{label}: {' / '.join(words)}"
     if not include_key:
         return text
-    return text + "\n" + key_solver_text(glyphs)
+    return text + "\n" + key_solver_text(glyphs, alphabet)
 
 
-def key_parts(mechanic_id: str, glyphs: Mapping[str, Glyph], count: int, include_key: bool) -> tuple[ArtifactPart, ...]:
+def key_parts(
+    mechanic_id: str, glyphs: Mapping[str, Glyph], count: int, include_key: bool, alphabet: str = ALPHABET
+) -> tuple[ArtifactPart, ...]:
     """Split the key into `count` runs of the alphabet, for other documents to print: a key on another prop makes
     the players connect two documents, while a key next to the message turns the puzzle into a worksheet."""
     if count and include_key:
@@ -98,8 +109,8 @@ def key_parts(mechanic_id: str, glyphs: Mapping[str, Glyph], count: int, include
             "The key cannot go both next to the message and in separate parts.",
             fix_hint="Set include_key to false when you use key_parts.",
         )
-    size: int = -(-len(ALPHABET) // count) if count else 0
-    runs: list[str] = [ALPHABET[start : start + size] for start in range(0, len(ALPHABET), size)] if count else []
+    size: int = -(-len(alphabet) // count) if count else 0
+    runs: list[str] = [alphabet[start : start + size] for start in range(0, len(alphabet), size)] if count else []
     return tuple(
         ArtifactPart(
             name=f"key{number}",
@@ -252,9 +263,28 @@ SYMBOL_POOL: list[Glyph] = [
 ]
 
 
-def substitution_glyphs(seed: int) -> dict[str, Glyph]:
-    chosen: list[Glyph] = random.Random(seed).sample(SYMBOL_POOL, 26)
-    return dict(zip(ALPHABET, chosen, strict=True))
+def substitution_glyphs(seed: int, alphabet: str = ALPHABET) -> dict[str, Glyph]:
+    chosen: list[Glyph] = random.Random(seed).sample(SYMBOL_POOL, len(alphabet))
+    return dict(zip(alphabet, chosen, strict=True))
+
+
+def native_plaintext(raw_plaintext: str | None, context: MechanicContext) -> str:
+    """The message in its own script (kana, Cyrillic, Greek): letters only, upper case where it exists.
+
+    A word longer than `MAX_GLYPH_RUN` letters is split, so that a language without spaces still wraps on the page.
+    """
+    text: str = unicodedata.normalize("NFC", context.answer if raw_plaintext is None else raw_plaintext).upper()
+    require_standalone_letters(text, "a symbol key")
+    words: list[str] = ["".join(character for character in word if character.isalpha()) for word in text.split()]
+    plaintext: str = " ".join(
+        word[start : start + MAX_GLYPH_RUN] for word in words for start in range(0, len(word), MAX_GLYPH_RUN)
+    )
+    if context.normalized_answer not in normalize_answer(plaintext, context.language):
+        raise MechanicBuildError(
+            f"The plaintext '{plaintext}' does not contain the answer '{context.answer}'.",
+            fix_hint="Write a plaintext that includes the answer word in letters, with no digits.",
+        )
+    return plaintext
 
 
 class SymbolSubstitutionParams(BaseModel):
@@ -270,8 +300,20 @@ class SymbolSubstitutionParams(BaseModel):
 
 
 def build_symbol_substitution(params: SymbolSubstitutionParams, context: MechanicContext) -> Artifact:
-    plaintext: str = symbol_plaintext(params.plaintext, context, "the symbol alphabet")
-    glyphs: dict[str, Glyph] = substitution_glyphs(context.seed)
+    # Outside A to Z, the key holds the letters of the message: kana or kanji are too many for one key.
+    latin: bool = is_latin(context.normalized_answer)
+    plaintext: str = (
+        symbol_plaintext(params.plaintext, context, "the symbol alphabet")
+        if latin
+        else native_plaintext(params.plaintext, context)
+    )
+    alphabet: str = ALPHABET if latin else "".join(sorted(set(plaintext) - {" "}))
+    if len(alphabet) > len(SYMBOL_POOL):
+        raise MechanicBuildError(
+            f"The message has {len(alphabet)} different letters, but the symbol key holds at most {len(SYMBOL_POOL)}.",
+            fix_hint="Write a shorter message, or one that repeats its letters more.",
+        )
+    glyphs: dict[str, Glyph] = substitution_glyphs(context.seed, alphabet)
     # The symbols are new for every game, so only the builder can draw the key: without it, nobody can solve this.
     if not params.include_key and not params.key_parts:
         raise MechanicBuildError(
@@ -279,9 +321,9 @@ def build_symbol_substitution(params: SymbolSubstitutionParams, context: Mechani
             fix_hint="Set key_parts to 1 to 4 and print each part in another document, or set include_key to true.",
         )
     return Artifact(
-        html=message_html("symbol-substitution", plaintext, glyphs, params.include_key),
-        solver_text=message_solver_text("Symbols", plaintext, glyphs, params.include_key),
-        parts=key_parts("symbol-substitution", glyphs, params.key_parts, params.include_key),
+        html=message_html("symbol-substitution", plaintext, glyphs, params.include_key, alphabet),
+        solver_text=message_solver_text("Symbols", plaintext, glyphs, params.include_key, alphabet),
+        parts=key_parts("symbol-substitution", glyphs, params.key_parts, params.include_key, alphabet),
     )
 
 

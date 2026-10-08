@@ -230,3 +230,28 @@ def test_symbol_substitution_alphabet_depends_on_the_seed() -> None:
     first: dict[str, str] = glyph_bodies(build("symbol-substitution", params, make_context(seed=1)))
     second: dict[str, str] = glyph_bodies(build("symbol-substitution", params, make_context(seed=2)))
     assert first != second
+
+
+def kana_context(answer: str = "ゆきやま") -> MechanicContext:
+    return MechanicContext(puzzle_id="P1", answer=answer, language="ja", seed=7, documents={})
+
+
+def test_a_kana_message_gets_a_key_of_its_own_letters() -> None:
+    raw = {"plaintext": "ふるいやまごやのゆきやまにいく", "include_key": False, "key_parts": 2}
+    artifact = build("symbol-substitution", raw, kana_context())
+    keyed = [letter for part in artifact.parts for letter in re.findall(r'data-key-symbol="([^"]+)"', part.html)]
+    assert sorted(keyed) == sorted(set("ふるいやまごのゆきにく"))
+    # A run of more than 8 glyphs gets a gap, so the message still wraps on a page.
+    assert artifact.html.count('data-symbol=" "') == 1
+    decoded = decode("symbol-substitution", raw, kana_context(), artifact)
+    assert decoded.replace(" ", "") == "ふるいやまごやのゆきやまにいく"
+
+
+def test_a_kana_message_must_hold_the_answer_and_fit_the_symbol_pool() -> None:
+    with pytest.raises(MechanicBuildError, match="does not contain the answer"):
+        build("symbol-substitution", {"plaintext": "ふるいやま", "include_key": True}, kana_context())
+    many = "".join(chr(code) for code in range(0x3042, 0x3042 + 2 * 40, 2)) + "ゆきやま"
+    with pytest.raises(MechanicBuildError, match="at most 32"):
+        build("symbol-substitution", {"plaintext": many, "include_key": True}, kana_context())
+    with pytest.raises(MechanicBuildError, match="combine with marks"):
+        build("symbol-substitution", {"include_key": True}, kana_context("किताब"))
