@@ -9,8 +9,9 @@ again. The same ledger tells `forge packets` which stages the solver panel must 
 import hashlib
 import json
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
@@ -207,16 +208,42 @@ def panel_stages_to_run(game: Game, ledger: VerificationLedger) -> set[str]:
     return stages
 
 
-def export_blockers(ledger: VerificationLedger, hashes: dict[str, str], panel_required: bool) -> list[Finding]:
-    """Return one finding per code and per kind of result (checks, panel) that does not pass on the current content."""
-    findings: list[Finding] = []
+# What does not pass on the current content of a code: the checks fail or did not run, the panel did not run, or the
+# panel's failing verdict.
+ProblemKind = Literal["checks_failing", "checks_stale", "panel_stale"] | Verdict
+
+
+@dataclass(frozen=True)
+class ExportProblem:
+    code: str
+    kind: ProblemKind
+
+
+def export_problems(ledger: VerificationLedger, hashes: dict[str, str], panel_required: bool) -> list[ExportProblem]:
+    """Return one problem per code and per kind of result (checks, panel) that does not pass on the current content."""
+    problems: list[ExportProblem] = []
     for code, current in hashes.items():
         entry: LedgerEntry = ledger.entries.get(code, LedgerEntry())
         if entry.checks_pass_hash != current:
-            findings.append(checks_blocker(code, failing=entry.checks_hash == current))
+            problems.append(ExportProblem(code, "checks_failing" if entry.checks_hash == current else "checks_stale"))
         if panel_required and entry.panel_pass_hash != current:
-            findings.append(panel_blocker(code, entry.panel_verdict if entry.panel_hash == current else None))
-    return findings
+            verdict: Verdict | None = entry.panel_verdict if entry.panel_hash == current else None
+            problems.append(ExportProblem(code, verdict if verdict is not None else "panel_stale"))
+    return problems
+
+
+def export_blockers(ledger: VerificationLedger, hashes: dict[str, str], panel_required: bool) -> list[Finding]:
+    """Return one finding per export problem."""
+    return [blocker_finding(problem) for problem in export_problems(ledger, hashes, panel_required)]
+
+
+def blocker_finding(problem: ExportProblem) -> Finding:
+    kind: ProblemKind = problem.kind
+    if kind == "checks_failing" or kind == "checks_stale":
+        return checks_blocker(problem.code, failing=kind == "checks_failing")
+    if kind == "panel_stale":
+        return panel_blocker(problem.code, None)
+    return panel_blocker(problem.code, kind)
 
 
 def checks_blocker(code: str, failing: bool) -> Finding:

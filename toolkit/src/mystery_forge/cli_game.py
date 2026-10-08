@@ -26,7 +26,7 @@ from mystery_forge.cli_output import (
     optional_report,
 )
 from mystery_forge.config import GameConfig
-from mystery_forge.export import ExportError, ExportResult, export_game, output_root
+from mystery_forge.export import ExportError, ExportResult, export_game, output_root, warnings_text
 from mystery_forge.findings import Finding, count_errors
 from mystery_forge.fix_groups import (
     DOCUMENTS_GROUP,
@@ -60,8 +60,11 @@ from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
 from mystery_forge.story_checks import check_story_folder
 from mystery_forge.verification import (
     DEDUCTION_KEY,
+    ExportProblem,
     VerificationLedger,
+    blocker_finding,
     export_blockers,
+    export_problems,
     game_hashes,
     ledger_path,
     load_ledger,
@@ -545,20 +548,28 @@ def command_export(arguments: argparse.Namespace, output: TextIO, folders: Syste
     game: Game | None = assemble_or_report(game_dir, output, "export")
     if game is None:
         return 0
-    blockers: list[Finding] = export_blockers(
+    problems: list[ExportProblem] = export_problems(
         load_ledger(ledger_path(game_dir)), game_hashes(game), flag_is_true(arguments.panel)
     )
-    if blockers and not arguments.force:
+    if problems and not arguments.force:
         message: str = "The verification blocks the export: some checks or panel results are missing or failing."
+        blockers: list[Finding] = [blocker_finding(problem) for problem in problems]
         emit(output, {"ok": False, "message": message, **capped_findings(blockers)})
         return 0
     root: Path = Path(arguments.to) if arguments.to else output_root(game.config.output.folder, folders.desktop)
+    language: str = game.config.language
     try:
         result: ExportResult = export_game(
-            game_dir / RENDER_FOLDER, root, game.story.title, output_file_names(game.config.language)
+            game_dir / RENDER_FOLDER,
+            root,
+            game.story.title,
+            output_file_names(language),
+            warnings_text(problems, language),
         )
     except ExportError as error:
         emit(output, {"ok": False, "message": str(error)})
         return 0
-    emit(output, {"ok": True, "folder": str(result.folder), "files": result.files, "blockers_ignored": len(blockers)})
+    # The same warnings in English, one per line, for the agent's final report in the user's language.
+    english: list[str] = [line[2:] for line in warnings_text(problems, "en").splitlines() if line.startswith("- ")]
+    emit(output, {"ok": True, "folder": str(result.folder), "files": result.files, "warnings": english})
     return 0

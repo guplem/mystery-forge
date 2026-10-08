@@ -3,6 +3,9 @@
 The top of the folder holds only what a host opens first: the manual, the materials to print, and the companion
 page. The hints and the solutions sit in a folder whose name warns about spoilers. Every name follows the game
 language. An export never overwrites an earlier one: a second export of the same title gets " (2)".
+
+A game that the verification still blocks gets a warnings file at the top of the folder. It names, in the game language
+and in plain words, each puzzle and the accusation form that may have problems. It reveals no answer.
 """
 
 import shutil
@@ -10,8 +13,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
+from mystery_forge.i18n import text
 from mystery_forge.paths import safe_folder_name, unique_folder
 from mystery_forge.render.sheets import OutputFileNames, OutputId
+from mystery_forge.verification import DEDUCTION_KEY, ExportProblem
 
 APP_FOLDER: Final[str] = "Mystery Forge"
 # Every render writes these PDF files. The hints PDF and the companion page exist only when the config asks for them.
@@ -34,8 +39,35 @@ def output_root(configured_folder: str, desktop: Path) -> Path:
     return Path(configured_folder) if configured_folder else desktop / APP_FOLDER
 
 
-def export_game(render_dir: Path, root: Path, title: str, names: OutputFileNames) -> ExportResult:
-    """Copy the outputs of `render_dir` into a new folder named after the title, inside `root`."""
+def warnings_text(problems: list[ExportProblem], language: str) -> str:
+    """The warnings file for these problems, in the language, or "" when there is no problem."""
+    if not problems:
+        return ""
+    by_code: dict[str, list[str]] = {}
+    for problem in problems:
+        by_code.setdefault(problem.code, []).append(text(language, f"export_warning_{problem.kind}"))
+    lines: list[str] = []
+    for code, sentences in by_code.items():
+        # Each text starts in lower case after the colon, so the second and later sentences start with a capital.
+        joined: str = " ".join([sentences[0], *(sentence[:1].upper() + sentence[1:] for sentence in sentences[1:])])
+        if code == DEDUCTION_KEY:
+            lines.append(f"- {text(language, 'export_warning_accusation', problems=joined)}")
+        else:
+            lines.append(f"- {text(language, 'export_warning_puzzle', code=code, problems=joined)}")
+    paragraphs: list[str] = [
+        text(language, "export_warnings_title"),
+        text(language, "export_warnings_intro"),
+        "\n".join(lines),
+        text(language, "export_warnings_fix"),
+    ]
+    return "\n\n".join(paragraphs) + "\n"
+
+
+def export_game(render_dir: Path, root: Path, title: str, names: OutputFileNames, warnings: str = "") -> ExportResult:
+    """Copy the outputs of `render_dir` into a new folder named after the title, inside `root`.
+
+    Non-empty `warnings` go first, into the warnings file.
+    """
     for output in REQUIRED_OUTPUTS:
         if not (render_dir / names.pdfs[output]).is_file():
             raise ExportError(f"The render folder has no '{names.pdfs[output]}'. Run `forge render` first.")
@@ -51,6 +83,10 @@ def export_game(render_dir: Path, root: Path, title: str, names: OutputFileNames
         (names.pdfs["solutions"], names.exported_path("solutions")),
     ]
     files: list[str] = []
+    if warnings:
+        # The byte order mark makes older Windows and macOS text editors read the file as UTF-8.
+        (folder / names.warnings).write_text(warnings, encoding="utf-8-sig", newline="\n")
+        files.append(names.warnings)
     for source, exported in copies:
         if (render_dir / source).is_file():
             shutil.copy2(render_dir / source, folder / exported)

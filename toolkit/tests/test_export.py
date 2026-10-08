@@ -2,8 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from mystery_forge.export import ExportError, export_game, output_root
+from mystery_forge.export import ExportError, export_game, output_root, warnings_text
 from mystery_forge.render.sheets import OutputFileNames, output_file_names
+from mystery_forge.verification import ExportProblem
 
 ENGLISH: OutputFileNames = output_file_names("en")
 
@@ -80,3 +81,35 @@ def test_export_needs_the_pdfs(tmp_path: Path) -> None:
 def test_output_root_is_the_config_folder_or_the_desktop(tmp_path: Path) -> None:
     assert output_root("", tmp_path / "Desktop") == tmp_path / "Desktop" / "Mystery Forge"
     assert output_root(str(tmp_path / "Games"), tmp_path / "Desktop") == tmp_path / "Games"
+
+
+def test_a_game_with_problems_gets_a_warnings_file_first(tmp_path: Path) -> None:
+    render_dir = make_render(tmp_path / "render")
+    problems = [
+        ExportProblem("B1", "checks_stale"),
+        ExportProblem("B1", "ambiguous"),
+        ExportProblem("deduction", "puzzles_not_needed"),
+    ]
+    result = export_game(render_dir, tmp_path / "out", "Flawed", ENGLISH, warnings_text(problems, "en"))
+    assert result.files[0] == "0 - READ FIRST (warnings).txt"
+    warnings = (result.folder / result.files[0]).read_text(encoding="utf-8-sig")
+    assert warnings.startswith("Read this before you play\n")
+    assert (
+        "- Puzzle B1: the automatic checks did not run after the last change. The test players found more than one "
+        "answer that fits."
+    ) in warnings
+    assert "- Accusation form: the test players could answer it without solving the puzzles." in warnings
+    assert "type 4" in warnings
+
+
+def test_the_warnings_follow_the_game_language() -> None:
+    spanish = warnings_text([ExportProblem("A2", "too_hard")], "es")
+    assert "- Enigma A2: los jugadores de prueba no lo pudieron resolver." in spanish
+    assert output_file_names("ca").warnings == "0 - LLEGEIX AIXÒ PRIMER (avisos).txt"
+
+
+def test_a_clean_game_gets_no_warnings_file(tmp_path: Path) -> None:
+    assert warnings_text([], "en") == ""
+    result = export_game(make_render(tmp_path / "render"), tmp_path / "out", "Clean", ENGLISH, "")
+    assert not any(name.startswith("0 - ") for name in result.files)
+    assert not list(result.folder.glob("*.txt"))

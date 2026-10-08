@@ -24,6 +24,29 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "file_solutions": "4 - Solutions",
         "file_companion": "Game companion",
         "folder_spoilers": "HOST ONLY - spoilers",
+        "file_export_warnings": "0 - READ FIRST (warnings)",
+        "export_warnings_title": "Read this before you play",
+        "export_warnings_intro": (
+            "Mystery Forge tests every game with automatic checks and with AI test players. Some tests of this game "
+            "did not pass. The game is probably still playable, but the parts below can be unclear, too hard, or "
+            "wrong."
+        ),
+        "export_warnings_fix": (
+            "To fix them, double-click Start Mystery Forge, type 4, and ask the AI to fix the warnings of this game."
+        ),
+        "export_warning_puzzle": "Puzzle {code}: {problems}",
+        "export_warning_accusation": "Accusation form: {problems}",
+        "export_warning_checks_failing": "some automatic checks failed.",
+        "export_warning_checks_stale": "the automatic checks did not run after the last change.",
+        "export_warning_panel_stale": "the test players did not try it after the last change.",
+        "export_warning_ambiguous": "the test players found more than one answer that fits.",
+        "export_warning_gold_suspect": "the test players think that the expected answer may be wrong.",
+        "export_warning_too_hard": "the test players could not solve it.",
+        "export_warning_guessable": "the test players could guess the answer without the clues.",
+        "export_warning_incomplete": "the test players think that something they need is missing.",
+        "export_warning_trivial": "the test players found it too easy.",
+        "export_warning_insufficient_solvers": "too few test players finished the test.",
+        "export_warning_puzzles_not_needed": "the test players could answer it without solving the puzzles.",
         "made_with": "Made with Mystery Forge",
         "page_label": "Page {number} of {count}",
         "copy_label": "Copy {number} of {count}",
@@ -247,6 +270,30 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "file_solutions": "4 - Soluciones",
         "file_companion": "Compañero de juego",
         "folder_spoilers": "SOLO ANFITRIÓN - spoilers",
+        "file_export_warnings": "0 - LEE ESTO PRIMERO (avisos)",
+        "export_warnings_title": "Lee esto antes de jugar",
+        "export_warnings_intro": (
+            "Mystery Forge prueba cada juego con comprobaciones automáticas y con jugadores de prueba de IA. Algunas "
+            "pruebas de este juego no se superaron. Lo más probable es que el juego funcione, pero las partes de "
+            "abajo pueden ser confusas, demasiado difíciles o incorrectas."
+        ),
+        "export_warnings_fix": (
+            "Para corregirlas, haz doble clic en Start Mystery Forge, escribe 4 y pide a la IA que corrija los "
+            "avisos de este juego."
+        ),
+        "export_warning_puzzle": "Enigma {code}: {problems}",
+        "export_warning_accusation": "Formulario de acusación: {problems}",
+        "export_warning_checks_failing": "algunas comprobaciones automáticas fallaron.",
+        "export_warning_checks_stale": "las comprobaciones automáticas no se repitieron tras el último cambio.",
+        "export_warning_panel_stale": "los jugadores de prueba no lo probaron tras el último cambio.",
+        "export_warning_ambiguous": "los jugadores de prueba encontraron más de una respuesta posible.",
+        "export_warning_gold_suspect": "los jugadores de prueba creen que la respuesta esperada puede ser incorrecta.",
+        "export_warning_too_hard": "los jugadores de prueba no lo pudieron resolver.",
+        "export_warning_guessable": "los jugadores de prueba pudieron adivinar la respuesta sin las pistas.",
+        "export_warning_incomplete": "los jugadores de prueba creen que falta algo que necesitan.",
+        "export_warning_trivial": "a los jugadores de prueba les pareció demasiado fácil.",
+        "export_warning_insufficient_solvers": "muy pocos jugadores de prueba terminaron la prueba.",
+        "export_warning_puzzles_not_needed": "los jugadores de prueba lo pudieron responder sin resolver los enigmas.",
         "made_with": "Hecho con Mystery Forge",
         "page_label": "Página {number} de {count}",
         "copy_label": "Copia {number} de {count}",
@@ -473,6 +520,30 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "file_solutions": "4 - Solucions",
         "file_companion": "Company de joc",
         "folder_spoilers": "NOMÉS AMFITRIÓ - espòilers",
+        "file_export_warnings": "0 - LLEGEIX AIXÒ PRIMER (avisos)",
+        "export_warnings_title": "Llegeix això abans de jugar",
+        "export_warnings_intro": (
+            "Mystery Forge prova cada joc amb comprovacions automàtiques i amb jugadors de prova d'IA. Algunes "
+            "proves d'aquest joc no s'han superat. El més probable és que el joc funcioni, però les parts de sota "
+            "poden ser confuses, massa difícils o incorrectes."
+        ),
+        "export_warnings_fix": (
+            "Per corregir-les, fes doble clic a Start Mystery Forge, escriu 4 i demana a la IA que corregeixi els "
+            "avisos d'aquest joc."
+        ),
+        "export_warning_puzzle": "Enigma {code}: {problems}",
+        "export_warning_accusation": "Formulari d'acusació: {problems}",
+        "export_warning_checks_failing": "algunes comprovacions automàtiques han fallat.",
+        "export_warning_checks_stale": "les comprovacions automàtiques no s'han repetit després de l'últim canvi.",
+        "export_warning_panel_stale": "els jugadors de prova no l'han provat després de l'últim canvi.",
+        "export_warning_ambiguous": "els jugadors de prova han trobat més d'una resposta possible.",
+        "export_warning_gold_suspect": "els jugadors de prova creuen que la resposta esperada pot ser incorrecta.",
+        "export_warning_too_hard": "els jugadors de prova no l'han pogut resoldre.",
+        "export_warning_guessable": "els jugadors de prova han pogut endevinar la resposta sense les pistes.",
+        "export_warning_incomplete": "els jugadors de prova creuen que falta alguna cosa que necessiten.",
+        "export_warning_trivial": "als jugadors de prova els ha semblat massa fàcil.",
+        "export_warning_insufficient_solvers": "molt pocs jugadors de prova han acabat la prova.",
+        "export_warning_puzzles_not_needed": "els jugadors de prova l'han pogut respondre sense resoldre els enigmes.",
         "made_with": "Fet amb Mystery Forge",
         "page_label": "Pàgina {number} de {count}",
         "copy_label": "Còpia {number} de {count}",
@@ -698,6 +769,32 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "file_solutions": "4 - Solutions",
         "file_companion": "Compagnon de jeu",
         "folder_spoilers": "HÔTE UNIQUEMENT - révélations",
+        "file_export_warnings": "0 - À LIRE D'ABORD (avertissements)",
+        "export_warnings_title": "Lisez ceci avant de jouer",
+        "export_warnings_intro": (
+            "Mystery Forge teste chaque jeu avec des contrôles automatiques et avec des joueurs de test IA. Certains "
+            "tests de ce jeu n'ont pas réussi. Le jeu reste sans doute jouable, mais les parties ci-dessous peuvent "
+            "être confuses, trop difficiles ou fausses."
+        ),
+        "export_warnings_fix": (
+            "Pour les corriger, double-cliquez sur Start Mystery Forge, tapez 4 et demandez à l'IA de corriger les "
+            "avertissements de ce jeu."
+        ),
+        "export_warning_puzzle": "Énigme {code} : {problems}",
+        "export_warning_accusation": "Formulaire d'accusation : {problems}",
+        "export_warning_checks_failing": "certains contrôles automatiques ont échoué.",
+        "export_warning_checks_stale": (
+            "les contrôles automatiques n'ont pas été refaits après la dernière modification."
+        ),
+        "export_warning_panel_stale": "les joueurs de test ne l'ont pas essayé après la dernière modification.",
+        "export_warning_ambiguous": "les joueurs de test ont trouvé plus d'une réponse possible.",
+        "export_warning_gold_suspect": "les joueurs de test pensent que la réponse attendue est peut-être fausse.",
+        "export_warning_too_hard": "les joueurs de test n'ont pas pu la résoudre.",
+        "export_warning_guessable": "les joueurs de test ont pu deviner la réponse sans les indices.",
+        "export_warning_incomplete": "les joueurs de test pensent qu'il manque quelque chose dont ils ont besoin.",
+        "export_warning_trivial": "les joueurs de test l'ont trouvée trop facile.",
+        "export_warning_insufficient_solvers": "trop peu de joueurs de test ont terminé le test.",
+        "export_warning_puzzles_not_needed": "les joueurs de test ont pu y répondre sans résoudre les énigmes.",
         "made_with": "Créé avec Mystery Forge",
         "page_label": "Page {number} sur {count}",
         "copy_label": "Exemplaire {number} sur {count}",
@@ -928,6 +1025,30 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "file_solutions": "4 - Lösungen",
         "file_companion": "Spielbegleiter",
         "folder_spoilers": "NUR GASTGEBER - Spoiler",
+        "file_export_warnings": "0 - ZUERST LESEN (Warnungen)",
+        "export_warnings_title": "Lies das vor dem Spiel",
+        "export_warnings_intro": (
+            "Mystery Forge testet jedes Spiel mit automatischen Prüfungen und mit KI-Testspielern. Einige Tests "
+            "dieses Spiels sind nicht bestanden. Das Spiel ist wahrscheinlich trotzdem spielbar, aber die Teile "
+            "unten können unklar, zu schwer oder falsch sein."
+        ),
+        "export_warnings_fix": (
+            "Zum Beheben: Doppelklicke auf Start Mystery Forge, tippe 4 und bitte die KI, die Warnungen dieses "
+            "Spiels zu beheben."
+        ),
+        "export_warning_puzzle": "Rätsel {code}: {problems}",
+        "export_warning_accusation": "Anklageformular: {problems}",
+        "export_warning_checks_failing": "einige automatische Prüfungen sind fehlgeschlagen.",
+        "export_warning_checks_stale": "die automatischen Prüfungen liefen nach der letzten Änderung nicht erneut.",
+        "export_warning_panel_stale": "die Testspieler haben es nach der letzten Änderung nicht erneut versucht.",
+        "export_warning_ambiguous": "die Testspieler fanden mehr als eine passende Antwort.",
+        "export_warning_gold_suspect": "die Testspieler halten die erwartete Antwort für möglicherweise falsch.",
+        "export_warning_too_hard": "die Testspieler konnten es nicht lösen.",
+        "export_warning_guessable": "die Testspieler konnten die Antwort ohne die Hinweise erraten.",
+        "export_warning_incomplete": "die Testspieler glauben, dass etwas fehlt, das sie brauchen.",
+        "export_warning_trivial": "die Testspieler fanden es zu leicht.",
+        "export_warning_insufficient_solvers": "zu wenige Testspieler haben den Test beendet.",
+        "export_warning_puzzles_not_needed": "die Testspieler konnten es beantworten, ohne die Rätsel zu lösen.",
         "made_with": "Erstellt mit Mystery Forge",
         "page_label": "Seite {number} von {count}",
         "copy_label": "Exemplar {number} von {count}",
@@ -1157,6 +1278,30 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "file_solutions": "4 - Soluzioni",
         "file_companion": "Compagno di gioco",
         "folder_spoilers": "SOLO CHI CONDUCE - spoiler",
+        "file_export_warnings": "0 - LEGGI PRIMA (avvisi)",
+        "export_warnings_title": "Leggi qui prima di giocare",
+        "export_warnings_intro": (
+            "Mystery Forge prova ogni gioco con controlli automatici e con giocatori di prova IA. Alcune prove di "
+            "questo gioco non sono riuscite. Il gioco probabilmente funziona, ma le parti qui sotto possono essere "
+            "poco chiare, troppo difficili o sbagliate."
+        ),
+        "export_warnings_fix": (
+            "Per correggerle, fai doppio clic su Start Mystery Forge, scrivi 4 e chiedi all'IA di correggere gli "
+            "avvisi di questo gioco."
+        ),
+        "export_warning_puzzle": "Enigma {code}: {problems}",
+        "export_warning_accusation": "Modulo d'accusa: {problems}",
+        "export_warning_checks_failing": "alcuni controlli automatici non sono riusciti.",
+        "export_warning_checks_stale": "i controlli automatici non sono stati ripetuti dopo l'ultima modifica.",
+        "export_warning_panel_stale": "i giocatori di prova non l'hanno provato dopo l'ultima modifica.",
+        "export_warning_ambiguous": "i giocatori di prova hanno trovato più di una risposta possibile.",
+        "export_warning_gold_suspect": "i giocatori di prova pensano che la risposta attesa possa essere sbagliata.",
+        "export_warning_too_hard": "i giocatori di prova non sono riusciti a risolverlo.",
+        "export_warning_guessable": "i giocatori di prova hanno potuto indovinare la risposta senza gli indizi.",
+        "export_warning_incomplete": "i giocatori di prova pensano che manchi qualcosa che serve loro.",
+        "export_warning_trivial": "i giocatori di prova l'hanno trovato troppo facile.",
+        "export_warning_insufficient_solvers": "troppo pochi giocatori di prova hanno finito la prova.",
+        "export_warning_puzzles_not_needed": "i giocatori di prova hanno potuto rispondere senza risolvere gli enigmi.",
         "made_with": "Creato con Mystery Forge",
         "page_label": "Pagina {number} di {count}",
         "copy_label": "Copia {number} di {count}",
@@ -1383,6 +1528,30 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "file_solutions": "4 - Soluções",
         "file_companion": "Companheiro de jogo",
         "folder_spoilers": "SÓ ANFITRIÃO - spoilers",
+        "file_export_warnings": "0 - LEIA PRIMEIRO (avisos)",
+        "export_warnings_title": "Leia isto antes de jogar",
+        "export_warnings_intro": (
+            "O Mystery Forge testa cada jogo com verificações automáticas e com jogadores de teste de IA. Alguns "
+            "testes deste jogo não passaram. O jogo provavelmente funciona, mas as partes abaixo podem ser confusas, "
+            "difíceis demais ou erradas."
+        ),
+        "export_warnings_fix": (
+            "Para corrigi-las, clique duas vezes em Start Mystery Forge, digite 4 e peça à IA que corrija os avisos "
+            "deste jogo."
+        ),
+        "export_warning_puzzle": "Enigma {code}: {problems}",
+        "export_warning_accusation": "Formulário de acusação: {problems}",
+        "export_warning_checks_failing": "algumas verificações automáticas falharam.",
+        "export_warning_checks_stale": "as verificações automáticas não foram repetidas após a última alteração.",
+        "export_warning_panel_stale": "os jogadores de teste não o testaram após a última alteração.",
+        "export_warning_ambiguous": "os jogadores de teste encontraram mais de uma resposta possível.",
+        "export_warning_gold_suspect": "os jogadores de teste acham que a resposta esperada pode estar errada.",
+        "export_warning_too_hard": "os jogadores de teste não conseguiram resolvê-lo.",
+        "export_warning_guessable": "os jogadores de teste conseguiram adivinhar a resposta sem as pistas.",
+        "export_warning_incomplete": "os jogadores de teste acham que falta algo de que precisam.",
+        "export_warning_trivial": "os jogadores de teste acharam-no fácil demais.",
+        "export_warning_insufficient_solvers": "poucos jogadores de teste terminaram o teste.",
+        "export_warning_puzzles_not_needed": "os jogadores de teste conseguiram responder sem resolver os enigmas.",
         "made_with": "Feito com Mystery Forge",
         "page_label": "Página {number} de {count}",
         "copy_label": "Cópia {number} de {count}",

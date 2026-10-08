@@ -314,6 +314,7 @@ def test_render_and_export_name_the_files_in_the_game_language(game_dir: Path, t
     exported = run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out"), "--force"])
     assert exported["ok"] is True
     assert exported["files"] == [
+        "0 - LEE ESTO PRIMERO (avisos).txt",
         "1 - EMPIEZA AQUÍ (manual).pdf",
         "2 - IMPRIME ESTO (materiales del juego).pdf",
         "Compañero de juego.html",
@@ -469,11 +470,19 @@ def test_export_refuses_a_game_that_verification_blocks(game_dir: Path, tmp_path
     assert not (tmp_path / "out").exists()
     without_panel = run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out"), "--panel", "False"])
     assert without_panel["ok"] is True
+    assert without_panel["warnings"] == []
+    assert without_panel["files"][0] == "1 - START HERE (manual).pdf"
     path = game_dir / "source" / "documents" / "D3.md"
     path.write_text(path.read_text(encoding="utf-8") + "\nOne more line.\n", encoding="utf-8")
     assert run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out"), "--panel", "false"])["ok"] is False
     forced = run(["export", "--game", str(game_dir), "--to", str(tmp_path / "out"), "--force"])
     assert forced["ok"] is True
+    # The host sees the problems in a file of the game folder, and the agent gets them in plain words for its report.
+    assert forced["files"][0] == "0 - READ FIRST (warnings).txt"
+    assert forced["warnings"][-1] == (
+        "Accusation form: the automatic checks did not run after the last change. The test players did not try it "
+        "after the last change."
+    )
 
 
 def make_fake_pdfs(game_dir: Path, names: OutputFileNames | None = None) -> None:

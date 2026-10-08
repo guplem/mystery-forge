@@ -56,6 +56,8 @@ class OutputFileNames:
     # The companion page keeps this name from the render folder to the exported folder.
     companion: str
     spoiler_folder: str
+    # A plain text file that an export with failing verification puts first, so the host reads it before the manual.
+    warnings: str
 
     def exported_path(self, output: OutputId) -> str:
         """The path of an output PDF in the exported folder, with a forward slash."""
@@ -69,6 +71,7 @@ def output_file_names(language: str) -> OutputFileNames:
         pdfs={output: f"{text(language, f'file_{output}')}.pdf" for output in OUTPUT_HTML_FILES},
         companion=f"{text(language, 'file_companion')}.html",
         spoiler_folder=text(language, "folder_spoilers"),
+        warnings=f"{text(language, 'file_export_warnings')}.txt",
     )
 
 

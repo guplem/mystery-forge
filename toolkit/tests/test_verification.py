@@ -9,9 +9,11 @@ from mystery_forge.game import AssembledDocument, Game
 from mystery_forge.panel.models import ItemVerdict, PanelReport, Verdict
 from mystery_forge.spec.documents import IMAGE_MARK
 from mystery_forge.verification import (
+    ExportProblem,
     LedgerEntry,
     VerificationLedger,
     export_blockers,
+    export_problems,
     game_hashes,
     ledger_path,
     load_ledger,
@@ -203,6 +205,18 @@ def test_export_blockers_name_failing_and_stale_codes() -> None:
     assert "too_hard" in blockers[1].message
     assert all(finding.severity == "error" and finding.fix_hint for finding in blockers)
     assert [finding.path for finding in export_blockers(ledger, HASHES, panel_required=False)] == ["B1"]
+
+
+def test_export_problems_name_each_code_with_what_does_not_pass() -> None:
+    ledger = record_checks(VerificationLedger(), HASHES, ["A1", "deduction"])
+    ledger = record_panel(ledger, HASHES, report([item("A1", "pass"), item("B1", "too_hard")], []))
+    assert export_problems(ledger, {**HASHES, "C1": "h4"}, panel_required=True) == [
+        ExportProblem("B1", "checks_failing"),
+        ExportProblem("B1", "too_hard"),
+        ExportProblem("deduction", "panel_stale"),
+        ExportProblem("C1", "checks_stale"),
+        ExportProblem("C1", "panel_stale"),
+    ]
 
 
 def test_the_panel_runs_the_stages_that_have_no_pass_on_their_current_content(golden_game: Game) -> None:
