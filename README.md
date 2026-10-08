@@ -112,15 +112,16 @@ If a command fails, the official pages always have the current one: [uv](https:/
 
 ## Troubleshooting
 
-| Problem                                             | What to do                                                                                                       |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| The terminal says `claude` or `uv` is not found     | Close the terminal and open a new one. If it still fails, run the install command again.                         |
-| The configurator page looks empty                   | Keep the whole `configurator` folder together. The page needs the other files next to it.                        |
-| The AI says it found no game settings               | Save your choices on the configurator page first (Step 1), or tell the AI where the file is.                     |
-| The AI asks for permission for every step           | Close it and open the terminal inside the `generator` folder itself (Step 2), not in the `mystery-forge` folder. |
-| "No browser found"                                  | Install Google Chrome or Microsoft Edge, or let the AI install a small browser for you when it asks.             |
-| The AI stopped before the game was ready            | Open Claude in the `generator` folder again and type **continue**.                                               |
-| Chinese, Japanese, or Arabic letters print as boxes | Your computer lacks a font for that script. Windows and macOS have them; on Linux, install the Noto fonts.       |
+| Problem                                             | What to do                                                                                                                                                                               |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A double-click on the launcher opens a text editor  | Your computer opens `.cmd` files in an editor. In the `mystery-forge` folder, click the address bar, type `cmd`, and press Enter. Then type `"Start Mystery Forge.cmd"` and press Enter. |
+| The terminal says `claude` or `uv` is not found     | Close the terminal and open a new one. If it still fails, run the install command again.                                                                                                 |
+| The configurator page looks empty                   | Keep the whole `configurator` folder together. The page needs the other files next to it.                                                                                                |
+| The AI says it found no game settings               | Save your choices on the configurator page first (Step 1), or tell the AI where the file is.                                                                                             |
+| The AI asks for permission for every step           | Close it and open the terminal inside the `generator` folder itself (Step 2), not in the `mystery-forge` folder.                                                                         |
+| "No browser found"                                  | Install Google Chrome or Microsoft Edge, or let the AI install a small browser for you when it asks.                                                                                     |
+| The AI stopped before the game was ready            | Open Claude in the `generator` folder again and type **continue**.                                                                                                                       |
+| Chinese, Japanese, or Arabic letters print as boxes | Your computer lacks a font for that script. Windows and macOS have them; on Linux, install the Noto fonts.                                                                               |
 
 ## How the games stay correct
 

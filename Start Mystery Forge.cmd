@@ -43,7 +43,10 @@ if errorlevel 4 goto talk
 if errorlevel 3 goto continue
 if errorlevel 2 goto make
 
-start "" "%~dp0configurator\index.html"
+rem Open the page with the browser that opens web links, not with the default app for .html files:
+rem many computers open .html files in a text editor. Microsoft Edge is the fallback.
+set "CONFIGURATOR_PAGE=%~dp0configurator\index.html"
+powershell -NoProfile -ExecutionPolicy ByPass -Command "$pageUrl = ([uri]$env:CONFIGURATOR_PAGE).AbsoluteUri; $progId = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice' -ErrorAction SilentlyContinue).ProgId; $openCommand = (Get-ItemProperty ('Registry::HKEY_CLASSES_ROOT\' + $progId + '\shell\open\command') -ErrorAction SilentlyContinue).'(default)'; $browser = 'msedge'; if ($progId -and $openCommand -match '^\x22([^\x22]+)\x22|^(\S+)') { $browser = $Matches[1] + $Matches[2] }; try { Start-Process $browser -ArgumentList $pageUrl -ErrorAction Stop } catch { Start-Process msedge -ArgumentList $pageUrl }"
 echo.
 echo   The settings page is open in your browser.
 echo   Choose your game, click "Review and save", then "Download config".
