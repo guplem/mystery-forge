@@ -38,7 +38,7 @@ from mystery_forge.fix_groups import (
 from mystery_forge.game import AssembledPuzzle, Game
 from mystery_forge.i18n import LANGUAGES, language_pack_template
 from mystery_forge.mechanics.registry import all_implementations
-from mystery_forge.panel.judge import judge_panel, report_summary
+from mystery_forge.panel.judge import MIN_SOLVERS, judge_panel, report_summary
 from mystery_forge.panel.models import (
     AccusationChoice,
     GuesserResult,
@@ -71,12 +71,14 @@ from mystery_forge.verification import (
     ledger_path,
     load_ledger,
     panel_stages_to_run,
+    panel_tested_stages,
     record_checks,
     record_panel,
     save_ledger,
     stale_check_codes,
     stale_codes,
     stale_panel_codes,
+    unjudged_panel_codes,
 )
 
 RENDER_FOLDER: Final[str] = "render"
@@ -375,11 +377,10 @@ def command_packets(arguments: argparse.Namespace, output: TextIO) -> int:
     (folder / PACKETS_FILE).write_text(
         json.dumps([packet.model_dump() for packet in packets], ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    to_run: set[str] = (
-        {packet.stage for packet in packets}
-        if arguments.all
-        else panel_stages_to_run(game, load_ledger(ledger_path(game_dir)))
-    )
+    ledger: VerificationLedger = load_ledger(ledger_path(game_dir))
+    to_run: set[str] = {packet.stage for packet in packets} if arguments.all else panel_stages_to_run(game, ledger)
+    # A stage that the panel judged before needs only the smallest panel to confirm a fix (`adr/0004`).
+    tested: set[str] = set() if arguments.all else panel_tested_stages(game, ledger)
     personas: list[str] = list(SOLVER_PERSONAS)
     if game.config.audience == "kids":
         personas[-1] = KIDS_PERSONA
@@ -389,7 +390,8 @@ def command_packets(arguments: argparse.Namespace, output: TextIO) -> int:
             continue
         packet_file: Path = folder / f"stage-{packet.stage}.md"
         packet_file.write_text(packet.text, encoding="utf-8")
-        for number in range(1, game.brief.solver_count + 1):
+        solvers: int = min(game.brief.solver_count, MIN_SOLVERS) if packet.stage in tested else game.brief.solver_count
+        for number in range(1, solvers + 1):
             tasks.append(
                 {
                     "name": f"{packet.stage} solver {number}",
@@ -596,6 +598,8 @@ def command_status(arguments: argparse.Namespace, output: TextIO) -> int:
             "stale": stale_codes(ledger, hashes, panel_required),
             "checks_stale": stale_check_codes(ledger, hashes),
             "panel_stale": stale_panel_codes(ledger, hashes) if panel_required else [],
+            # Only these need the panel again: the other stale codes failed it on their current content.
+            "panel_unjudged": unjudged_panel_codes(ledger, hashes) if panel_required else [],
             **capped_findings(blockers),
         },
     )

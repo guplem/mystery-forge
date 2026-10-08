@@ -620,7 +620,8 @@ blocks:
         to: export
       - when: "{{ (steps.status.json.checks_stale | default([]) | length) > 0 and (history.game_check | length) < 8 }}"
         to: game_check
-      - when: "{{ inputs.panel and (history.panel | length) < 5 }}"
+      # A code that failed the panel on its current content would only fail again: re-run the panel for new content.
+      - when: "{{ inputs.panel and (steps.status.json.panel_unjudged | default([]) | length) > 0 and (history.panel | length) < 5 }}"
         to: panel
       - to: export_with_warnings
 

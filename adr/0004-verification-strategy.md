@@ -38,4 +38,5 @@ Panel rules:
 
 - The catalog prefers buildable mechanics, and each catalog entry names its verification level.
 - Panel cost grows with stages times solvers, not with puzzles times solvers, plus one story-only group. A run after a fix costs only the stages that changed.
+- A re-test of a stage that the panel judged before gets 3 solvers, the smallest panel that the thresholds allow; the first round keeps the full panel. The run sends the game to the panel again only when some code has no verdict on its current content: a code that failed on unchanged content would only fail again. In the first 8 live runs, 58% of all agent tasks were solvers, and every round re-ran every stage with 5 solvers.
 - A run can skip the panel (`create-game` input `panel: false`) when the user asks for speed; the final report says so. On a harness with no subagents, the panel tasks run one after another in the main context, so they are not isolated from the answers.
