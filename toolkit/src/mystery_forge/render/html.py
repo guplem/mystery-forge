@@ -9,7 +9,7 @@ from functools import cache
 from jinja2 import Environment, PackageLoader, StrictUndefined
 from markupsafe import Markup
 
-from mystery_forge.i18n import text
+from mystery_forge.i18n import text, text_direction
 from mystery_forge.render.document_body import speaker_lines
 from mystery_forge.render.fonts import font_face_css
 from mystery_forge.render.sheets import OutputId, OutputPlan
@@ -58,6 +58,7 @@ def render_output_html(plan: OutputPlan, settings: StyleSettings, title: str, la
             plan=plan,
             settings=settings,
             language=language,
+            direction=text_direction(language),
             title=f"{title} · {translate(OUTPUT_TITLE_KEYS[plan.id])}",
             # The CSS comes from the package files and the bundled fonts, never from game content.
             css=Markup(css),

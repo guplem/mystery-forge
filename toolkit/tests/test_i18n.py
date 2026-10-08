@@ -2,7 +2,17 @@ from datetime import datetime
 
 import pytest
 
-from mystery_forge.i18n import LANGUAGES, format_date, text, weekday_name
+from mystery_forge.i18n import (
+    LANGUAGES,
+    LanguagePack,
+    format_date,
+    language_pack_problems,
+    language_pack_template,
+    register_language,
+    text,
+    text_direction,
+    weekday_name,
+)
 
 
 def test_every_language_has_every_key_of_english() -> None:
@@ -55,3 +65,64 @@ def test_a_solo_game_gets_the_solo_text_when_one_exists() -> None:
     assert text("es", "cover_players", solo=True, count="1") == "1 jugador"
     assert text("es", "cover_players", count="1") == "1 jugadores"
     assert text("en", "accusation_title", solo=True) == "Accusation form"
+
+
+def japanese_pack() -> LanguagePack:
+    template = language_pack_template()
+    strings = {key: f"JA {value}" for key, value in template.strings.items()}
+    return LanguagePack(
+        strings=strings,
+        months=[f"{number}月" for number in range(1, 13)],
+        weekdays=["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"],
+        date_pattern="{year}年{month}{day}日",
+    )
+
+
+def test_the_template_holds_every_english_text_and_the_calendar() -> None:
+    template = language_pack_template()
+    assert template.strings["envelope_label"] == "Envelope {stage}"
+    assert template.months[0] == "January" and len(template.months) == 12
+    assert template.weekdays[-1] == "Sunday" and len(template.weekdays) == 7
+    assert template.date_pattern == "{day} {month} {year}"
+    assert language_pack_problems(template) == []
+
+
+def test_a_pack_must_keep_every_key_and_every_placeholder() -> None:
+    template = language_pack_template()
+    strings = dict(template.strings)
+    del strings["continued"]
+    strings["envelope_label"] = "Sobre {etapa}"
+    strings["made_up_key"] = "x"
+    broken = template.model_copy(update={"strings": strings, "date_pattern": "{day} {month}"})
+    assert language_pack_problems(broken) == [
+        "The key 'continued' is missing.",
+        "The key 'made_up_key' is not a fixed text.",
+        "The text 'envelope_label' must keep the fields {stage}, not {etapa}.",
+        "The date pattern must hold {day}, {month}, and {year}.",
+    ]
+
+
+def test_a_registered_pack_serves_its_language(restored_tables: None) -> None:
+    register_language("ja", japanese_pack())
+    assert text("ja", "envelope_label", stage="B") == "JA Envelope B"
+    assert format_date(datetime(1931, 3, 14), "ja") == "1931年3月14日"
+    assert weekday_name(datetime(1931, 3, 14), "ja") == "土曜日"
+
+
+def test_a_translated_file_name_may_not_hold_a_character_that_file_names_forbid() -> None:
+    template = language_pack_template()
+    strings = dict(template.strings)
+    strings["file_manual"] = "1 - Start: here?"
+    problems = language_pack_problems(template.model_copy(update={"strings": strings}))
+    assert problems == ["The file name 'file_manual' holds a character that file names forbid: ':', '?'."]
+
+
+def test_arabic_hebrew_persian_and_urdu_read_from_right_to_left() -> None:
+    assert [text_direction(language) for language in ("ar", "he", "fa", "ur", "en", "ja")] == [
+        "rtl",
+        "rtl",
+        "rtl",
+        "rtl",
+        "ltr",
+        "ltr",
+    ]

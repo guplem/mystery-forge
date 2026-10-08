@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from mystery_forge.assemble import assemble_game, game_salt, image_text, insert_solver_texts, puzzle_codes
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument
+from mystery_forge.i18n import language_pack_template, text
 from mystery_forge.mechanics.base import (
     Artifact,
     ArtifactPart,
@@ -228,3 +229,35 @@ def test_a_part_mark_gets_the_solver_text_of_the_part() -> None:
 )
 def test_the_solver_text_of_an_image_holds_its_caption_and_its_title(caption: str, svg: str, expected: str) -> None:
     assert image_text(caption, svg) == expected
+
+
+def with_language(game_dir: Path, language: str) -> None:
+    config_path = game_dir / "source" / "config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["language"] = language
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+
+def write_pack(game_dir: Path, strings: dict[str, str]) -> None:
+    template = language_pack_template()
+    pack = template.model_copy(update={"strings": strings})
+    (game_dir / "source" / "strings.json").write_text(pack.model_dump_json(), encoding="utf-8")
+
+
+def test_a_language_without_a_checked_table_needs_its_translated_pack(game_dir: Path, restored_tables: None) -> None:
+    with_language(game_dir, "ja")
+    missing = assemble_game(game_dir, FAKE_IMPLEMENTATIONS).findings
+    assert [(finding.rule, finding.file) for finding in missing] == [("strings.missing", "strings.json")]
+    (game_dir / "source" / "strings.json").write_text("{not json", encoding="utf-8")
+    assert [finding.rule for finding in assemble_game(game_dir, FAKE_IMPLEMENTATIONS).findings] == ["strings.invalid"]
+    strings = {key: f"JA {value}" for key, value in language_pack_template().strings.items()}
+    del strings["continued"]
+    write_pack(game_dir, strings)
+    invalid = assemble_game(game_dir, FAKE_IMPLEMENTATIONS).findings
+    assert [(finding.rule, finding.message) for finding in invalid] == [
+        ("strings.invalid", "The key 'continued' is missing.")
+    ]
+    strings["continued"] = "JA continued"
+    write_pack(game_dir, strings)
+    assert assemble_game(game_dir, FAKE_IMPLEMENTATIONS).findings == []
+    assert text("ja", "envelope_label", stage="B") == "JA Envelope B"

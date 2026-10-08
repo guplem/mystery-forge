@@ -545,3 +545,23 @@ def test_a_game_verb_refuses_a_folder_without_source_and_writes_nothing(tmp_path
     assert result["ok"] is False
     assert "has no source folder" in result["message"]
     assert not mistyped.exists()
+
+
+def test_strings_writes_the_template_for_a_language_without_a_checked_table(
+    game_dir: Path, restored_tables: None
+) -> None:
+    assert run(["strings", "--game", str(game_dir)]) == {"ok": True, "needed": False}
+    config_path = game_dir / "source" / "config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["language"] = "ja"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    first = run(["strings", "--game", str(game_dir)])
+    assert (first["ok"], first["needed"], first["language"]) == (False, True, "ja")
+    assert first["findings"][0]["rule"] == "strings.missing"
+    template = Path(first["template"])
+    assert json.loads(template.read_text(encoding="utf-8"))["strings"]["envelope_label"] == "Envelope {stage}"
+    Path(first["target"]).write_text(template.read_text(encoding="utf-8"), encoding="utf-8")
+    second = run(["strings", "--game", str(game_dir)])
+    assert (second["ok"], second["needed"]) == (True, True)
+    config_path.unlink()
+    assert run(["strings", "--game", str(game_dir)])["ok"] is False

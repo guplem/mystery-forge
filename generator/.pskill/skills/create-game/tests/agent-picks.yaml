@@ -11,6 +11,9 @@ scripts:
       "difficulty": "medium", "language": "en", "audience": "family", "format": "both", "idea": "", "quality": "best", "pick_concept":
       "agent", "host": "self_running", "images": "svg"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20,
       "generation_minutes": 90}, "draw_file": "games/g/source/draw.json"}'
+  texts:
+  - exit_code: 0
+    stdout: '{"ok": true, "needed": false}'
   writer_tasks:
   - exit_code: 0
     stdout: '{"ok": true, "tasks": [{"name": "P1 caesar-cipher", "id": "P1", "stage": "A", "mechanic": "caesar-cipher", "documents":
@@ -103,6 +106,7 @@ expect:
   - doctor
   - setup
   - confirm_config
+  - texts
   - concepts
   - pick_concept_agent
   - write_story
