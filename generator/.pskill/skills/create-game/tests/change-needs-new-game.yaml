@@ -1,0 +1,29 @@
+name: a change that needs a new game stops with nothing changed
+inputs:
+  game: games/g
+  change: make it for six players
+scripts:
+  doctor:
+  - exit_code: 0
+    stdout: '{"ok": true, "browser": "chrome", "desktop": "D", "downloads": "W"}'
+  setup:
+  - exit_code: 0
+    stdout: '{"ok": true, "game_dir": "games/g", "config_file": "c.json", "summary": {"players": 4, "duration_minutes": 90,
+      "difficulty": "medium", "language": "en", "audience": "family", "format": "both", "idea": "", "quality": "best", "pick_concept":
+      "ask", "host": "self_running", "images": "svg"}, "brief": {"puzzle_count": 8, "stage_count": 3, "printed_pages": 20,
+      "generation_minutes": 90}, "draw_file": "games/g/source/draw.json"}'
+calls: {}
+answers:
+  apply_change:
+  - status: new_game_needed
+    changed_files: []
+    summary: The number of players needs a new game.
+expect:
+  path:
+  - doctor
+  - setup
+  - apply_change
+  - new_game_needed
+  status: cancelled
+  outputs:
+    result: stopped

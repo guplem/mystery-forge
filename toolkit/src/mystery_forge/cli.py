@@ -16,10 +16,11 @@ from datetime import date
 from pathlib import Path
 from typing import Any, TextIO
 
+import yaml
 from pydantic import BaseModel
 
 from mystery_forge import cli_game
-from mystery_forge.assemble import AssemblyResult, assemble_game
+from mystery_forge.assemble import AssemblyResult, assemble_game, load_brief, load_config
 from mystery_forge.brief import Brief, derive_brief
 from mystery_forge.catalog.loader import design_rules_text, load_mechanics, mechanic_by_id
 from mystery_forge.catalog.models import Mechanic
@@ -90,6 +91,8 @@ def write_json(path: Path, model: BaseModel) -> None:
 
 
 def command_setup(arguments: argparse.Namespace, output: TextIO) -> int:
+    if arguments.game:
+        return setup_existing_game(Path(arguments.game), output)
     folders: SystemFolders = find_system_folders()
     config_path: Path | None = None
     # The generator passes the user's answer as --config; the word "defaults" asks for the default config.
@@ -132,6 +135,102 @@ def command_setup(arguments: argparse.Namespace, output: TextIO) -> int:
         },
     )
     return 0
+
+
+def setup_existing_game(game_dir: Path, output: TextIO) -> int:
+    """Load a game folder that exists, so that a run can change it. Nothing is drawn or written."""
+    findings: list[Finding] = []
+    config: GameConfig | None = load_config(game_dir, findings)
+    brief: Brief | None = load_brief(game_dir, findings)
+    if config is None or brief is None:
+        emit(output, {"ok": False, **capped_findings(findings)})
+        return 0
+    emit(
+        output,
+        {
+            "ok": True,
+            "game_dir": str(game_dir),
+            "config_file": None,
+            "summary": config_summary(config),
+            "brief": brief.model_dump(mode="json"),
+            "draw_file": str(game_dir / SOURCE_FOLDER / "draw.json"),
+        },
+    )
+    return 0
+
+
+# The config fields that a finished game can change: how it prints and what the host adds. A dotted prefix ending in
+# "." allows every field of that section. Any other change (players, length, language, audience) needs a new game.
+CHANGEABLE_CONFIG_FIELDS: tuple[str, ...] = (
+    "equipment.",
+    "visuals.",
+    "assistance.",
+    "output.",
+    "personalization.host_name",
+    "personalization.dedication",
+    "players.names",
+)
+
+
+def changeable(field: str) -> bool:
+    return any(
+        field.startswith(prefix) if prefix.endswith(".") else field == prefix for prefix in CHANGEABLE_CONFIG_FIELDS
+    )
+
+
+def command_config(arguments: argparse.Namespace, output: TextIO) -> int:
+    """Change print settings of a game's config.json, check the result against the schema, and write it."""
+    path: Path = Path(arguments.game) / SOURCE_FOLDER / "config.json"
+    raw: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    for assignment in arguments.set:
+        field, separator, value = assignment.partition("=")
+        section, _, key = field.partition(".")
+        if not separator or not changeable(field) or key not in raw.get(section, {}):
+            allowed: str = ", ".join(CHANGEABLE_CONFIG_FIELDS)
+            message: str = (
+                f"'{assignment}' is not a change that a finished game can take. Use <field>=<value> with a field of: "
+                f"{allowed}. Other changes need a new game."
+            )
+            emit(output, {"ok": False, "message": message})
+            return 0
+        raw[section][key] = config_value(value)
+    result: ConfigLoadResult = normalize_config(raw)
+    if result.config is None:
+        emit(output, {"ok": False, "findings": [finding.model_dump() for finding in result.findings]})
+        return 0
+    write_json(path, result.config)
+    emit(output, {"ok": True, "summary": config_summary(result.config)})
+    return 0
+
+
+def config_value(value: str) -> Any:
+    """A JSON value (false, 3, ["Ana"]), or the text itself (black_and_white)."""
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
+
+def command_games(arguments: argparse.Namespace, output: TextIO) -> int:
+    """List the game folders, newest first, with their titles, so an agent finds the game that a user names."""
+    games_dir: Path = Path(arguments.games_dir)
+    folders: list[Path] = sorted(games_dir.iterdir(), reverse=True) if games_dir.is_dir() else []
+    games: list[dict[str, Any]] = [
+        {"game_dir": str(folder), "title": story_title(folder), "rendered": (folder / "render").is_dir()}
+        for folder in folders
+        if (folder / SOURCE_FOLDER / "config.json").is_file()
+    ]
+    emit(output, {"ok": True, "games": games})
+    return 0
+
+
+def story_title(game_dir: Path) -> str:
+    """The title in story.yaml, or "" when the story is missing or does not load."""
+    try:
+        loaded: Any = yaml.safe_load((game_dir / SOURCE_FOLDER / "story.yaml").read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        return ""
+    return str(loaded.get("title", "")) if isinstance(loaded, dict) else ""
 
 
 def not_found_finding(downloads: Path) -> dict[str, Any]:
@@ -292,7 +391,17 @@ def build_parser() -> argparse.ArgumentParser:
     setup.add_argument("--config", help="The config file. Default: the newest *.mystery-config.json in Downloads.")
     setup.add_argument("--defaults", action="store_true", help="Use the default config, with no file.")
     setup.add_argument("--games-dir", default="games", help="The folder that holds the game folders.")
+    setup.add_argument("--game", default="", help="Load this existing game folder instead, to change it.")
     setup.set_defaults(handler=command_setup)
+    config = verbs.add_parser("config", help="Change the print settings of an existing game.")
+    config.add_argument("--game", required=True, help="The game folder.")
+    config.add_argument(
+        "--set", action="append", required=True, help="<field>=<value>, such as equipment.printer=black_and_white."
+    )
+    config.set_defaults(handler=command_config)
+    games = verbs.add_parser("games", help="List the game folders, newest first, with their titles.")
+    games.add_argument("--games-dir", default="games", help="The folder that holds the game folders.")
+    games.set_defaults(handler=command_games)
     assemble = verbs.add_parser("assemble", help="Load, build, and assemble a game into game.json.")
     assemble.add_argument("--game", required=True, help="The game folder (the parent of source/).")
     add_output_flags(assemble)
@@ -369,7 +478,7 @@ def main(argv: list[str] | None = None, output: TextIO | None = None) -> int:
     handler: VerbHandler = arguments.handler
     game: str | None = getattr(arguments, "game", None)
     # A mistyped game path must not become a new folder full of reports for a game that does not exist.
-    if game is not None and not (Path(game) / SOURCE_FOLDER).is_dir():
+    if game and not (Path(game) / SOURCE_FOLDER).is_dir():
         emit(stream, {"ok": False, "message": f"The game folder {game} has no source folder. Check the path."})
         return 2
     try:

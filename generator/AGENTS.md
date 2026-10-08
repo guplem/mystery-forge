@@ -10,6 +10,8 @@ uv run .pskill/pskill.py start create-game --input config="<path to the .mystery
 
 Add `--mode autonomous` when the user asks you to decide everything alone (for example: "do not ask me anything"). In autonomous mode the run asks no questions.
 
+**To change or fix a finished game** ("make puzzle B2 easier", "print it in black and white", "fix the warnings"), run `uv run --project ../toolkit forge games` to find its folder by title, then start the same skill with `--input game=<game_dir> --input change="<the request>"`. The run applies the change, checks, tests, renders, and exports a new copy. Never change a finished game outside such a run.
+
 When a run already exists (the user says "continue"), run `uv run .pskill/pskill.py runs --open` and continue the open run with `uv run .pskill/pskill.py current <run>`. Never start a second run for the same game.
 
 ## What you must never do
@@ -35,7 +37,7 @@ Every command runs from this folder as `uv run --project ../toolkit forge <verb>
 | `forge schema <story\|flow\|puzzle\|document\|references>` | The fields of a source file, or the reference forms and directives of a document body.        |
 | `forge assemble --game <dir>`                              | Load and build the game, and write `game.json`. Reports problems as findings.                 |
 
-The skill's steps run the other verbs (doctor, setup, check, writer-tasks, material, packets, judge, render, status, export) for you.
+The skill's steps run the other verbs (doctor, setup, config, games, check, writer-tasks, material, packets, judge, render, status, export) for you.
 
 ## A game folder
 
