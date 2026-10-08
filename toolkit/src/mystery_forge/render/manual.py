@@ -10,6 +10,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from typing import Final, Literal
 
+from mystery_forge.catalog.loader import mechanic_by_id
+from mystery_forge.catalog.models import NeededItem
 from mystery_forge.game import Game
 from mystery_forge.i18n import text
 from mystery_forge.render.layout import Tightness, page_budget, split_text, text_height, tightness
@@ -99,6 +101,14 @@ def needs_cutting(game: Game) -> bool:
     return game.config.equipment.envelopes or game.config.assistance.hints or cut_documents or cut_artifacts
 
 
+def needed_items(game: Game) -> list[NeededItem]:
+    """The items that the game's puzzles need beyond paper and pencils, each once, in puzzle order."""
+    items: list[NeededItem] = [
+        item for puzzle in game.puzzles for item in mechanic_by_id(puzzle.source.mechanic).needs.items
+    ]
+    return list(dict.fromkeys(items))
+
+
 def needs_section(game: Game) -> ManualSection:
     language: str = game.config.language
     stages: str = str(len(game.flow.stages))
@@ -117,6 +127,7 @@ def needs_section(game: Game) -> ManualSection:
         items.append(text(language, "manual_need_label_tape"))
     elif game.config.equipment.tape_or_glue:
         items.append(text(language, "manual_need_tape"))
+    items.extend(text(language, f"manual_need_{item}") for item in needed_items(game))
     return ManualSection(heading=text(language, "manual_need_title"), checklist=items)
 
 

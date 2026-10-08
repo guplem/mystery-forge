@@ -35,6 +35,8 @@ AnswerKind = Literal["word", "phrase", "number", "digits", "name", "choice"]
 # built: code builds the material from the answer. verified: code checks material that the agent wrote.
 # panel: only the AI solver panel can check it. See adr/0004-verification-strategy.md.
 Verification = Literal["built", "verified", "panel"]
+# A mirror reads mirror writing; a light (a bright window or a lamp) shines through stacked pages.
+NeededItem = Literal["mirror", "light"]
 
 DIFFICULTY_LEVELS: tuple[Difficulty, ...] = get_args(Difficulty)
 
@@ -60,6 +62,8 @@ class CraftNeeds(CatalogModel):
     fold: bool
     # True only when the mechanic cannot work in black and white.
     color: bool
+    # What players need beyond paper and pencils, for the manual's "What you need" list.
+    items: list[NeededItem] = []
 
 
 class DifficultyRange(CatalogModel):

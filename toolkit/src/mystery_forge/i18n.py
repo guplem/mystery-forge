@@ -178,6 +178,8 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_paper": "Some scrap paper",
         "manual_need_scissors": "Scissors",
         "manual_need_tape": "Tape or glue",
+        "manual_need_mirror": "A small mirror (or a bright window: hold the page against it and read it from the back)",
+        "manual_need_light": "A bright window or a lamp, to hold pages against the light",
         "manual_setup_title": "Setup",
         "manual_setup_split": "Do not read the game materials. Split the stack at each page that says STOP.",
         "manual_setup_outside": (
@@ -404,6 +406,8 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_paper": "Algo de papel para notas",
         "manual_need_scissors": "Tijeras",
         "manual_need_tape": "Cinta adhesiva o pegamento",
+        "manual_need_mirror": "Un espejo pequeño (o una ventana con luz: apoya la hoja en ella y léela por detrás)",
+        "manual_need_light": "Una ventana con luz o una lámpara, para mirar hojas a contraluz",
         "manual_setup_title": "Preparación",
         "manual_setup_split": "No leas el material del juego. Separa el montón por cada página que dice ALTO.",
         "manual_setup_outside": (
@@ -631,6 +635,8 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_paper": "Una mica de paper per a notes",
         "manual_need_scissors": "Tisores",
         "manual_need_tape": "Cinta adhesiva o cola",
+        "manual_need_mirror": "Un mirall petit (o una finestra amb llum: recolza-hi el full i llegeix-lo per darrere)",
+        "manual_need_light": "Una finestra amb llum o un llum, per mirar fulls a contrallum",
         "manual_setup_title": "Preparació",
         "manual_setup_split": "No llegeixis el material del joc. Separa la pila per cada pàgina que diu ATURA'T.",
         "manual_setup_outside": (
@@ -859,6 +865,10 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_paper": "Du papier brouillon",
         "manual_need_scissors": "Des ciseaux",
         "manual_need_tape": "Du ruban adhésif ou de la colle",
+        "manual_need_mirror": (
+            "Un petit miroir (ou une fenêtre lumineuse : posez la page contre elle et lisez-la par l'arrière)"
+        ),
+        "manual_need_light": "Une fenêtre lumineuse ou une lampe, pour regarder des pages à contre-jour",
         "manual_setup_title": "Préparation",
         "manual_setup_split": "Ne lisez pas le matériel du jeu. Séparez la pile à chaque page marquée STOP.",
         "manual_setup_outside": (
@@ -1088,6 +1098,10 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_paper": "Etwas Schmierpapier",
         "manual_need_scissors": "Eine Schere",
         "manual_need_tape": "Klebeband oder Kleber",
+        "manual_need_mirror": (
+            "Ein kleiner Spiegel (oder ein helles Fenster: die Seite dagegen halten und von hinten lesen)"
+        ),
+        "manual_need_light": "Ein helles Fenster oder eine Lampe, um Seiten gegen das Licht zu halten",
         "manual_setup_title": "Vorbereitung",
         "manual_setup_split": "Lest das Spielmaterial nicht. Teilt den Stapel bei jeder Seite mit STOPP.",
         "manual_setup_outside": (
@@ -1314,6 +1328,8 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_paper": "Un po' di carta per appunti",
         "manual_need_scissors": "Forbici",
         "manual_need_tape": "Nastro adesivo o colla",
+        "manual_need_mirror": "Uno specchietto (o una finestra luminosa: appoggia il foglio e leggilo dal retro)",
+        "manual_need_light": "Una finestra luminosa o una lampada, per guardare i fogli in controluce",
         "manual_setup_title": "Preparazione",
         "manual_setup_split": "Non leggere il materiale di gioco. Dividi la pila a ogni pagina con scritto STOP.",
         "manual_setup_outside": (
@@ -1540,6 +1556,8 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_need_paper": "Algum papel de rascunho",
         "manual_need_scissors": "Tesoura",
         "manual_need_tape": "Fita-cola ou cola",
+        "manual_need_mirror": "Um pequeno espelho (ou uma janela clara: encoste a folha e leia-a pelo verso)",
+        "manual_need_light": "Uma janela clara ou um candeeiro, para ver folhas contra a luz",
         "manual_setup_title": "Preparação",
         "manual_setup_split": "Não leia o material do jogo. Separe a pilha em cada página que diz PARE.",
         "manual_setup_outside": (

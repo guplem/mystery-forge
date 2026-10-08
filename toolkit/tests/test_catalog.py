@@ -405,3 +405,11 @@ def test_the_lock_and_the_strips_warn_about_their_known_failures() -> None:
     lock_pitfalls: str = " ".join(mechanic_by_id("arithmetic-lock").pitfalls).lower()
     assert "never the final puzzle when the note states the formula" in lock_pitfalls
     assert "orientation" in " ".join(mechanic_by_id("cut-strips").pitfalls)
+
+
+def test_a_mechanic_names_the_items_that_players_need_beyond_paper_and_pencils() -> None:
+    from mystery_forge.catalog.loader import mechanic_by_id
+
+    assert mechanic_by_id("mirror-writing").needs.items == ["mirror"]
+    assert mechanic_by_id("overlay-stack").needs.items == ["light"]
+    assert mechanic_by_id("caesar-cipher").needs.items == []

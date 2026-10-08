@@ -121,6 +121,23 @@ def test_a_cut_document_or_a_cut_artifact_needs_scissors() -> None:
     assert "Scissors" in section(bare.model_copy(update={"puzzles": puzzles}), "What you need").checklist
 
 
+def with_mechanics(game: Game, *mechanics: str) -> Game:
+    puzzles = [
+        puzzle.model_copy(update={"source": puzzle.source.model_copy(update={"mechanic": mechanic})})
+        for puzzle, mechanic in zip(game.puzzles, mechanics, strict=False)
+    ]
+    return game.model_copy(update={"puzzles": [*puzzles, *game.puzzles[len(puzzles) :]]})
+
+
+def test_what_you_need_lists_the_items_that_the_puzzles_need() -> None:
+    mirror = "A small mirror (or a bright window: hold the page against it and read it from the back)"
+    light = "A bright window or a lamp, to hold pages against the light"
+    assert mirror not in section(golden_game(), "What you need").checklist
+    game = with_mechanics(golden_game(), "overlay-stack", "mirror-writing", "mirror-writing")
+    checklist = section(game, "What you need").checklist
+    assert checklist[-2:] == [light, mirror]
+
+
 def test_play_steps_follow_the_answer_checks_and_include_the_intro() -> None:
     play = section(golden_game(), "How to play")
     assert play.read_aloud == golden_game().story.intro

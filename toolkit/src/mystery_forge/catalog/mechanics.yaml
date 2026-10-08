@@ -2147,7 +2147,7 @@ mechanics:
       window from the back. Normal 80 gsm paper works. Use it as a reveal step, not a full puzzle.
     material: Mirrored handwriting on a note.
     answer_kinds: [word, phrase]
-    needs: { scissors: false, tape: false, fold: false, color: false }
+    needs: { scissors: false, tape: false, fold: false, color: false, items: [mirror] }
     solo: true
     parallel: true
     audiences: [kids, family, teens, adults]
@@ -2243,7 +2243,7 @@ mechanics:
       reveal a word. Code splits the glyph into two random-looking halves.
     material: Two pattern pages with registration marks.
     answer_kinds: [word, phrase]
-    needs: { scissors: false, tape: false, fold: false, color: false }
+    needs: { scissors: false, tape: false, fold: false, color: false, items: [light] }
     solo: true
     parallel: false
     audiences: [family, teens, adults, puzzle_fans]
