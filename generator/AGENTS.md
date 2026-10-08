@@ -62,4 +62,5 @@ The skill's steps run the other verbs (doctor, setup, config, games, check, plai
 - **Every puzzle needs a reason to exist in the story.** A coded line in a logbook is a puzzle; "Puzzle 4: decode this" is a worksheet.
 - **Avoid the clichés** listed in `source/draw.json` (`cliches`): the overused names, phrases, and plots.
 - **Respect the audience rule** in `source/draw.json` (`audience_rule`): words per document, murder or not, themes to avoid.
+- **One year style.** Write years the way the toolkit prints dates: Western years (1958), unless `source/strings.json` has a `date_pattern` with `{era_year}` (昭和33年). The checks reject the other style.
 - **YAML:** quote a value that contains `: `, `#`, or a leading `{`, `[`, `*`, or `'`. Write numbers that must keep their zeros as text (`answer: "0420"`).

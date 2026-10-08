@@ -10,6 +10,7 @@ from typing import Final
 
 from mystery_forge.catalog import Mechanic, load_mechanics
 from mystery_forge.checks.budget import check_budget
+from mystery_forge.checks.calendar import check_calendar
 from mystery_forge.checks.deduction import check_deduction
 from mystery_forge.checks.fact_registry import check_fact_registry
 from mystery_forge.checks.graph import check_graph
@@ -46,6 +47,7 @@ CHECK_FAMILIES: Final[tuple[CheckFamily, ...]] = (
     CheckFamily("references", lambda game, _: check_references(game)),
     CheckFamily("documents", lambda game, _: check_document_kinds(game)),
     CheckFamily("images", lambda game, _: check_images(game)),
+    CheckFamily("dates", lambda game, _: check_calendar(game)),
 )
 CHECK_PREFIXES: Final[tuple[str, ...]] = tuple(family.prefix for family in CHECK_FAMILIES)
 
