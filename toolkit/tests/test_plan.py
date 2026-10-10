@@ -372,7 +372,7 @@ def test_a_document_with_two_owners_or_a_puzzle_that_nobody_wrote_is_left_to_oth
     set_puzzle_link(game_dir, "D4", "puzzle: P3", "")
     set_puzzle_link(game_dir, "D5", "kind: generic", "kind: generic\npuzzle: P1")
     plan = golden_plan()
-    # D3 has two puzzle owners, D5 has a puzzle and the story documents: plan.duplicate_document reports both.
+    # D3 has two puzzle owners, D5 has a puzzle and the story documents: only the plan check reports them.
     plan["puzzles"][0]["documents"] = ["D2", "D3"]
     plan["puzzles"][1]["documents"] = ["D3", "D5"]
     # No puzzle file defines P9, so a hint that asks for `puzzle: P9` would only trade for graph.unknown_puzzle.

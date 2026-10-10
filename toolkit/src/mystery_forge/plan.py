@@ -210,8 +210,9 @@ def document_puzzle_link_findings(game_dir: Path, game: Game) -> list[Finding]:
 
     The front matter `puzzle:` is the only link that the toolkit sees: it prints the puzzle badge on every page and
     lists the document in the solver packets. A key or a table without it looks like a plain story document, and a
-    story document with it prints a puzzle badge. A document with two owners and a planned puzzle that no puzzle file
-    defines are the findings of `plan.duplicate_document` and `graph.unknown_puzzle`, not these.
+    story document with it prints a puzzle badge. The check skips a document with two owners, because no front matter
+    can match both: the plan check (`plan.duplicate_document`) reports it. The check also skips a planned puzzle with
+    no puzzle file, because `puzzle:` with its id fails `graph.unknown_puzzle`.
     """
     plan: Plan | None = load_required_model(game_dir / SOURCE_FOLDER, PLAN_FILE, Plan, [])
     if plan is None:
