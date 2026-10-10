@@ -113,8 +113,11 @@ def test_the_full_check_reports_a_puzzle_document_without_its_puzzle_link(game_d
     path.write_text(path.read_text(encoding="utf-8").replace("puzzle: P3", ""), "utf-8")
     result = run(["check", "--game", str(game_dir)])
     assert result["ok"] is False
-    assert "plan.document_without_puzzle" in {finding["rule"] for finding in result["findings"]}
-    assert "P3" in [group["name"] for group in result["fix_groups"]]
+    group = next(group for group in result["fix_groups"] if group["name"] == "P3")
+    notes = json.loads(Path(group["findings_file"]).read_text(encoding="utf-8"))
+    assert ("plan.document_puzzle_link", "documents/D4.md") in {
+        (finding["rule"], finding["file"]) for finding in notes["findings"]
+    }
 
 
 def solver_answers(stage: str) -> list[dict[str, Any]]:

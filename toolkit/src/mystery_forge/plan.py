@@ -6,7 +6,7 @@ checks here run on the plan alone, before the expensive writing starts, and catc
 The graph, variety, and budget rules call the same pure functions as the whole-game checks in `checks/`, so a plan
 that passes does not fail the same rule later. Three checks run later, on the written game, because writers and fixers
 can drift from the plan: a `must_contain` sentence that the documents lost, a puzzle named by its old plan title, and
-a puzzle document whose front matter does not name its puzzle.
+a document whose front matter names the wrong puzzle, or a puzzle that the plan does not give it.
 """
 
 from collections.abc import Callable
@@ -205,31 +205,58 @@ def stale_title_findings(game_dir: Path, game: Game) -> list[Finding]:
     ]
 
 
-def unlinked_document_findings(game_dir: Path, game: Game) -> list[Finding]:
-    """Report each written document of a puzzle whose front matter does not name that puzzle.
+def document_puzzle_link_findings(game_dir: Path, game: Game) -> list[Finding]:
+    """Report each written document whose front matter `puzzle:` does not match its owner in the plan.
 
     The front matter `puzzle:` is the only link that the toolkit sees: it prints the puzzle badge on every page and
-    lists the document in the solver packets. A key or a table without it looks like a plain story document.
+    lists the document in the solver packets. A key or a table without it looks like a plain story document, and a
+    story document with it prints a puzzle badge. A document with two owners and a planned puzzle that no puzzle file
+    defines are the findings of `plan.duplicate_document` and `graph.unknown_puzzle`, not these.
     """
     plan: Plan | None = load_required_model(game_dir / SOURCE_FOLDER, PLAN_FILE, Plan, [])
     if plan is None:
         return []
     links: dict[str, str | None] = {document.meta.id: document.meta.puzzle for document in game.documents}
-    return [
+    owned: list[str] = [document_id for puzzle in plan.puzzles for document_id in puzzle.documents]
+    owned += [document.id for document in plan.story_documents]
+    shared: set[str] = set(find_duplicates(owned))
+    written_puzzles: set[str] = {puzzle.source.id for puzzle in game.puzzles}
+    findings: list[Finding] = [
+        puzzle_document_link_finding(document_id, puzzle.id, links[document_id])
+        for puzzle in plan.puzzles
+        if puzzle.id in written_puzzles
+        for document_id in puzzle.documents
+        if document_id in links and document_id not in shared and links[document_id] != puzzle.id
+    ]
+    findings += [
         Finding(
             severity="error",
-            rule="plan.document_without_puzzle",
-            message=f"The plan gives the document {document_id} to the writer of puzzle {puzzle.id}, but its front "
-            + (f"matter says `puzzle: {links[document_id]}`." if links[document_id] else "matter has no `puzzle:`."),
-            file=f"documents/{document_id}.md",
+            rule="plan.document_puzzle_link",
+            message=f"The plan gives the document {document.id} to the story writer, so its front matter must not "
+            f"name a puzzle, but it says `puzzle: {links[document.id]}`.",
+            file=f"documents/{document.id}.md",
             path="puzzle",
-            fix_hint=f"Write `puzzle: {puzzle.id}` in the front matter of {document_id}, so that every page of it "
-            "prints the puzzle badge.",
+            fix_hint=f"Remove the `puzzle:` field from the front matter of {document.id}, so that it prints no "
+            "puzzle badge.",
         )
-        for puzzle in plan.puzzles
-        for document_id in puzzle.documents
-        if document_id in links and links[document_id] != puzzle.id
+        for document in plan.story_documents
+        if links.get(document.id) is not None and document.id not in shared
     ]
+    return findings
+
+
+def puzzle_document_link_finding(document_id: str, puzzle_id: str, link: str | None) -> Finding:
+    front_matter: str = f"says `puzzle: {link}`" if link else "has no `puzzle:` field"
+    return Finding(
+        severity="error",
+        rule="plan.document_puzzle_link",
+        message=f"The plan gives the document {document_id} to the writer of puzzle {puzzle_id}, but its front "
+        f"matter {front_matter}.",
+        file=f"documents/{document_id}.md",
+        path="puzzle",
+        fix_hint=f"Write `puzzle: {puzzle_id}` in the front matter of {document_id}, so that every page of it prints "
+        "the puzzle badge.",
+    )
 
 
 def plan_finding(rule: str, message: str, fix_hint: str, severity: Severity = "error") -> Finding:
