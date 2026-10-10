@@ -33,6 +33,7 @@ answer_format:
   kind: digits
   label: a 4-digit time (hours and minutes)
   length: 4
+question: 'The four figures make one time on the 24-hour clock: two for the hour, two for the minutes.'
 params:
   mode: hour
 clues:

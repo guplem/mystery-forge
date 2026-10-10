@@ -13,6 +13,7 @@ accepted: [the low tide, at low tide]
 answer_format:
   kind: phrase
   label: two words
+question: when could the thief walk out to the rock? Two words.
 clues:
   - id: tide-table
     document: D4

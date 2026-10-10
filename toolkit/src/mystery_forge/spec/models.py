@@ -281,6 +281,15 @@ class Puzzle(SourceModel):
     # so that scanning the register does not reveal which entries are real.
     decoys: list[ShortText] = []
     answer_format: AnswerFormat
+    # Optional here, so that games written before the field still load; the check `ledger.question_missing` asks
+    # for it. No PDF prints `answer_format`, so this printed sentence is all that paper players learn of the answer.
+    question: str = Field(
+        default="",
+        description="The in-world question that a player document prints for this puzzle, copied word for word from "
+        "a document that players hold at this stage or earlier. It asks what to find and in what form (one word, "
+        "four digits, two words of 4 and 5 letters), never the category of the answer. For a choice puzzle it lists "
+        "the choices.",
+    )
     params: dict[str, Any] = {}
     seed: int = 0
     clues: list[Clue] = []

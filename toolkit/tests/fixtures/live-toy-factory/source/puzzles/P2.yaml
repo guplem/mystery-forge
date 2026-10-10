@@ -32,6 +32,7 @@ answer_format:
   kind: phrase
   label: Two words of 4 letters each
   length: 8
+question: The eight letters under Night 2 make the name of a street in Wickfold, two words of four letters each.
 params:
   letters: NELIALML
 clues:

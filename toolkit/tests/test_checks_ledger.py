@@ -140,6 +140,41 @@ def test_a_hint_that_points_outside_the_solution_is_a_warning() -> None:
     assert "receipt-lines" in outside[0].message
 
 
+def test_a_puzzle_without_a_printed_question_is_an_error() -> None:
+    findings = only_rule(
+        check_ledger(edit_puzzle(golden_game(), "P2", question=""), golden_mechanics()), "ledger.question_missing"
+    )
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("puzzles/P2.yaml", "question", "error")
+    ]
+    assert "P2" in findings[0].message
+
+
+def test_a_question_that_no_document_of_its_stage_prints_is_an_error() -> None:
+    later_question: str = next(puzzle.source.question for puzzle in golden_game().puzzles if puzzle.source.id == "P3")
+    # P1 is in stage A, so the question in the stage B document D4 reaches players too late.
+    game: Game = edit_puzzle(golden_game(), "P1", question=later_question)
+    game = edit_puzzle(game, "P2", question="What is the code of the store room lock?")
+    findings = only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed")
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("puzzles/P1.yaml", "question", "error"),
+        ("puzzles/P2.yaml", "question", "error"),
+    ]
+    assert "P1" in findings[0].message
+
+
+def test_a_question_matches_across_whitespace() -> None:
+    question: str = next(puzzle.source.question for puzzle in golden_game().puzzles if puzzle.source.id == "P1")
+    game: Game = edit_puzzle(golden_game(), "P1", question="  " + question.replace(" ", "\n ") + " ")
+    assert only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed") == []
+
+
+def test_a_question_in_a_document_of_an_unknown_stage_is_not_judged_too_late() -> None:
+    game: Game = edit_document(golden_game(), "D4", meta={"stage": "F"})
+    game = edit_puzzle(game, "P1", question=next(p.source.question for p in game.puzzles if p.source.id == "P3"))
+    assert only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed") == []
+
+
 def test_a_hidden_clue_has_no_quote_to_find_but_needs_an_existing_revealing_puzzle() -> None:
     assert only_rule(check_ledger(golden_game(), golden_mechanics()), "ledger.quote_not_found") == []
     clues: list[Clue] = list(golden_game().story.clues)

@@ -2,7 +2,8 @@
 
 The solver panel and the solutions trust the clues, so a quote that the document does not contain, or a clue that
 players only get after the puzzle, breaks the proof that the puzzle is fair. A hidden clue has no document: a puzzle
-reveals it, so that puzzle must exist.
+reveals it, so that puzzle must exist. Each puzzle's question is word for word in a document that players hold at its
+stage too: no sheet prints the answer format, so without that sentence players on paper cannot tell what to answer.
 """
 
 from collections.abc import Mapping
@@ -41,6 +42,7 @@ def check_ledger(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]
         *clue_reference_findings(game, {entry.clue.id for entry in entries}),
         *solution_findings(game, mechanics),
         *hint_ladder_findings(game),
+        *question_findings(game),
     ]
 
 
@@ -139,6 +141,47 @@ def hidden_clue_findings(game: Game, entries: list[ClueEntry]) -> list[Finding]:
                 f"{', '.join(puzzle_ids)}.",
             )
         )
+    return findings
+
+
+def question_findings(game: Game) -> list[Finding]:
+    """Report each puzzle whose printed question is empty, or is in no document that players hold at its stage."""
+    positions: dict[str, int] = stage_positions(game)
+    findings: list[Finding] = []
+    for puzzle in game.puzzles:
+        if not puzzle.source.question.strip():
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="ledger.question_missing",
+                    message=f"{puzzle.source.id} has no printed question, so players on paper cannot tell what to "
+                    "answer or in what form.",
+                    file=puzzle.file,
+                    path="question",
+                    fix_hint="Add an in-world sentence to one of the puzzle's documents that asks what to find and in "
+                    "what form (one word, four digits), never the category, and copy it word for word into `question`.",
+                )
+            )
+            continue
+        question: str = normalize_quote_text(puzzle.source.question)
+        printed: bool = any(
+            question in normalize_quote_text(document.text)
+            for document in game.documents
+            if not is_later_stage(document.meta.stage, puzzle, positions)
+        )
+        if not printed:
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="ledger.question_not_printed",
+                    message=f"The question of {puzzle.source.id} is in no document that players hold at stage "
+                    f'{puzzle.source.stage}: "{puzzle.source.question}".',
+                    file=puzzle.file,
+                    path="question",
+                    fix_hint="Copy the question word for word from a document of the puzzle's stage or an earlier "
+                    "stage, or add the sentence to such a document.",
+                )
+            )
     return findings
 
 
