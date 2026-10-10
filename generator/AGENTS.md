@@ -49,7 +49,7 @@ The skill's steps run the other verbs (doctor, setup, config, games, check, plai
 | `source/concepts.yaml`                          | concept writer                | Three story concepts.                                                                                                           |
 | `source/story.yaml`                             | story writer                  | The fact registry (characters, places, objects, timeline), the truth, the clues of the deduction, the intro, and the epilogues. |
 | `source/plan.yaml`, `source/flow.yaml`          | puzzle planner                | The puzzle plan and the stages (envelopes).                                                                                     |
-| `source/puzzles/<id>.yaml`                      | puzzle writers                | One puzzle each: answer, params, clues, solution, hints.                                                                        |
+| `source/puzzles/<id>.yaml`                      | puzzle writers                | One puzzle each: answer, params, printed question, clues, solution, hints.                                                      |
 | `source/documents/<id>.md`                      | puzzle and document writers   | One player document each: front matter plus a Markdown body.                                                                    |
 | `source/images/<id>.svg`                        | document writers, illustrator | Simple SVG illustrations. The illustrator runs only when the config asks for SVG images.                                        |
 | `game.json`, `reports/`, `render/`              | toolkit                       | The assembled game, the check reports, and the rendered files.                                                                  |
@@ -57,9 +57,9 @@ The skill's steps run the other verbs (doctor, setup, config, games, check, plai
 ## Writing rules for every writer
 
 - **Write in the game language** (`config.json` → `language`). Ids stay in English kebab case.
-- **Use the fact registry.** Write `{{char:ana-ruiz}}`, `{{place:kitchen}}`, `{{event:theft.date}}` in document bodies and header `fields` instead of retyping names and dates. The toolkit fills them in, so every document agrees.
+- **Use the fact registry.** Write `{{char:ana-ruiz}}`, `{{place:kitchen}}`, `{{event:theft.date}}` in document bodies, header `fields`, and a puzzle's `question` instead of retyping names and dates. The toolkit fills them in, so every document agrees.
 - **Quote, do not paraphrase.** A clue's `quote` and a puzzle's `question` are copied character for character from a document. The checks reject a quote or a question that is not in the document.
-- **Every puzzle asks its question on paper.** No sheet prints the answer format. One document that players hold at the puzzle's stage asks, in the story's voice, what to find and in what form, never the category.
+- **Every puzzle asks its question on paper.** No sheet prints the answer format. One document that players hold at the puzzle's stage asks, in the story's voice, what to find. Give the form of the answer (one word, four digits). Never name its category (a street, an animal).
 - **Every puzzle needs a reason to exist in the story.** A coded line in a logbook is a puzzle; "Puzzle 4: decode this" is a worksheet.
 - **Avoid the clichés** listed in `source/draw.json` (`cliches`): the overused names, phrases, and plots.
 - **Respect the audience rule** in `source/draw.json` (`audience_rule`): words per document, murder or not, themes to avoid.
