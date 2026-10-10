@@ -4,7 +4,7 @@ The solver panel and the solutions trust the clues, so a quote that the document
 players only get after the puzzle, breaks the proof that the puzzle is fair. A hidden clue has no document: a puzzle
 reveals it, so that puzzle must exist. Each puzzle's question is word for word in a document that players hold at its
 stage too: no sheet prints the answer format, so without that sentence players on paper cannot tell what to answer.
-The check compares the question with the assembled text, so both sides have their references filled in.
+The check compares the question with the assembled body text, so both sides have their references filled in.
 """
 
 from collections.abc import Mapping
@@ -265,9 +265,9 @@ def question_findings(game: Game) -> list[Finding]:
                     "answer or in what form.",
                     file=puzzle.file,
                     path="question",
-                    fix_hint="Add an in-world sentence to a document of the puzzle's stage. Let it ask what to find "
-                    "and in what form (one word, four digits), never the category. Copy the printed text into "
-                    "`question`.",
+                    fix_hint="Add an in-world sentence to the body of a document of the puzzle's stage. Let it ask "
+                    "what to find. Give the form of the answer (one word, four digits), never its category. Copy the "
+                    "printed text into `question`.",
                 )
             )
             continue
@@ -286,11 +286,11 @@ def question_findings(game: Game) -> list[Finding]:
                 )
             )
             continue
+        # Only the body counts: a kind template prints only the header fields that it names.
         if not any(
-            question in printed_text
+            question in normalize_quote_text(document.text)
             for document in game.documents
             if not is_later_stage(document.meta.stage, puzzle, positions)
-            for printed_text in printed_texts(document)
         ):
             findings.append(
                 Finding(
@@ -300,13 +300,8 @@ def question_findings(game: Game) -> list[Finding]:
                     f'{puzzle.source.stage}: "{puzzle.source.question}".',
                     file=puzzle.file,
                     path="question",
-                    fix_hint="Copy the question word for word from a document of the puzzle's stage or an earlier "
-                    "stage, or add the sentence to such a document.",
+                    fix_hint="Copy the question word for word from the body of a document of the puzzle's stage or "
+                    "an earlier stage, or add the sentence to such a body. A header field does not count.",
                 )
             )
     return findings
-
-
-def printed_texts(document: AssembledDocument) -> list[str]:
-    """The body and each header field: the templates print both, so a question in a form label counts too."""
-    return [normalize_quote_text(text) for text in (document.text, *document.meta.fields.values())]

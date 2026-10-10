@@ -11,12 +11,13 @@ Write `source/puzzles/{{ item.id }}.yaml` and the documents `source/documents/<i
 {% endif %}
 - **The answer format label** names the format only ("two words", "a 4-digit code"), never the category ("a street name", "an animal"): a category makes the answer guessable.
 - **The printed question.** No sheet prints the answer format, so players on paper learn what to answer only from your documents. Example: "What did Marisol have to bring? Two words."
-  - Put one in-world sentence (or two) in one of your documents: a character's note, a form field, a caption, or a lock drawn as "__ : __".
+  - Put one in-world sentence (or two) in the body of one of your documents: a character's note, a form line, a caption, or a lock drawn as "__ : __".
+  - Never put the question only in a header field. A template prints only some header fields, so the check ignores them.
   - Let it ask what to find and in what form (one word, four digits, two words of 4 and 5 letters). Never name the category.
   - For a `choice` puzzle, list every choice in the sentence.
   - When the sentences that must stay (below) hold the planned question, use that sentence.
   - Copy the printed sentence word for word into `question`, with the same `{{ '{{...}}' }}` references as the document.
-  - The checks reject a `question` that is missing, shorter than three words, or in no document of this stage or an earlier stage.
+  - The checks reject a `question` that is missing, shorter than three words, or in the body of no document of this stage or an earlier stage.
 - **Fair.** Everything needed is in the material that players have at this stage. When `config.json` sets `equipment.printer` to `black_and_white`, no clue depends on a color, and no text names a printed color ("ruled off in red").
 - **Clues.** Each `clues` entry quotes, character for character, a sentence of a document that players have at this stage or earlier. Start each new clue id with the puzzle id in lower case (`{{ item.id | lower }}-...`), so that it never collides with another clue.
 - **Solution.** Steps that a player could follow, each citing the clues it uses. Name other puzzles by their printed code, never by their id.

@@ -172,11 +172,15 @@ def test_a_question_with_a_reference_matches_a_document_that_uses_the_same_refer
     assert only_rule(check_ledger(result.game, golden_mechanics()), "ledger.question_not_printed") == []
 
 
-def test_a_question_in_a_printed_header_field_counts_as_printed() -> None:
+def test_a_question_only_in_a_header_field_is_not_printed() -> None:
+    # A kind template prints only the header fields that it names, so a field is no proof that players see it.
     question: str = "Which four digits open the shed?"
     game: Game = edit_document(golden_game(), "D3", meta={"fields": {"sender": "Ward Supplies", "subject": question}})
     game = edit_puzzle(game, "P2", question=question)
-    assert only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed") == []
+    findings = only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed")
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("puzzles/P2.yaml", "question", "error")
+    ]
 
 
 def test_a_question_in_a_script_without_spaces_counts_its_letters_as_words() -> None:

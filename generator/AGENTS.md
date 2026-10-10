@@ -59,7 +59,7 @@ The skill's steps run the other verbs (doctor, setup, config, games, check, plai
 - **Write in the game language** (`config.json` → `language`). Ids stay in English kebab case.
 - **Use the fact registry.** Write `{{char:ana-ruiz}}`, `{{place:kitchen}}`, `{{event:theft.date}}` in document bodies, header `fields`, and a puzzle's `question` instead of retyping names and dates. The toolkit fills them in, so every document agrees.
 - **Quote, do not paraphrase.** A clue's `quote` and a puzzle's `question` are copied character for character from a document. The checks reject a quote or a question that is not in the document.
-- **Every puzzle asks its question on paper.** No sheet prints the answer format. One document that players hold at the puzzle's stage asks, in the story's voice, what to find. Give the form of the answer (one word, four digits). Never name its category (a street, an animal).
+- **Every puzzle asks its question on paper.** No sheet prints the answer format. The body of one document that players hold at the puzzle's stage asks, in the story's voice, what to find. Give the form of the answer (one word, four digits). Never name its category (a street, an animal).
 - **Every puzzle needs a reason to exist in the story.** A coded line in a logbook is a puzzle; "Puzzle 4: decode this" is a worksheet.
 - **Avoid the clichés** listed in `source/draw.json` (`cliches`): the overused names, phrases, and plots.
 - **Respect the audience rule** in `source/draw.json` (`audience_rule`): words per document, murder or not, themes to avoid.

@@ -284,10 +284,10 @@ class Puzzle(SourceModel):
     # Optional here, so that games written before the field still load; the check `ledger.question_missing` asks for it.
     question: Text = Field(
         default="",
-        description="The printed text of the in-world question for this puzzle. The question lives in the body or a "
-        "header field of a document that players hold at this stage or earlier. Copy it word for word, with the same "
-        "{{...}} references. It asks what to find and in what form (one word, four digits, two words of 4 and 5 "
-        "letters), never the category of the answer. For a choice puzzle it lists the choices.",
+        description="The printed text of the in-world question for this puzzle. The question lives in the body of a "
+        "document that players hold at this stage or earlier, never only in a header field. Copy it word for word, "
+        "with the same {{...}} references. It asks what to find and in what form (one word, four digits, two words "
+        "of 4 and 5 letters), never the category of the answer. For a choice puzzle it lists the choices.",
     )
     params: dict[str, Any] = {}
     seed: int = 0
