@@ -76,6 +76,7 @@ def test_a_missing_artifact_is_reported(game: Game) -> None:
     del artifacts["P1"]
     findings = check_rendered(game, report(game, artifacts, [], [], []), all_implementations())
     assert rules(findings) == ["render.artifact_missing"]
+    assert "one of the documents whose front matter says `puzzle: P1` (only one)" in (findings[0].fix_hint or "")
 
 
 def test_an_answer_on_an_early_page_is_a_leak(game: Game) -> None:
