@@ -41,7 +41,8 @@ def roundtrip_findings(
                     "render.artifact_missing",
                     f"The printed materials do not show the material of {puzzle.code}.",
                     puzzle.file,
-                    "Place {{artifact}} in the document whose front matter names this puzzle.",
+                    f"Place {{{{artifact}}}} in one of the documents whose front matter says `puzzle: "
+                    f"{puzzle.source.id}` (only one).",
                 )
             )
             continue
