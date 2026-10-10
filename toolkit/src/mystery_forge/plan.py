@@ -6,7 +6,7 @@ checks here run on the plan alone, before the expensive writing starts, and catc
 The graph, variety, and budget rules call the same pure functions as the whole-game checks in `checks/`, so a plan
 that passes does not fail the same rule later. Three checks run later, on the written game, because writers and fixers
 can drift from the plan: a `must_contain` sentence that the documents lost, a puzzle named by its old plan title, and
-a document whose front matter names the wrong puzzle, or a puzzle that the plan does not give it.
+a document whose front matter `puzzle:` does not match its owner in the plan.
 """
 
 from collections.abc import Callable
