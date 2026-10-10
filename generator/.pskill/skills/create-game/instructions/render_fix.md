@@ -7,4 +7,4 @@ You may change only these files: {% for file in item.files %}`{{ steps.setup.jso
 - `render.leak`: an answer appears in clear text in printed material that players have before they solve it. Rewrite that text.
 - A problem that is not in your files (for example on a page that the toolkit builds): change nothing and answer `unfixable`, with the reason.
 
-Change no fact of the story and no answer unless the finding needs it, and keep every clue quote word for word. Then verify your fix: `uv run --project ../toolkit forge render --game {{ steps.setup.json.game_dir }} --no-write --only {{ item.files | join(',') }}` must report no error for your files.
+Change no fact of the story and no answer unless the finding needs it, and keep every clue quote and every printed question (`question` of a puzzle file) word for word. Then verify your fix: `uv run --project ../toolkit forge render --game {{ steps.setup.json.game_dir }} --no-write --only {{ item.files | join(',') }}` must report no error for your files.
