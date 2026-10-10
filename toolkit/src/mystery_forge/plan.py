@@ -4,8 +4,9 @@ The planner decides the puzzles before anyone writes them: the mechanic, the sta
 which documents each writer owns. Writers then work in parallel, so one document must have exactly one owner. The
 checks here run on the plan alone, before the expensive writing starts, and catch the structural mistakes early.
 The graph, variety, and budget rules call the same pure functions as the whole-game checks in `checks/`, so a plan
-that passes does not fail the same rule later. Two checks run later, on the written game, because writers and fixers
-can drift from the plan: a `must_contain` sentence that the documents lost, and a puzzle named by its old plan title.
+that passes does not fail the same rule later. Three checks run later, on the written game, because writers and fixers
+can drift from the plan: a `must_contain` sentence that the documents lost, a puzzle named by its old plan title, and
+a puzzle document whose front matter does not name its puzzle.
 """
 
 from collections.abc import Callable
@@ -201,6 +202,33 @@ def stale_title_findings(game_dir: Path, game: Game) -> list[Finding]:
         for file, text in texts
         for old, new in renamed
         if old.casefold() in text.casefold()
+    ]
+
+
+def unlinked_document_findings(game_dir: Path, game: Game) -> list[Finding]:
+    """Report each written document of a puzzle whose front matter does not name that puzzle.
+
+    The front matter `puzzle:` is the only link that the toolkit sees: it prints the puzzle badge on every page and
+    lists the document in the solver packets. A key or a table without it looks like a plain story document.
+    """
+    plan: Plan | None = load_required_model(game_dir / SOURCE_FOLDER, PLAN_FILE, Plan, [])
+    if plan is None:
+        return []
+    links: dict[str, str | None] = {document.meta.id: document.meta.puzzle for document in game.documents}
+    return [
+        Finding(
+            severity="error",
+            rule="plan.document_without_puzzle",
+            message=f"The plan gives the document {document_id} to the writer of puzzle {puzzle.id}, but its front "
+            + (f"matter says `puzzle: {links[document_id]}`." if links[document_id] else "matter has no `puzzle:`."),
+            file=f"documents/{document_id}.md",
+            path="puzzle",
+            fix_hint=f"Write `puzzle: {puzzle.id}` in the front matter of {document_id}, so that every page of it "
+            "prints the puzzle badge.",
+        )
+        for puzzle in plan.puzzles
+        for document_id in puzzle.documents
+        if document_id in links and links[document_id] != puzzle.id
     ]
 
 
