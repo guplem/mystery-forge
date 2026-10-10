@@ -107,6 +107,16 @@ def test_the_full_check_reports_a_planned_sentence_that_a_document_lost(game_dir
     assert "P2" in [group["name"] for group in result["fix_groups"]]
 
 
+def test_the_full_check_reports_a_puzzle_document_without_its_puzzle_link(game_dir: Path) -> None:
+    write_plan(game_dir)
+    path = game_dir / "source" / "documents" / "D4.md"
+    path.write_text(path.read_text(encoding="utf-8").replace("puzzle: P3", ""), "utf-8")
+    result = run(["check", "--game", str(game_dir)])
+    assert result["ok"] is False
+    assert "plan.document_without_puzzle" in {finding["rule"] for finding in result["findings"]}
+    assert "P3" in [group["name"] for group in result["fix_groups"]]
+
+
 def solver_answers(stage: str) -> list[dict[str, Any]]:
     if stage == "A":
         return [
