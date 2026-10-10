@@ -453,8 +453,8 @@ def artifact_findings(game: Game) -> list[Finding]:
                     rule="graph.artifact_missing",
                     message=f"No document prints the material of the puzzle {puzzle.source.id}.",
                     file=puzzle.file,
-                    fix_hint=f"Add `{{{{artifact}}}}` to the document whose front matter says `puzzle: "
-                    f"{puzzle.source.id}`, or `{{{{artifact:{puzzle.source.id}}}}}` to another document.",
+                    fix_hint=f"Add `{{{{artifact}}}}` to one of the documents whose front matter says `puzzle: "
+                    f"{puzzle.source.id}` (only one), or `{{{{artifact:{puzzle.source.id}}}}}` to another document.",
                 )
             )
         elif len(holders) > 1:

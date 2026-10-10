@@ -12,9 +12,9 @@ from mystery_forge.findings import Finding
 from mystery_forge.game import Game
 from mystery_forge.plan import (
     check_plan_folder,
+    document_puzzle_link_findings,
     planned_sentence_findings,
     stale_title_findings,
-    unlinked_document_findings,
 )
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
@@ -334,38 +334,65 @@ def test_planned_sentences_are_checked_only_with_a_valid_plan_and_written_docume
     assert planned_sentence_findings(game_dir, game) == []
 
 
+def set_puzzle_link(game_dir: Path, document_id: str, old: str, new: str) -> None:
+    path = game_dir / "source" / "documents" / f"{document_id}.md"
+    path.write_text(path.read_text(encoding="utf-8").replace(old, new, 1), encoding="utf-8")
+
+
 def test_a_puzzle_document_without_its_puzzle_link_is_reported(game_dir: Path) -> None:
-    plan = golden_plan()
-    # D3 links to P2, so the plan that gives it to P1 finds a wrong link.
-    plan["puzzles"][0]["documents"] = ["D2", "D3"]
-    write_plan(game_dir, plan)
-    document_path = game_dir / "source" / "documents" / "D4.md"
-    document_path.write_text(document_path.read_text(encoding="utf-8").replace("puzzle: P3", ""), encoding="utf-8")
-    findings = unlinked_document_findings(game_dir, assembled(game_dir))
+    set_puzzle_link(game_dir, "D3", "puzzle: P2", "puzzle: P1")
+    set_puzzle_link(game_dir, "D4", "puzzle: P3", "")
+    findings = document_puzzle_link_findings(game_dir, assembled(game_dir))
     assert [(finding.rule, finding.file, finding.path, finding.severity) for finding in findings] == [
-        ("plan.document_without_puzzle", "documents/D3.md", "puzzle", "error"),
-        ("plan.document_without_puzzle", "documents/D4.md", "puzzle", "error"),
+        ("plan.document_puzzle_link", "documents/D3.md", "puzzle", "error"),
+        ("plan.document_puzzle_link", "documents/D4.md", "puzzle", "error"),
     ]
     assert "D3" in findings[0].message
-    assert "P1" in findings[0].message
-    assert "puzzle: P2" in findings[0].message
-    assert "puzzle: P1" in (findings[0].fix_hint or "")
+    assert "P2" in findings[0].message
+    assert "puzzle: P1" in findings[0].message
+    assert "puzzle: P2" in (findings[0].fix_hint or "")
     assert "D4" in findings[1].message
     assert "P3" in findings[1].message
     assert "puzzle: P3" in (findings[1].fix_hint or "")
 
 
-def test_puzzle_links_are_checked_only_with_a_valid_plan_and_written_puzzle_documents(game_dir: Path) -> None:
+def test_a_story_document_that_names_a_puzzle_is_reported(game_dir: Path) -> None:
+    set_puzzle_link(game_dir, "D1", "kind: letter", "kind: letter\npuzzle: P1")
+    findings = document_puzzle_link_findings(game_dir, assembled(game_dir))
+    assert [(finding.rule, finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("plan.document_puzzle_link", "documents/D1.md", "puzzle", "error"),
+    ]
+    assert "D1" in findings[0].message
+    assert "story writer" in findings[0].message
+    assert "puzzle:" in (findings[0].fix_hint or "")
+
+
+def test_a_document_with_two_owners_or_a_puzzle_that_nobody_wrote_is_left_to_other_checks(game_dir: Path) -> None:
+    set_puzzle_link(game_dir, "D3", "puzzle: P2", "puzzle: P1")
+    set_puzzle_link(game_dir, "D4", "puzzle: P3", "")
+    set_puzzle_link(game_dir, "D5", "kind: generic", "kind: generic\npuzzle: P1")
+    plan = golden_plan()
+    # D3 has two puzzle owners, D5 has a puzzle and the story documents: only the plan check reports them.
+    plan["puzzles"][0]["documents"] = ["D2", "D3"]
+    plan["puzzles"][1]["documents"] = ["D3", "D5"]
+    # No puzzle file defines P9, so a hint that asks for `puzzle: P9` would only trade for graph.unknown_puzzle.
+    plan["puzzles"][2]["id"] = "P9"
+    write_plan(game_dir, plan)
+    assert document_puzzle_link_findings(game_dir, assembled(game_dir)) == []
+
+
+def test_puzzle_links_are_checked_only_with_a_valid_plan_and_written_documents(game_dir: Path) -> None:
     game = assembled(game_dir)
-    assert unlinked_document_findings(game_dir, game) == []
+    assert document_puzzle_link_findings(game_dir, game) == []
     plan = golden_plan()
     plan["puzzles"][0]["documents"] = ["D2", "D9"]
+    plan["story_documents"].append({"id": "D8", "kind": "letter", "stage": "A", "title": "A note", "purpose": "None."})
     write_plan(game_dir, plan)
-    assert unlinked_document_findings(game_dir, game) == []
+    assert document_puzzle_link_findings(game_dir, game) == []
     (game_dir / "source" / "plan.yaml").write_text("puzzles: 3\n", encoding="utf-8")
-    assert unlinked_document_findings(game_dir, game) == []
+    assert document_puzzle_link_findings(game_dir, game) == []
     (game_dir / "source" / "plan.yaml").unlink()
-    assert unlinked_document_findings(game_dir, game) == []
+    assert document_puzzle_link_findings(game_dir, game) == []
 
 
 def test_an_old_plan_title_in_a_hint_a_solution_or_a_document_is_reported(game_dir: Path) -> None:

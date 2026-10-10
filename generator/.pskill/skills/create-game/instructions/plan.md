@@ -28,7 +28,7 @@ Design rules (the checks and a puzzle-design reviewer enforce them):
 - Variety: at least 4 different player actions, at most 2 lookup ciphers, never the same action twice in a row, at most about 40% of the answers read letters off something, and at least 40% of the puzzles combine two or more documents.
 - Parallel work: each stage offers about `brief.json` → `parallel_width` puzzles that people can solve at the same time.
 - Answers: specific, unambiguous, and not guessable from the premise or from the answer format. A word that is the theme of the game is a bad answer.
-- Every document has exactly one owner: one puzzle, or `story_documents`. A key, a table, or a reference page that only one puzzle uses belongs to that puzzle, so that it prints the puzzle badge. Keep the document ids that `story.yaml` plain clues already use.
+- Every document has exactly one owner: one puzzle, or `story_documents`. A key, a table, or a reference page that only one puzzle uses belongs to that puzzle, so that the page prints the puzzle badge. Keep the document ids that `story.yaml` plain clues already use.
 - Difficulty: at least half of the puzzles reach the config difficulty (hard for an expert game). Never lower a puzzle's difficulty to fit a mechanic; pick a mechanic whose range fits.
 - Time: the catalog minutes of the puzzles plus the reading must fit the duration of the config.
 

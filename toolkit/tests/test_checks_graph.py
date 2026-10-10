@@ -170,6 +170,7 @@ def test_a_built_artifact_must_sit_in_exactly_one_document() -> None:
     missing = graph_findings(edit_document(golden_game(), "D2", body_html="<p>no mark</p>"))
     assert rules(missing) == ["graph.artifact_missing"]
     assert missing[0].file == "puzzles/P1.yaml"
+    assert "one of the documents whose front matter says `puzzle: P1` (only one)" in (missing[0].fix_hint or "")
     twice: Game = edit_document(golden_game(), "D5", body_html="<p>⟦artifact:P1⟧</p>")
     duplicated = graph_findings(twice)
     assert rules(duplicated) == ["graph.artifact_duplicated"]
