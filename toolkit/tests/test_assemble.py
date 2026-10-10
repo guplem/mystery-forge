@@ -208,6 +208,26 @@ def test_an_unknown_reference_in_a_header_field_is_a_finding(game_dir: Path) -> 
     assert rules(result.findings) == ["reference.unknown"]
 
 
+def test_references_in_the_puzzle_question_are_resolved(game_dir: Path) -> None:
+    path = game_dir / "source" / "puzzles" / "P2.yaml"
+    text = path.read_text(encoding="utf-8").replace("open the store room lock?", "open the lock of {{char:tom-bell}}?")
+    path.write_text(text, encoding="utf-8")
+    result = assemble_game(game_dir, FAKE_IMPLEMENTATIONS)
+    assert result.findings == []
+    assert result.game is not None
+    assert result.game.puzzles[1].source.question == "which four digits open the lock of Tom Bell?"
+
+
+def test_an_unknown_reference_in_the_puzzle_question_is_a_finding(game_dir: Path) -> None:
+    path = game_dir / "source" / "puzzles" / "P2.yaml"
+    text = path.read_text(encoding="utf-8").replace("open the store room lock?", "open the lock of {{char:nobody}}?")
+    path.write_text(text, encoding="utf-8")
+    result = assemble_game(game_dir, FAKE_IMPLEMENTATIONS)
+    assert [(finding.rule, finding.file, finding.path) for finding in result.findings] == [
+        ("reference.unknown", "puzzles/P2.yaml", "question")
+    ]
+
+
 def test_a_part_mark_gets_the_solver_text_of_the_part() -> None:
     part = ArtifactPart(name="key1", html="<p>A = B</p>", solver_text="Key: A = B")
     artifact = Artifact(html="<p>msg</p>", solver_text="msg", parts=(part,))

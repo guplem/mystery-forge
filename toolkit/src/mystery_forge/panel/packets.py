@@ -30,7 +30,7 @@ not search anywhere else. Use only this text.
 
 Solve each puzzle under "Puzzles to solve now". For each puzzle:
 - Give the answer that the documents ask for, in the form that they ask for. If no document tells you what to find \
-or in what form, say so.
+or in what form, report it as a gap.
 - Quote the exact words of the documents that prove your answer, and name the title of each document.
 - List every other answer that you considered, and say which clue rules it out.
 - If you cannot find an answer that the documents prove, say that you are stuck. Do not guess."""
@@ -38,6 +38,7 @@ or in what form, say so.
 GUESSER_INSTRUCTIONS: str = """You are a player of a printed mystery game, but you have no documents. You know only \
 the case summary below and the question that the documents print for each puzzle. Give your best guess for each \
 puzzle code."""
+
 NO_PRINTED_QUESTION: str = "no printed question"
 
 ACCUSATION_INSTRUCTIONS: str = "Answer each question with the id of one option, and quote the evidence."

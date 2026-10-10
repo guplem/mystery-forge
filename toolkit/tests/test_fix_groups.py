@@ -8,7 +8,8 @@ from test_checks_support import edit_puzzle, golden_game, golden_mechanics, only
 
 from mystery_forge.checks.ledger import check_ledger
 from mystery_forge.findings import Finding
-from mystery_forge.fix_groups import file_owners, group_findings, write_fix_groups
+from mystery_forge.fix_groups import FixGroup, file_owners, group_findings, write_fix_groups
+from mystery_forge.game import Game
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
 
@@ -91,9 +92,9 @@ def test_findings_are_grouped_by_the_writer_that_owns_their_file(game_dir: Path)
 
 
 def test_a_missing_printed_question_goes_to_the_writer_of_its_puzzle(game_dir: Path) -> None:
-    game = edit_puzzle(golden_game(), "P2", question="")
-    findings = only_rule(check_ledger(game, golden_mechanics()), "ledger.question_missing")
-    groups = group_findings(findings, game_dir)
+    game: Game = edit_puzzle(golden_game(), "P2", question="")
+    findings: list[Finding] = only_rule(check_ledger(game, golden_mechanics()), "ledger.question_missing")
+    groups: list[FixGroup] = group_findings(findings, game_dir)
     assert [(group.name, group.files) for group in groups] == [("P2", ["puzzles/P2.yaml", "documents/D3.md"])]
 
 

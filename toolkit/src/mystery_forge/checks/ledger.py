@@ -4,6 +4,7 @@ The solver panel and the solutions trust the clues, so a quote that the document
 players only get after the puzzle, breaks the proof that the puzzle is fair. A hidden clue has no document: a puzzle
 reveals it, so that puzzle must exist. Each puzzle's question is word for word in a document that players hold at its
 stage too: no sheet prints the answer format, so without that sentence players on paper cannot tell what to answer.
+The check compares the question with the assembled text, so both sides have their references filled in.
 """
 
 from collections.abc import Mapping
@@ -31,6 +32,7 @@ TYPOGRAPHIC_MARKS: Final[dict[int, str]] = {
     **dict.fromkeys(QUOTATION_MARKS, '"'),
     **dict.fromkeys(DASHES, "-"),
 }
+MINIMUM_QUESTION_WORDS: Final[int] = 3
 
 
 def check_ledger(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
@@ -144,47 +146,6 @@ def hidden_clue_findings(game: Game, entries: list[ClueEntry]) -> list[Finding]:
     return findings
 
 
-def question_findings(game: Game) -> list[Finding]:
-    """Report each puzzle whose printed question is empty, or is in no document that players hold at its stage."""
-    positions: dict[str, int] = stage_positions(game)
-    findings: list[Finding] = []
-    for puzzle in game.puzzles:
-        if not puzzle.source.question.strip():
-            findings.append(
-                Finding(
-                    severity="error",
-                    rule="ledger.question_missing",
-                    message=f"{puzzle.source.id} has no printed question, so players on paper cannot tell what to "
-                    "answer or in what form.",
-                    file=puzzle.file,
-                    path="question",
-                    fix_hint="Add an in-world sentence to one of the puzzle's documents that asks what to find and in "
-                    "what form (one word, four digits), never the category, and copy it word for word into `question`.",
-                )
-            )
-            continue
-        question: str = normalize_quote_text(puzzle.source.question)
-        printed: bool = any(
-            question in normalize_quote_text(document.text)
-            for document in game.documents
-            if not is_later_stage(document.meta.stage, puzzle, positions)
-        )
-        if not printed:
-            findings.append(
-                Finding(
-                    severity="error",
-                    rule="ledger.question_not_printed",
-                    message=f"The question of {puzzle.source.id} is in no document that players hold at stage "
-                    f'{puzzle.source.stage}: "{puzzle.source.question}".',
-                    file=puzzle.file,
-                    path="question",
-                    fix_hint="Copy the question word for word from a document of the puzzle's stage or an earlier "
-                    "stage, or add the sentence to such a document.",
-                )
-            )
-    return findings
-
-
 def is_later_stage(document_stage: str, puzzle: AssembledPuzzle, positions: dict[str, int]) -> bool:
     document_position: int | None = positions.get(document_stage)
     puzzle_position: int | None = positions.get(puzzle.source.stage)
@@ -286,3 +247,64 @@ def hint_ladder_findings(game: Game) -> list[Finding]:
                 )
             previous = pointed
     return findings
+
+
+def question_findings(game: Game) -> list[Finding]:
+    """Report each puzzle whose printed question is empty, too short, or in no document that players hold in time."""
+    positions: dict[str, int] = stage_positions(game)
+    findings: list[Finding] = []
+    for puzzle in game.puzzles:
+        question: str = normalize_quote_text(puzzle.source.question)
+        if not question:
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="ledger.question_missing",
+                    message=f"{puzzle.source.id} has no printed question, so players on paper cannot tell what to "
+                    "answer or in what form.",
+                    file=puzzle.file,
+                    path="question",
+                    fix_hint="Add an in-world sentence to a document of the puzzle's stage. Let it ask what to find "
+                    "and in what form (one word, four digits), never the category. Copy the printed text into "
+                    "`question`.",
+                )
+            )
+            continue
+        # A word or two ("Code") is in almost any document, so it would pass without telling players anything.
+        if len(question.split()) < MINIMUM_QUESTION_WORDS:
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="ledger.question_too_short",
+                    message=f'The question of {puzzle.source.id} has fewer than {MINIMUM_QUESTION_WORDS} words: "'
+                    f'{puzzle.source.question}".',
+                    file=puzzle.file,
+                    path="question",
+                    fix_hint="Copy the whole printed sentence that asks what to find and in what form.",
+                )
+            )
+            continue
+        if not any(
+            question in printed_text
+            for document in game.documents
+            if not is_later_stage(document.meta.stage, puzzle, positions)
+            for printed_text in printed_texts(document)
+        ):
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="ledger.question_not_printed",
+                    message=f"The question of {puzzle.source.id} is in no document that players hold at stage "
+                    f'{puzzle.source.stage}: "{puzzle.source.question}".',
+                    file=puzzle.file,
+                    path="question",
+                    fix_hint="Copy the question word for word from a document of the puzzle's stage or an earlier "
+                    "stage, or add the sentence to such a document.",
+                )
+            )
+    return findings
+
+
+def printed_texts(document: AssembledDocument) -> list[str]:
+    """The body and each header field: the templates print both, so a question in a form label counts too."""
+    return [normalize_quote_text(text) for text in (document.text, *document.meta.fields.values())]

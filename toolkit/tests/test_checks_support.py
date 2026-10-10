@@ -4,13 +4,15 @@ The checks read only the assembled `Game`, so most tests edit the model with `mo
 model validators on purpose: a check must also report states that only a broken source can produce.
 """
 
+import shutil
 from collections.abc import Sequence
 from functools import cache
+from pathlib import Path
 from typing import Any
 
 from test_assemble import FAKE_IMPLEMENTATIONS, GOLDEN_GAME
 
-from mystery_forge.assemble import assemble_game
+from mystery_forge.assemble import AssemblyResult, assemble_game
 from mystery_forge.catalog import Mechanic, load_mechanics
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
@@ -83,3 +85,13 @@ def edit_config(game: Game, section: str, **updates: Any) -> Game:
 
 def golden_mechanics() -> dict[str, Mechanic]:
     return {mechanic.id: mechanic for mechanic in golden_catalog()}
+
+
+def golden_game_with_question_reference(game_dir: Path) -> AssemblyResult:
+    """Assemble the golden game with the same `{{char:...}}` reference in the question of P2 and in its receipt."""
+    shutil.copytree(GOLDEN_GAME / "source", game_dir / "source")
+    for name in ("documents/D3.md", "puzzles/P2.yaml"):
+        path: Path = game_dir / "source" / name
+        text: str = path.read_text(encoding="utf-8")
+        path.write_text(text.replace("open the store room lock?", "open the lock of {{char:tom-bell}}?"), "utf-8")
+    return assemble_game(game_dir, FAKE_IMPLEMENTATIONS)

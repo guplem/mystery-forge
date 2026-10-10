@@ -4,9 +4,10 @@ from pathlib import Path
 
 import pytest
 from test_assemble import FAKE_IMPLEMENTATIONS, GOLDEN_GAME
+from test_checks_support import golden_game_with_question_reference
 
 from mystery_forge.assemble import assemble_game
-from mystery_forge.game import AssembledDocument, Game
+from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
 from mystery_forge.panel.packets import (
     STORY_ONLY_INSTRUCTIONS,
     STORY_ONLY_STAGE,
@@ -94,21 +95,27 @@ def test_the_puzzles_to_solve_show_the_title_and_the_attached_documents_but_no_a
         assert "characters)" not in packet.text
         assert "a 4-digit code" not in packet.text
     assert "answer format" not in first.text.casefold()
+    # The judge counts gaps for the incomplete verdict, so a missing question must reach it as a gap.
+    assert "or in what form, report it as a gap." in first.text
 
 
 def test_a_choice_puzzle_hides_its_unprinted_choices_and_a_puzzle_without_documents_says_so(
     golden_game: Game,
 ) -> None:
-    puzzle = golden_game.puzzles[2]
-    answer_format = puzzle.source.answer_format.model_copy(update={"kind": "choice", "choices": ["low tide", "dusk"]})
+    # No document holds the sentinel, so the packet can show it only from the answer format.
+    sentinel: str = "sentinel-choice-zq"
+    puzzle: AssembledPuzzle = golden_game.puzzles[2]
+    answer_format = puzzle.source.answer_format.model_copy(update={"kind": "choice", "choices": ["low tide", sentinel]})
     choice_puzzle = puzzle.model_copy(
         update={"source": puzzle.source.model_copy(update={"answer_format": answer_format})}
     )
     documents = [document for document in golden_game.documents if document.meta.puzzle != "P3"]
-    game = golden_game.model_copy(update={"puzzles": [*golden_game.puzzles[:2], choice_puzzle], "documents": documents})
+    game: Game = golden_game.model_copy(
+        update={"puzzles": [*golden_game.puzzles[:2], choice_puzzle], "documents": documents}
+    )
     text = build_stage_packets(game)[1].text
     assert "Choices" not in text
-    assert "dusk" not in text
+    assert sentinel not in text
     assert "  Its material is in: no document of its own" in text
 
 
@@ -157,11 +164,20 @@ def test_the_guesser_packet_holds_only_the_premise_and_the_printed_questions(gol
     assert "boathouse" not in packet.text
 
 
-def test_the_guesser_packet_says_when_a_puzzle_prints_no_question(golden_game: Game) -> None:
-    puzzle = golden_game.puzzles[1]
-    silent = puzzle.model_copy(update={"source": puzzle.source.model_copy(update={"question": ""})})
-    game = golden_game.model_copy(update={"puzzles": [golden_game.puzzles[0], silent, golden_game.puzzles[2]]})
+@pytest.mark.parametrize("question", ["", "   "])
+def test_the_guesser_packet_says_when_a_puzzle_prints_no_question(golden_game: Game, question: str) -> None:
+    puzzle: AssembledPuzzle = golden_game.puzzles[1]
+    silent: AssembledPuzzle = puzzle.model_copy(
+        update={"source": puzzle.source.model_copy(update={"question": question})}
+    )
+    game: Game = golden_game.model_copy(update={"puzzles": [golden_game.puzzles[0], silent, golden_game.puzzles[2]]})
     assert "- A2: no printed question" in build_guesser_packet(game).text
+
+
+def test_the_guesser_packet_prints_the_question_with_its_references_resolved(tmp_path: Path) -> None:
+    game: Game | None = golden_game_with_question_reference(tmp_path).game
+    assert game is not None
+    assert "- A2: which four digits open the lock of Tom Bell?" in build_guesser_packet(game).text
 
 
 def test_canaries_map_each_code_to_its_canary(golden_game: Game) -> None:

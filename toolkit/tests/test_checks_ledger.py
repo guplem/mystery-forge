@@ -1,15 +1,19 @@
+from pathlib import Path
 from typing import Any
 
+import pytest
 from test_checks_support import (
     edit_document,
     edit_puzzle,
     edit_story,
     golden_game,
+    golden_game_with_question_reference,
     golden_mechanics,
     only_rule,
     rules,
 )
 
+from mystery_forge.assemble import AssemblyResult
 from mystery_forge.checks.ledger import check_ledger, normalize_quote_text
 from mystery_forge.game import Game
 from mystery_forge.spec.models import Clue, Hint, SolutionStep
@@ -140,14 +144,47 @@ def test_a_hint_that_points_outside_the_solution_is_a_warning() -> None:
     assert "receipt-lines" in outside[0].message
 
 
-def test_a_puzzle_without_a_printed_question_is_an_error() -> None:
+@pytest.mark.parametrize("question", ["", "   "])
+def test_a_puzzle_without_a_printed_question_is_an_error(question: str) -> None:
     findings = only_rule(
-        check_ledger(edit_puzzle(golden_game(), "P2", question=""), golden_mechanics()), "ledger.question_missing"
+        check_ledger(edit_puzzle(golden_game(), "P2", question=question), golden_mechanics()),
+        "ledger.question_missing",
     )
     assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
         ("puzzles/P2.yaml", "question", "error")
     ]
     assert "P2" in findings[0].message
+
+
+def test_a_question_of_fewer_than_three_words_is_an_error() -> None:
+    # The logbook of stage A prints "the receipt", so only the length rule can catch this question.
+    game: Game = edit_puzzle(golden_game(), "P2", question="the receipt")
+    findings = only_rule(check_ledger(game, golden_mechanics()), "ledger.question_too_short")
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("puzzles/P2.yaml", "question", "error")
+    ]
+    assert only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed") == []
+
+
+def test_a_question_with_a_reference_matches_a_document_that_uses_the_same_reference(tmp_path: Path) -> None:
+    result: AssemblyResult = golden_game_with_question_reference(tmp_path)
+    assert result.game is not None
+    assert only_rule(check_ledger(result.game, golden_mechanics()), "ledger.question_not_printed") == []
+
+
+def test_a_question_in_a_printed_header_field_counts_as_printed() -> None:
+    question: str = "Which four digits open the shed?"
+    game: Game = edit_document(golden_game(), "D3", meta={"fields": {"sender": "Ward Supplies", "subject": question}})
+    game = edit_puzzle(game, "P2", question=question)
+    assert only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed") == []
+
+
+def test_a_question_with_typographic_quotes_matches_straight_quotes() -> None:
+    document_text: str = next(document.text for document in golden_game().documents if document.meta.id == "D3")
+    game: Game = edit_document(golden_game(), "D3", text=document_text + '\n\nWhich lock is the "keeper\'s" one?')
+    curly: str = f"Which lock is the {chr(0x201C)}keeper{chr(0x2019)}s{chr(0x201D)} one?"
+    game = edit_puzzle(game, "P2", question=curly)
+    assert only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed") == []
 
 
 def test_a_question_that_no_document_of_its_stage_prints_is_an_error() -> None:

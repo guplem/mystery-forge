@@ -61,8 +61,9 @@ def assemble_game(
     brief: Brief | None = load_brief(game_dir, findings)
     if source.story is None or source.flow is None or config is None or brief is None:
         return AssemblyResult(game=None, findings=findings)
-    documents, source_texts = assemble_documents(source, config.language, findings)
-    puzzles: list[AssembledPuzzle] = assemble_puzzles(source, mechanics, config.language, source_texts, findings)
+    context: ReferenceContext = reference_context(source, config.language)
+    documents, source_texts = assemble_documents(source, context, findings)
+    puzzles: list[AssembledPuzzle] = assemble_puzzles(source, mechanics, context, source_texts, findings)
     artifacts: dict[str, Artifact] = {puzzle.source.id: puzzle.artifact for puzzle in puzzles if puzzle.artifact}
     documents = [insert_solver_texts(document, artifacts) for document in documents]
     game = Game(
@@ -168,12 +169,9 @@ def missing_file_finding(name: str) -> Finding:
     )
 
 
-def assemble_documents(
-    source: GameSource, language: str, findings: list[Finding]
-) -> tuple[list[AssembledDocument], dict[str, str]]:
-    """Render every document. Also return each document's text before the artifacts go in, for verifier mechanics."""
+def reference_context(source: GameSource, language: str) -> ReferenceContext:
     assert source.story is not None and source.flow is not None
-    context = ReferenceContext(
+    return ReferenceContext(
         language=language,
         story=source.story,
         stage_ids=frozenset(stage.id for stage in source.flow.stages),
@@ -181,6 +179,12 @@ def assemble_documents(
         puzzle_ids=frozenset(puzzle.id for puzzle in source.puzzles),
         image_ids=frozenset(source.images),
     )
+
+
+def assemble_documents(
+    source: GameSource, context: ReferenceContext, findings: list[Finding]
+) -> tuple[list[AssembledDocument], dict[str, str]]:
+    """Render every document. Also return each document's text before the artifacts go in, for verifier mechanics."""
     documents: list[AssembledDocument] = []
     source_texts: dict[str, str] = {}
     for document in source.documents:
@@ -223,10 +227,11 @@ def image_text(caption: str, svg: str) -> str:
 def assemble_puzzles(
     source: GameSource,
     mechanics: Mapping[str, MechanicImplementation[Any]],
-    language: str,
+    context: ReferenceContext,
     source_texts: dict[str, str],
     findings: list[Finding],
 ) -> list[AssembledPuzzle]:
+    language: str = context.language
     codes: dict[str, str] = puzzle_codes([(puzzle.id, puzzle.stage) for puzzle in source.puzzles])
     assembled: list[AssembledPuzzle] = []
     for puzzle in source.puzzles:
@@ -235,7 +240,7 @@ def assemble_puzzles(
         answers: list[str] = [normalize_answer(text, language) for text in (puzzle.answer, *puzzle.accepted)]
         assembled.append(
             AssembledPuzzle(
-                source=puzzle,
+                source=resolve_question(puzzle, file, context, findings),
                 file=file,
                 code=codes[puzzle.id],
                 artifact=artifact,
@@ -243,6 +248,13 @@ def assemble_puzzles(
             )
         )
     return assembled
+
+
+def resolve_question(puzzle: Puzzle, file: str, context: ReferenceContext, findings: list[Finding]) -> Puzzle:
+    # The question repeats a printed sentence, and the ledger check compares it with the resolved document text.
+    resolved, reference_findings = resolve_references(puzzle.question, puzzle.id, context, file, 1)
+    findings.extend(finding.model_copy(update={"line": None, "path": "question"}) for finding in reference_findings)
+    return puzzle.model_copy(update={"question": resolved})
 
 
 def build_artifact(

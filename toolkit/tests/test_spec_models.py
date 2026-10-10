@@ -278,3 +278,5 @@ def test_the_printed_question_is_optional_in_the_file_and_documented_in_the_sche
     question: str = "When could the thief cross? Two words."
     assert Puzzle.model_validate(minimal_puzzle() | {"question": question}).question == question
     assert "word for word" in Puzzle.model_json_schema()["properties"]["question"]["description"]
+    with pytest.raises(ValidationError):
+        Puzzle.model_validate(minimal_puzzle() | {"question": ""})
