@@ -11,7 +11,7 @@ An LLM writes the game. Long prose inside one big JSON file is hard for an LLM t
   - `story.yaml`: the fact registry (characters, locations, objects, timeline events), the truth, the deduction, the intro, and the epilogues.
   - `plan.yaml`: the puzzle plan. It names the documents that each writer owns and the sentences (`must_contain`) that those documents must keep. `forge check` compares the written game with it.
   - `flow.yaml`: the stages (envelopes) in order and what opens each one.
-  - `puzzles/<id>.yaml`: one puzzle each, with its answer, its mechanic parameters, its clues, its solution steps, and its hints.
+  - `puzzles/<id>.yaml`: one puzzle each, with its answer, its mechanic parameters, its clues, its solution steps, its hints, and its printed `question`.
   - `documents/<id>.md`: one player document each. Front matter holds the metadata; the body is Markdown with a small fixed set of directives.
   - `images/`: SVG files.
 - Each parallel writer owns only its own files. Shared indexes are computed by the toolkit, never written by agents.
@@ -19,6 +19,7 @@ An LLM writes the game. Long prose inside one big JSON file is hard for an LLM t
 - `forge assemble` loads everything, runs the puzzle builders, resolves the references in the documents, and writes `game.json`. The renderer reads only `game.json`.
 - Every error names the file, the line when known, the field path, a rule id, and a fix hint, because fix loops read these errors.
 - Every file carries `format_version: 1`. A change that breaks old games raises the version and adds a migration.
+- A new field that every new game needs, but that old games lack, stays optional in the model, and a check makes it mandatory. Old games then still load, and the check tells the fix loop what to add. Example: a puzzle's `question` (the in-world sentence that a document prints to ask what to answer) has an empty default, and `ledger.question_missing` rejects it when empty.
 
 **Rejected alternative:** one `game.json` written by the agent. It is simpler to load, but it breaks under parallel writers and long prose.
 
