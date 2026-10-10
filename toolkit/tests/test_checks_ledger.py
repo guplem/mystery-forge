@@ -179,6 +179,26 @@ def test_a_question_in_a_printed_header_field_counts_as_printed() -> None:
     assert only_rule(check_ledger(game, golden_mechanics()), "ledger.question_not_printed") == []
 
 
+def test_a_question_in_a_script_without_spaces_counts_its_letters_as_words() -> None:
+    document_text: str = next(document.text for document in golden_game().documents if document.meta.id == "D3")
+    question: str = "倉庫の鍵を開ける四桁の数字は何ですか"
+    game: Game = edit_document(golden_game(), "D3", text=document_text + "\n\n" + question)
+    game = edit_puzzle(game, "P2", question=question)
+    findings = check_ledger(game, golden_mechanics())
+    assert only_rule(findings, "ledger.question_too_short") == []
+    assert only_rule(findings, "ledger.question_not_printed") == []
+
+
+def test_a_short_question_in_a_script_without_spaces_is_an_error() -> None:
+    document_text: str = next(document.text for document in golden_game().documents if document.meta.id == "D3")
+    game: Game = edit_document(golden_game(), "D3", text=document_text + "\n\n暗号")
+    game = edit_puzzle(game, "P2", question="暗号")
+    findings = only_rule(check_ledger(game, golden_mechanics()), "ledger.question_too_short")
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("puzzles/P2.yaml", "question", "error")
+    ]
+
+
 def test_a_question_with_typographic_quotes_matches_straight_quotes() -> None:
     document_text: str = next(document.text for document in golden_game().documents if document.meta.id == "D3")
     game: Game = edit_document(golden_game(), "D3", text=document_text + '\n\nWhich lock is the "keeper\'s" one?')

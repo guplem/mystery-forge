@@ -22,6 +22,7 @@ from mystery_forge.checks.game_index import (
 from mystery_forge.findings import Finding, Severity
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
 from mystery_forge.spec.models import Deduction
+from mystery_forge.text_measure import count_words
 
 # Typographic marks (by code point) that an agent and a document may write in different forms. Letters and case stay.
 APOSTROPHES: Final[tuple[int, ...]] = (0x2018, 0x2019, 0x201A, 0x201B, 0x2032)
@@ -271,7 +272,8 @@ def question_findings(game: Game) -> list[Finding]:
             )
             continue
         # A word or two ("Code") is in almost any document, so it would pass without telling players anything.
-        if len(question.split()) < MINIMUM_QUESTION_WORDS:
+        # Japanese, Chinese, and Thai write no spaces, so a split on spaces sees a whole sentence as one word.
+        if count_words(question) < MINIMUM_QUESTION_WORDS:
             findings.append(
                 Finding(
                     severity="error",
