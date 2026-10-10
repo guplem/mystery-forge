@@ -1,9 +1,13 @@
 """Player packets: the text that a solver subagent gets for one stage, and the text that the guesser gets.
 
-A solver must see what a player sees at that stage and nothing more. A packet therefore holds the documents, the
-answers of earlier stages, and the answer formats, and never the answers of its own stage, hints, solutions, mechanic
-names, difficulties, or canaries. The workflow pastes the packet text into the solver prompt, so the solver needs no
-file.
+A solver must see what a player sees at that stage and nothing more. A packet therefore holds the documents and the
+answers of earlier stages, and never the answers of its own stage, hints, solutions, mechanic names, difficulties, or
+canaries. It holds no answer format and no choice list either: no sheet prints them, so a solver must learn what to
+answer from the printed question in the documents, like a player on paper. The workflow pastes the packet text into
+the solver prompt, so the solver needs no file.
+
+The guesser gets the premise and each puzzle's printed question, the most that a player knows before reading any
+material.
 
 The story-only packet tests the promise that the puzzles matter. It holds every document of every envelope with the
 built puzzle material taken out, no answer, and every accusation question. A puzzle document stays, because its plain
@@ -18,20 +22,23 @@ from pydantic import BaseModel, ConfigDict
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
 from mystery_forge.i18n import text
 from mystery_forge.render.kinds import document_kind
-from mystery_forge.spec.models import AnswerFormat, Deduction
+from mystery_forge.spec.models import Deduction
 
 SOLVER_INSTRUCTIONS: str = """You are a player of a printed mystery game. Everything you have is below: the case, \
 the documents of every envelope that you opened, and the answers that you already found. Do not open any file and do \
 not search anywhere else. Use only this text.
 
 Solve each puzzle under "Puzzles to solve now". For each puzzle:
-- Give your answer in the answer format.
+- Give the answer that the documents ask for, in the form that they ask for. If no document tells you what to find \
+or in what form, say so.
 - Quote the exact words of the documents that prove your answer, and name the title of each document.
 - List every other answer that you considered, and say which clue rules it out.
 - If you cannot find an answer that the documents prove, say that you are stuck. Do not guess."""
 
 GUESSER_INSTRUCTIONS: str = """You are a player of a printed mystery game, but you have no documents. You know only \
-the case summary below and the answer format of each puzzle. Give your best guess for each puzzle code."""
+the case summary below and the question that the documents print for each puzzle. Give your best guess for each \
+puzzle code."""
+NO_PRINTED_QUESTION: str = "no printed question"
 
 ACCUSATION_INSTRUCTIONS: str = "Answer each question with the id of one option, and quote the evidence."
 
@@ -148,7 +155,9 @@ def without_material(game: Game, document: AssembledDocument) -> AssembledDocume
 
 def build_guesser_packet(game: Game) -> GuesserPacket:
     puzzles: list[AssembledPuzzle] = ordered_puzzles(game)
-    lines: list[str] = [f"- {puzzle.code}: {format_label(puzzle.source.answer_format)}" for puzzle in puzzles]
+    lines: list[str] = [
+        f"- {puzzle.code}: {puzzle.source.question.strip() or NO_PRINTED_QUESTION}" for puzzle in puzzles
+    ]
     sections: list[str] = [
         f"# {game.story.title}\n\n{GUESSER_INSTRUCTIONS}",
         f"# The case\n\n{game.story.tagline}\n\n{game.story.premise}",
@@ -207,21 +216,9 @@ def answers_found_section(earlier: list[AssembledPuzzle]) -> str:
 
 def puzzle_entry(game: Game, puzzle: AssembledPuzzle) -> str:
     titles: list[str] = [document.meta.title for document in game.documents if document.meta.puzzle == puzzle.source.id]
-    lines: list[str] = [
-        f"- {puzzle.code}: {puzzle.source.title}",
-        f"  Answer format: {format_label(puzzle.source.answer_format)}",
-    ]
-    if puzzle.source.answer_format.choices:
-        lines.append("  Choices: " + " | ".join(puzzle.source.answer_format.choices))
     # Other documents can matter too: a solver that reads this list as complete reports false gaps.
-    lines.append("  Its material is in: " + ("; ".join(titles) if titles else "no document of its own"))
-    return "\n".join(lines)
-
-
-def format_label(answer_format: AnswerFormat) -> str:
-    if answer_format.length is None:
-        return answer_format.label
-    return f"{answer_format.label} ({answer_format.length} characters)"
+    material: str = "; ".join(titles) if titles else "no document of its own"
+    return f"- {puzzle.code}: {puzzle.source.title}\n  Its material is in: {material}"
 
 
 def accusation_section(deduction: Deduction) -> str:

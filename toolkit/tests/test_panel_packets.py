@@ -82,15 +82,23 @@ def test_a_later_packet_lists_the_answers_of_earlier_stages_and_the_opened_envel
     assert "Envelope B" not in first.text
 
 
-def test_the_puzzles_to_solve_show_the_format_and_the_attached_documents(golden_game: Game) -> None:
+def test_the_puzzles_to_solve_show_the_title_and_the_attached_documents_but_no_answer_format(
+    golden_game: Game,
+) -> None:
+    # No sheet prints the answer format, so a solver must learn it from the printed question, like a player on paper.
     first, second = build_stage_packets(golden_game)
-    assert "- A1: The keeper's coded line\n  Answer format: one word (9 characters)" in first.text
-    assert "  Its material is in: The keeper's logbook" in first.text
-    assert "- B1: How did the thief reach the rock?\n  Answer format: two words\n" in second.text
-    assert "  Its material is in: Notes from the boathouse box" in second.text
+    assert "- A1: The keeper's coded line\n  Its material is in: The keeper's logbook" in first.text
+    assert "- B1: How did the thief reach the rock?\n  Its material is in: Notes from the boathouse box" in second.text
+    for packet in (first, second):
+        assert "Answer format" not in packet.text
+        assert "characters)" not in packet.text
+        assert "a 4-digit code" not in packet.text
+    assert "answer format" not in first.text.casefold()
 
 
-def test_a_choice_puzzle_shows_its_choices_and_a_puzzle_without_documents_says_so(golden_game: Game) -> None:
+def test_a_choice_puzzle_hides_its_unprinted_choices_and_a_puzzle_without_documents_says_so(
+    golden_game: Game,
+) -> None:
     puzzle = golden_game.puzzles[2]
     answer_format = puzzle.source.answer_format.model_copy(update={"kind": "choice", "choices": ["low tide", "dusk"]})
     choice_puzzle = puzzle.model_copy(
@@ -99,7 +107,8 @@ def test_a_choice_puzzle_shows_its_choices_and_a_puzzle_without_documents_says_s
     documents = [document for document in golden_game.documents if document.meta.puzzle != "P3"]
     game = golden_game.model_copy(update={"puzzles": [*golden_game.puzzles[:2], choice_puzzle], "documents": documents})
     text = build_stage_packets(game)[1].text
-    assert "  Choices: low tide | dusk" in text
+    assert "Choices" not in text
+    assert "dusk" not in text
     assert "  Its material is in: no document of its own" in text
 
 
@@ -135,15 +144,24 @@ def test_the_golden_packets_hold_no_secret(golden_game: Game) -> None:
                 assert lowered.count(answer.casefold()) == in_documents, answer
 
 
-def test_the_guesser_packet_holds_only_the_premise_and_the_formats(golden_game: Game) -> None:
+def test_the_guesser_packet_holds_only_the_premise_and_the_printed_questions(golden_game: Game) -> None:
     packet = build_guesser_packet(golden_game)
     assert packet.codes == ["A1", "A2", "B1"]
     assert packet.sha256 == hashlib.sha256(packet.text.encode()).hexdigest()
     assert golden_game.story.premise in packet.text
     assert golden_game.story.tagline in packet.text
-    assert "- A2: a 4-digit code (4 characters)" in packet.text
+    assert "- A2: which four digits open the store room lock?" in packet.text
+    assert "a 4-digit code" not in packet.text
+    assert "answer format" not in packet.text.casefold()
     assert "logbook" not in packet.text
     assert "boathouse" not in packet.text
+
+
+def test_the_guesser_packet_says_when_a_puzzle_prints_no_question(golden_game: Game) -> None:
+    puzzle = golden_game.puzzles[1]
+    silent = puzzle.model_copy(update={"source": puzzle.source.model_copy(update={"question": ""})})
+    game = golden_game.model_copy(update={"puzzles": [golden_game.puzzles[0], silent, golden_game.puzzles[2]]})
+    assert "- A2: no printed question" in build_guesser_packet(game).text
 
 
 def test_canaries_map_each_code_to_its_canary(golden_game: Game) -> None:

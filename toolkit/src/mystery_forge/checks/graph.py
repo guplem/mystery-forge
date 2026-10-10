@@ -356,8 +356,9 @@ def feeder_variant_findings(game: Game, final: AssembledPuzzle) -> list[Finding]
                 "that types one of them uses other letters in the final puzzle.",
                 file=feeder.file,
                 path="accepted",
-                fix_hint="Remove these variants. Make the answer format force one spelling instead (for example "
-                "'a number in words'), or add the variant as a near miss whose message asks for the other form.",
+                fix_hint="Remove these variants. Make the printed question and the answer format force one spelling "
+                "instead (for example 'a number in words'), or add the variant as a near miss whose message asks "
+                "for the other form.",
             )
         )
     return findings
