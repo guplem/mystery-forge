@@ -11,6 +11,7 @@ from test_render_support import configured, golden_game, showcase_game
 
 from mystery_forge.assemble import assemble_game
 from mystery_forge.game import Game
+from mystery_forge.i18n import text as fixed_text
 from mystery_forge.mechanics.registry import all_implementations
 from mystery_forge.render import materials
 from mystery_forge.render.answer_register import register_form
@@ -169,6 +170,19 @@ def test_other_themes_and_modes_fit_their_pages(
         assert output.pdf_file is not None and pdf_page_count(output.pdf_file) == output.sheet_count
     if game.music is not None:
         assert game.music.suggestions[0].title in " ".join(report.outputs["manual"].sheet_texts)
+
+
+def test_the_longest_music_table_fits_the_manual(browser: PlaywrightSheetBrowser, tmp_path: Path) -> None:
+    # The model allows 6 suggestions of 120 characters each: the fixed-size sheets must hold them all.
+    longest: list[tuple[str, str]] = [
+        ((f"Title {index} " + "Nocturne in a minor key " * 5)[:120], (f"Artist {index} " + "Orchestra " * 12)[:120])
+        for index in range(6)
+    ]
+    report = render_game(with_music(golden_game(), *longest), tmp_path, browser)
+    assert report.findings == []
+    manual_text: str = " ".join(report.outputs["manual"].sheet_texts)
+    assert all(title in manual_text for title, _ in longest)
+    assert fixed_text("en", "manual_music_title") in manual_text
 
 
 LIVE_GAME: Path = Path(__file__).parent / "fixtures" / "live-toy-factory"
