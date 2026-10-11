@@ -298,9 +298,30 @@ def test_music_holds_three_to_six_suggestions() -> None:
             Music.model_validate(music_with(count))
 
 
-@pytest.mark.parametrize("link", ["https://example.com/song", "www.example.com", "listen on http now"])
+@pytest.mark.parametrize(
+    "link",
+    [
+        "https://example.com/song",
+        "www.example.com",
+        "youtube.com/watch?v=x",
+        "youtu.be/abc",
+        "open.spotify.com/track/x",
+        "spotify:track:x",
+        "music.example.de/song",
+        "http:example",
+    ],
+)
 def test_a_music_suggestion_has_no_link_because_the_pages_stay_self_contained(link: str) -> None:
     data: dict[str, Any] = music_with(3)
     data["suggestions"][1]["artist"] = link
     with pytest.raises(ValidationError, match="link"):
         Music.model_validate(data)
+
+
+@pytest.mark.parametrize(
+    "title", ["Op. 9 No. 2", "Nocturne Op. 9 No. 2", "No. 5", "Vol. 1", "St. Louis Blues", "Mr. Sandman", "1.2.3"]
+)
+def test_a_real_title_with_dots_is_no_link(title: str) -> None:
+    data: dict[str, Any] = music_with(3)
+    data["suggestions"][0]["title"] = title
+    assert Music.model_validate(data).suggestions[0].title == title

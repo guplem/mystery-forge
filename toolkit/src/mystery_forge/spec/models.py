@@ -26,7 +26,12 @@ Difficulty = Literal["easy", "medium", "hard", "expert"]
 # The config's visual styles without "auto": when the config says "auto", the story names the style it fits.
 VisualStyle = Literal["vintage", "noir", "modern", "victorian", "scifi", "fantasy", "kids", "minimal"]
 TIME_FORMATS: tuple[str, ...] = ("%Y-%m-%d %H:%M", "%Y-%m-%d")
-LINK_PATTERN: re.Pattern[str] = re.compile(r"://|www\.|http", re.IGNORECASE)
+# A scheme, "www.", or a domain written with no space after its dot ("youtu.be/abc"). A title such as "Op. 9 No. 2"
+# or "St. Louis Blues" has a space after each dot, so it never matches.
+LINK_PATTERN: re.Pattern[str] = re.compile(
+    r"://|www\.|\b(?:https?|spotify):|\w\.(?:com|net|org|be|fm|io|ly|tv|me|co|app|link)\b|\w\.[a-z]{2,}/",
+    re.IGNORECASE,
+)
 
 
 class SourceModel(BaseModel):
