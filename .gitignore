@@ -18,3 +18,6 @@ htmlcov/
 # Games generated inside the repo by mistake or by tests
 generator/games/
 _site/
+
+# Git worktrees of Claude Code subagents (a full copy of the repo that Prettier would scan)
+.claude/worktrees/
