@@ -14,6 +14,7 @@ An LLM writes the game. Long prose inside one big JSON file is hard for an LLM t
   - `puzzles/<id>.yaml`: one puzzle each, with its answer, its mechanic parameters, its clues, its solution steps, its hints, and its printed `question`.
   - `documents/<id>.md`: one player document each. Front matter holds the metadata; the body is Markdown with a small fixed set of directives.
   - `images/`: SVG files.
+  - `music.yaml`: optional. 3 to 6 music suggestions (title and artist) that the manual prints. One writer owns it, and it has its own fix group. A game without it has no music section and no finding. The model rejects links, because the printed pages stay self-contained.
 - Each parallel writer owns only its own files. Shared indexes are computed by the toolkit, never written by agents.
 - **Every YAML scalar loads as text**, except `null`. Pydantic then converts each field to its declared type. `0420` stays `"0420"`.
 - `forge assemble` loads everything, runs the puzzle builders, resolves the references in the documents and in each puzzle's `question`, and writes `game.json`. The renderer reads only `game.json`.

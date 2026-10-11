@@ -29,13 +29,13 @@ When a run already exists (the user says "continue"), run `uv run .pskill/pskill
 
 Every command runs from this folder as `uv run --project ../toolkit forge <verb>`. Each verb prints one JSON object.
 
-| Verb                                                       | What it does                                                                                  |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `forge catalog list --implemented`                         | The mechanics that you can use, with their player action and verification level.              |
-| `forge catalog show <id>`                                  | One mechanic: how it works, its pitfalls, its hint ladder, and the JSON schema of its params. |
-| `forge catalog rules`                                      | The design rules for game writers (pacing, fairness, hints, variety, failure modes).          |
-| `forge schema <story\|flow\|puzzle\|document\|references>` | The fields of a source file, or the reference forms and directives of a document body.        |
-| `forge assemble --game <dir>`                              | Load and build the game, and write `game.json`. Reports problems as findings.                 |
+| Verb                                                              | What it does                                                                                  |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `forge catalog list --implemented`                                | The mechanics that you can use, with their player action and verification level.              |
+| `forge catalog show <id>`                                         | One mechanic: how it works, its pitfalls, its hint ladder, and the JSON schema of its params. |
+| `forge catalog rules`                                             | The design rules for game writers (pacing, fairness, hints, variety, failure modes).          |
+| `forge schema <story\|flow\|puzzle\|document\|music\|references>` | The fields of a source file, or the reference forms and directives of a document body.        |
+| `forge assemble --game <dir>`                                     | Load and build the game, and write `game.json`. Reports problems as findings.                 |
 
 The skill's steps run the other verbs (doctor, setup, config, games, check, plain-test, writer-tasks, material, packets, judge, render, status, export) for you.
 
@@ -52,6 +52,7 @@ The skill's steps run the other verbs (doctor, setup, config, games, check, plai
 | `source/puzzles/<id>.yaml`                      | puzzle writers                | One puzzle each: answer, params, printed question, clues, solution, hints.                                                      |
 | `source/documents/<id>.md`                      | puzzle and document writers   | One player document each: front matter plus a Markdown body.                                                                    |
 | `source/images/<id>.svg`                        | document writers, illustrator | Simple SVG illustrations. The illustrator runs only when the config asks for SVG images.                                        |
+| `source/music.yaml`                             | document writer               | Optional. 3 to 6 music suggestions (title and artist) that the manual prints.                                                   |
 | `game.json`, `reports/`, `render/`              | toolkit                       | The assembled game, the check reports, and the rendered files.                                                                  |
 
 ## Writing rules for every writer

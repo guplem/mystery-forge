@@ -58,7 +58,7 @@ When it finishes, the AI tells you where the game is: a new folder in `Mystery F
 
 ### Step 4: print and play
 
-Open the file whose name starts with `1 -` (the manual). It has the printing checklist, how to prepare the envelopes, and the rules. Read it before you print.
+Open the file whose name starts with `1 -` (the manual). It has the printing checklist, how to prepare the envelopes, the rules, and a few music suggestions that fit the story. Read it before you print.
 
 ## What you get
 
@@ -67,7 +67,7 @@ A folder on your Desktop (`Mystery Forge/<game title>`) with:
 | File                                     | What it is                                                                                                                                                                                               |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `0 - READ FIRST (warnings).txt`          | Only when some tests of the game did not pass: which puzzles may be unclear or too hard, and how to fix them. It reveals no answer.                                                                      |
-| `1 - START HERE (manual).pdf`            | Read this before you print: what to print, how to set up the envelopes, and how to play.                                                                                                                 |
+| `1 - START HERE (manual).pdf`            | Read this before you print: what to print, how to set up the envelopes, how to play, and background music that fits the story.                                                                           |
 | `2 - PRINT THIS (game materials).pdf`    | The game itself: letters, reports, maps, codes, and puzzles, split into envelopes by "STOP" pages, plus the answer list and the accusation form.                                                         |
 | `Game companion.html`                    | An optional page for a phone or a computer. It checks your answers, shows a bit of story for each solved puzzle, gives one hint at a time, keeps the time, and scores your accusation. It works offline. |
 | `HOST ONLY - spoilers/3 - Hints.pdf`     | Fold-over hint cards, for groups that play without a phone or computer.                                                                                                                                  |
