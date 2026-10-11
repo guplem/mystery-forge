@@ -25,10 +25,11 @@ from mystery_forge.checks.game_index import (
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledPuzzle, Game
 from mystery_forge.spec.loader import MUSIC_FILE
-from mystery_forge.spec.models import Character
+from mystery_forge.spec.models import Character, MusicSuggestion
 
 # Replaces an allowlisted passage. A non-alphanumeric mark keeps the text on both sides from joining into a new match.
 CUT_MARK: Final[str] = "|"
+MUSIC_LEAK_RULE: Final[str] = "leaks.answer_in_music"
 WORD_PATTERN: Final[re.Pattern[str]] = re.compile(r"\w+")
 # A straight or a curly apostrophe.
 POSSESSIVE_PATTERN: Final[re.Pattern[str]] = re.compile(r"['\u2019]s\b", re.IGNORECASE)
@@ -87,7 +88,7 @@ def visible_texts(game: Game, puzzle: AssembledPuzzle, position: int) -> list[Vi
         )
     texts.append(VisibleText(puzzle.source.title, f"the title of {puzzle.source.id}", puzzle.file, "title", in_title))
     texts.extend(
-        VisibleText(value, f"the music suggestions ({field_path})", MUSIC_FILE, field_path, "leaks.answer_in_music")
+        VisibleText(value, f"the music suggestions ({field_path})", MUSIC_FILE, field_path, MUSIC_LEAK_RULE)
         for field_path, value in music_fields(game)
     )
     return texts
@@ -95,7 +96,7 @@ def visible_texts(game: Game, puzzle: AssembledPuzzle, position: int) -> list[Vi
 
 def music_fields(game: Game) -> list[tuple[str, str]]:
     """Each title and artist of the music suggestions, with its field path in music.yaml."""
-    suggestions = game.music.suggestions if game.music is not None else []
+    suggestions: list[MusicSuggestion] = game.music.suggestions if game.music is not None else []
     return [
         (f"suggestions.{index}.{name}", value)
         for index, suggestion in enumerate(suggestions)
@@ -124,7 +125,9 @@ def puzzle_leak_findings(puzzle: AssembledPuzzle, texts: list[VisibleText]) -> l
     used: set[int] = set()
     for visible in texts:
         squashed: str = squash(visible.text)
-        for index, passage in enumerate(allowed):
+        # An allowlist entry allows a passage of a puzzle's own documents, never a music suggestion: a real title
+        # that holds the answer must go, and the fixer of music.yaml cannot edit the puzzle file.
+        for index, passage in enumerate(allowed if visible.rule != MUSIC_LEAK_RULE else []):
             if passage and passage in squashed:
                 used.add(index)
                 squashed = squashed.replace(passage, CUT_MARK)
@@ -153,6 +156,12 @@ def puzzle_leak_findings(puzzle: AssembledPuzzle, texts: list[VisibleText]) -> l
 
 def leak_finding(puzzle: AssembledPuzzle, visible: VisibleText, answer: str, reversed_form: bool) -> Finding:
     how: str = "reversed " if reversed_form else ""
+    fix_hint: str = (
+        "Replace this music suggestion with another real work that fits the story."
+        if visible.rule == MUSIC_LEAK_RULE
+        else f"Rephrase the text so that it does not contain the answer. If the text must contain it, add the "
+        f"passage to `leak_allowlist` in {puzzle.file} with the reason."
+    )
     return Finding(
         severity="error",
         rule=visible.rule,
@@ -162,8 +171,7 @@ def leak_finding(puzzle: AssembledPuzzle, visible: VisibleText, answer: str, rev
         # allow the passage in the puzzle file. The writer of another puzzle's document cannot edit that allowlist.
         file=puzzle.file if visible.path is None else visible.file,
         path="leak_allowlist" if visible.path is None else visible.path,
-        fix_hint=f"Rephrase the text so that it does not contain the answer. If the text must contain it, add the "
-        f"passage to `leak_allowlist` in {puzzle.file} with the reason.",
+        fix_hint=fix_hint,
     )
 
 

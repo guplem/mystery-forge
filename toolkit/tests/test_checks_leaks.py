@@ -158,6 +158,27 @@ def test_an_answer_in_a_music_suggestion_is_an_error_for_every_stage() -> None:
     assert findings[0].fix_hint
 
 
+def test_a_music_leak_asks_for_another_work_and_no_allowlist_silences_it() -> None:
+    # A real title cannot be rephrased, and the fixer of music.yaml cannot edit the puzzle's allowlist.
+    allowed = LeakAllowance(text="Boathouse Blues", reason="A known place.")
+    game: Game = with_music(
+        edit_puzzle(golden_game(), "P1", leak_allowlist=[allowed]), ("Boathouse Blues", "A"), ("B", "C"), ("D", "E")
+    )
+    findings = only_rule(check_leaks(game), "leaks.answer_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.0.title"]
+    assert findings[0].fix_hint == "Replace this music suggestion with another real work that fits the story."
+
+
+def test_a_digits_answer_or_a_reversed_answer_in_a_music_title_is_a_leak() -> None:
+    game: Game = with_music(golden_game(), ("Nocturne 07-26", "Chopin"), ("Esuohtaob", "A"), ("D", "E"))
+    findings = only_rule(check_leaks(game), "leaks.answer_in_music")
+    assert [(finding.path, "P2" in finding.message) for finding in findings] == [
+        ("suggestions.1.title", False),
+        ("suggestions.0.title", True),
+    ]
+    assert "reversed" in findings[0].message
+
+
 def test_the_culprit_s_name_in_a_music_suggestion_is_an_error() -> None:
     game: Game = with_music(
         golden_game(), ("Songs Without Words", "Felix Mendelssohn"), ("Clair de lune", "Debussy"), ("Ana", "Ruiz")
