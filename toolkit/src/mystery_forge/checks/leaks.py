@@ -33,6 +33,16 @@ MUSIC_LEAK_RULE: Final[str] = "leaks.answer_in_music"
 WORD_PATTERN: Final[re.Pattern[str]] = re.compile(r"\w+")
 # A straight or a curly apostrophe.
 POSSESSIVE_PATTERN: Final[re.Pattern[str]] = re.compile(r"['\u2019]s\b", re.IGNORECASE)
+APOSTROPHE_PATTERN: Final[re.Pattern[str]] = re.compile(r"['\u2019]")
+# Honorifics and name particles, squashed. They occur in ordinary titles ("Dr. Who", "La Bamba"), so they are no name
+# part of the culprit.
+NAME_STOP_WORDS: Final[frozenset[str]] = frozenset(
+    {
+        *("dr", "mr", "mrs", "ms", "miss", "sir", "lady", "lord", "don", "dona", "senor", "senora", "sra", "sr"),
+        *("mme", "mlle", "herr", "frau", "prof", "capt", "captain", "inspector"),
+        *("de", "del", "della", "la", "le", "las", "los", "van", "von", "der", "di", "da", "du", "dos", "das"),
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -219,12 +229,15 @@ def culprit_music_findings(game: Game) -> list[Finding]:
     if culprit is None:
         return []
     # Each capitalized word of the name counts alone, also a short one such as "Li": the match is whole-word, so chance
-    # hits are rare. A lowercase particle such as "de" in "Ana de la Cruz" occurs in ordinary titles, so it does not
-    # count. An alias such as "The Fox" counts only as a whole phrase, because its "The" alone would match any title.
+    # hits are rare. A lowercase word such as "bin" in "Ali bin Omar" is a particle that the stop list may not hold.
+    # An alias such as "The Fox" counts only as a whole phrase, because its "The" alone would match any title. An
+    # alias with no letters, such as "?", gives no phrase, and an empty phrase would match every title.
     names: list[tuple[str, ...]] = [
-        (squash(word),) for word in name_words(culprit.name) if len(word) > 1 and not word[0].islower()
+        (squash(word),)
+        for word in name_words(culprit.name)
+        if len(word) > 1 and not word[0].islower() and squash(word) not in NAME_STOP_WORDS
     ]
-    names.extend(tuple(map(squash, name_words(alias))) for alias in culprit.aliases)
+    names.extend(phrase for alias in culprit.aliases if (phrase := tuple(map(squash, name_words(alias)))))
     return [
         Finding(
             severity="error",
@@ -243,8 +256,11 @@ def culprit_music_findings(game: Game) -> list[Finding]:
 
 
 def name_words(text: str) -> list[str]:
-    """Split a name or a title into words, without a possessive "'s": "Felix's Theme" gives "Felix" and "Theme"."""
-    return WORD_PATTERN.findall(POSSESSIVE_PATTERN.sub("", text))
+    """Split a name or a title into words, without a possessive "'s": "Felix's Theme" gives "Felix" and "Theme".
+
+    Every other apostrophe joins its word: "Don't" gives "Dont", not the name "Don", and "O'Brien" gives "OBrien".
+    """
+    return WORD_PATTERN.findall(APOSTROPHE_PATTERN.sub("", POSSESSIVE_PATTERN.sub("", text)))
 
 
 def contains_phrase(words: tuple[str, ...], phrase: tuple[str, ...]) -> bool:

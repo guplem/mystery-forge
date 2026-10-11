@@ -224,6 +224,37 @@ def test_a_lowercase_name_particle_is_no_name_part() -> None:
     assert [finding.path for finding in findings] == ["suggestions.2.title"]
 
 
+def test_a_contraction_stem_is_no_name_word() -> None:
+    # "Don't" is one word "Dont", so it does not match the honorific "Don" either way.
+    music: Game = with_music(golden_game(), ("Don't Stop Me Now", "Queen"), ("Won\u2019t Get Fooled", "B"), ("D", "E"))
+    assert only_rule(check_leaks(with_culprit(music, "Don Alfonso", [])), "leaks.culprit_in_music") == []
+
+
+@pytest.mark.parametrize("title", ["O'Brien's Lament", "O\u2019Brien", "OBrien Reel"])
+def test_a_name_with_an_apostrophe_counts_with_or_without_it(title: str) -> None:
+    music: Game = with_music(golden_game(), (title, "A"), ("B", "C"), ("D", "E"))
+    findings = only_rule(check_leaks(with_culprit(music, "Sean O'Brien", [])), "leaks.culprit_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.0.title"]
+
+
+def test_an_honorific_is_no_name_part() -> None:
+    music: Game = with_music(golden_game(), ("Dr. Who Theme", "A"), ("Hall of the Mountain King", "Grieg"), ("D", "E"))
+    findings = only_rule(check_leaks(with_culprit(music, "Dr. Hall", [])), "leaks.culprit_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.1.title"]
+
+
+def test_a_capitalized_name_particle_is_no_name_part() -> None:
+    music: Game = with_music(golden_game(), ("La Bamba", "Valens"), ("De Profundis", "B"), ("Santa Cruz", "E"))
+    findings = only_rule(check_leaks(with_culprit(music, "Ana De La Cruz", [])), "leaks.culprit_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.2.title"]
+
+
+@pytest.mark.parametrize("alias", ["?", "...", ""])
+def test_an_alias_with_no_letters_matches_no_title(alias: str) -> None:
+    music: Game = with_music(golden_game(), ("A", "B"), ("C", "D"), ("E", "F"))
+    assert only_rule(check_leaks(with_culprit(music, "Max Li", [alias])), "leaks.culprit_in_music") == []
+
+
 def test_a_game_without_a_culprit_checks_no_name_in_the_music() -> None:
     characters = [character.model_copy(update={"is_culprit": False}) for character in golden_game().story.characters]
     game: Game = edit_story(with_music(golden_game(), ("Felix", "Ward"), ("B", "C"), ("D", "E")), characters=characters)
