@@ -84,6 +84,7 @@ Baseline minutes per puzzle for a group of 3 or 4 adults. The catalog gives a va
 
 ## 6. Answers and answer checks
 
+- **Print the question of every puzzle in the body of a document.** An in-world sentence asks what to find and in what form ("Two words."), never the category. No sheet prints the answer format, so players on paper learn the form only from this sentence. Code checks it.
 - **Answer slots show their shape**, such as letter-count blanks or "4 digits". This catches near misses without a computer.
 - **Prefer chain confirmation.** Use an answer as the key of the next puzzle. A wrong answer then gives nonsense.
 - **List 2 to 5 near misses per puzzle** (a shift off by one, the wrong suspect with a strong motive, a reversed order). Each near miss gets a short custom message.

@@ -31,6 +31,7 @@ decoys:
 answer_format:
   kind: phrase
   label: What Rudy will push into the clock (2 words)
+question: What does he mean to push into the clock wheels? Two words.
 params:
   message: '15:17 LIVE: I PUSH THE WOODEN WEDGE INTO THE CLOCK WHEELS. NO WHISTLE AT FOUR.'
   strips: 8

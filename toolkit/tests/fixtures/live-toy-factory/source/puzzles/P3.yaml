@@ -30,6 +30,7 @@ answer_format:
   kind: word
   label: The eight-letter word of the lock on Fenna's tape case
   length: 8
+question: Word lock, eight letters. The word is on the leader of Tape Seven.
 params:
   plaintext: THE GHOST HAS FEATHERS
   include_reference_chart: true

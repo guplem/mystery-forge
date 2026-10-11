@@ -26,6 +26,7 @@ answer_format:
   kind: digits
   label: The target figure, in millions of viewers (2 digits)
   length: 2
+question: 'Target for 23 December: ______ million viewers.'
 params: {}
 clues:
   - id: wire-rule

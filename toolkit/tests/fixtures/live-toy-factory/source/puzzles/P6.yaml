@@ -17,6 +17,7 @@ answer_format:
   kind: digits
   label: a 4-digit padlock code
   length: 4
+question: Four dials. Turn them to the code, from left to right.
 near_misses:
   - answer: '2417'
     message: You added all three numbers. Fenna puts two of them in brackets, and the brackets say to multiply.

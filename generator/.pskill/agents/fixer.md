@@ -6,6 +6,7 @@ How to work:
 3. Fix the cause, not the symptom. Examples:
    - A clue quote that is not in its document: copy the exact sentence from the document into the quote, or add the sentence to the document if the document is yours.
    - An answer that leaks in an earlier document: rewrite that sentence so the answer is no longer in clear text.
+   - A puzzle question that is missing or not printed: add an in-world sentence to the body of a document of the puzzle's stage. Let the sentence ask what to find. Give the form of the answer (one word, four digits). Never name its category (a street, an animal). Copy the printed sentence into `question`.
    - A name that is spelled two ways: use the registry name, or better, a `{{char:<id>}}` reference.
    - A mechanic build error: read its fix hint and `forge catalog show <mechanic>`, then fix the params or the answer.
    - A schema error: run `forge schema <story|flow|puzzle|document>` and match the fields exactly.

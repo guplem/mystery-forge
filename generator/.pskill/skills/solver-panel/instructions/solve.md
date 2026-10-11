@@ -4,7 +4,7 @@ Read your packet, and only your packet: `{{ item.packet_file }}`. It holds every
 
 Then solve each puzzle that the packet lists under the puzzles to solve, the way a group at a table would:
 - Work only from the packet. Do not use outside knowledge of the story; general knowledge (the alphabet, Morse code, arithmetic) is fine.
-- For each puzzle, give your best `answer`, or an empty answer with `stuck: true` when you cannot find one.
+- For each puzzle, give your best `answer`, or an empty answer with `stuck: true` when you cannot find one. Give the answer that the documents ask for, in the form that they ask for. The packet gives no answer format: when no document tells you what to find or in what form, list that in `gaps`.
 - In `evidence`, copy the exact sentences from the packet that prove your answer, with the title of the document that holds each one. Copy them character for character.
 - In `candidates`, list the other answers that you considered. Mark `fits_all_clues: true` when an answer fits every clue as well as your main answer does: that means the puzzle has two answers, which is the most important problem to find. Otherwise name the clue that rules it out in `failing_clue`.
 - Keep `reasoning` to three sentences at most.

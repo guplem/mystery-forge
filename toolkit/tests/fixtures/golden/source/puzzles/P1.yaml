@@ -11,6 +11,7 @@ answer_format:
   kind: word
   label: one word
   length: 9
+question: Where are the spare keys? One word, in the code below.
 near_misses:
   - answer: yxlxqeorpb
     message: You moved the letters the wrong way. Count back, not forward.

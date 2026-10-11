@@ -2,7 +2,9 @@
 
 The solver panel and the solutions trust the clues, so a quote that the document does not contain, or a clue that
 players only get after the puzzle, breaks the proof that the puzzle is fair. A hidden clue has no document: a puzzle
-reveals it, so that puzzle must exist.
+reveals it, so that puzzle must exist. Each puzzle's question is word for word in a document that players hold at its
+stage too: no sheet prints the answer format, so without that sentence players on paper cannot tell what to answer.
+The check compares the question with the assembled body text, so both sides have their references filled in.
 """
 
 from collections.abc import Mapping
@@ -20,6 +22,7 @@ from mystery_forge.checks.game_index import (
 from mystery_forge.findings import Finding, Severity
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
 from mystery_forge.spec.models import Deduction
+from mystery_forge.text_measure import count_words
 
 # Typographic marks (by code point) that an agent and a document may write in different forms. Letters and case stay.
 APOSTROPHES: Final[tuple[int, ...]] = (0x2018, 0x2019, 0x201A, 0x201B, 0x2032)
@@ -30,6 +33,7 @@ TYPOGRAPHIC_MARKS: Final[dict[int, str]] = {
     **dict.fromkeys(QUOTATION_MARKS, '"'),
     **dict.fromkeys(DASHES, "-"),
 }
+MINIMUM_QUESTION_WORDS: Final[int] = 3
 
 
 def check_ledger(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]:
@@ -41,6 +45,7 @@ def check_ledger(game: Game, mechanics: Mapping[str, Mechanic]) -> list[Finding]
         *clue_reference_findings(game, {entry.clue.id for entry in entries}),
         *solution_findings(game, mechanics),
         *hint_ladder_findings(game),
+        *question_findings(game),
     ]
 
 
@@ -242,4 +247,61 @@ def hint_ladder_findings(game: Game) -> list[Finding]:
                     )
                 )
             previous = pointed
+    return findings
+
+
+def question_findings(game: Game) -> list[Finding]:
+    """Report each puzzle whose printed question is empty, too short, or in no document that players hold in time."""
+    positions: dict[str, int] = stage_positions(game)
+    findings: list[Finding] = []
+    for puzzle in game.puzzles:
+        question: str = normalize_quote_text(puzzle.source.question)
+        if not question:
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="ledger.question_missing",
+                    message=f"{puzzle.source.id} has no printed question, so players on paper cannot tell what to "
+                    "answer or in what form.",
+                    file=puzzle.file,
+                    path="question",
+                    fix_hint="Add an in-world sentence to the body of a document of the puzzle's stage. Let it ask "
+                    "what to find. Give the form of the answer (one word, four digits), never its category. Copy the "
+                    "printed text into `question`.",
+                )
+            )
+            continue
+        # A word or two ("Code") is in almost any document, so it would pass without telling players anything.
+        # Japanese, Chinese, and Thai write no spaces, so a split on spaces sees a whole sentence as one word.
+        if count_words(question) < MINIMUM_QUESTION_WORDS:
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="ledger.question_too_short",
+                    message=f'The question of {puzzle.source.id} has fewer than {MINIMUM_QUESTION_WORDS} words: "'
+                    f'{puzzle.source.question}".',
+                    file=puzzle.file,
+                    path="question",
+                    fix_hint="Copy the whole printed sentence that asks what to find and in what form.",
+                )
+            )
+            continue
+        # Only the body counts: a kind template prints only the header fields that it names.
+        if not any(
+            question in normalize_quote_text(document.text)
+            for document in game.documents
+            if not is_later_stage(document.meta.stage, puzzle, positions)
+        ):
+            findings.append(
+                Finding(
+                    severity="error",
+                    rule="ledger.question_not_printed",
+                    message=f"The question of {puzzle.source.id} is in no document that players hold at stage "
+                    f'{puzzle.source.stage}: "{puzzle.source.question}".',
+                    file=puzzle.file,
+                    path="question",
+                    fix_hint="Copy the question word for word from the body of a document of the puzzle's stage or "
+                    "an earlier stage, or add the sentence to such a body. A header field does not count.",
+                )
+            )
     return findings

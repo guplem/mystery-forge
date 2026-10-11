@@ -11,6 +11,7 @@ answer_format:
   kind: digits
   label: a 4-digit code
   length: 4
+question: which four digits open the store room lock?
 params:
   digits: 4
   steps:

@@ -4,9 +4,12 @@ from pathlib import Path
 
 import pytest
 import yaml
+from test_checks_support import edit_puzzle, golden_game, golden_mechanics, only_rule
 
+from mystery_forge.checks.ledger import check_ledger
 from mystery_forge.findings import Finding
-from mystery_forge.fix_groups import file_owners, group_findings, write_fix_groups
+from mystery_forge.fix_groups import FixGroup, file_owners, group_findings, write_fix_groups
+from mystery_forge.game import Game
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
 
@@ -86,6 +89,13 @@ def test_findings_are_grouped_by_the_writer_that_owns_their_file(game_dir: Path)
     assert "images/" in groups["documents"].files
     assert len(groups["story"].findings) == 1
     assert groups["plan"].files == ["plan.yaml", "flow.yaml"]
+
+
+def test_a_missing_printed_question_goes_to_the_writer_of_its_puzzle(game_dir: Path) -> None:
+    game: Game = edit_puzzle(golden_game(), "P2", question="")
+    findings: list[Finding] = only_rule(check_ledger(game, golden_mechanics()), "ledger.question_missing")
+    groups: list[FixGroup] = group_findings(findings, game_dir)
+    assert [(group.name, group.files) for group in groups] == [("P2", ["puzzles/P2.yaml", "documents/D3.md"])]
 
 
 def test_a_finding_without_a_file_makes_a_game_group_that_runs_alone(game_dir: Path) -> None:

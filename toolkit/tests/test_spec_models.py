@@ -270,3 +270,13 @@ def test_story_visual_style_is_optional_and_limited_to_known_styles() -> None:
 def test_puzzle_decoys_default_to_empty() -> None:
     assert Puzzle.model_validate(minimal_puzzle()).decoys == []
     assert Puzzle.model_validate(minimal_puzzle() | {"decoys": ["Mill Pond"]}).decoys == ["Mill Pond"]
+
+
+def test_the_printed_question_is_optional_in_the_file_and_documented_in_the_schema() -> None:
+    # Old games have no question: they still load, and the ledger check asks for one.
+    assert Puzzle.model_validate(minimal_puzzle()).question == ""
+    question: str = "When could the thief cross? Two words."
+    assert Puzzle.model_validate(minimal_puzzle() | {"question": question}).question == question
+    assert "word for word" in Puzzle.model_json_schema()["properties"]["question"]["description"]
+    with pytest.raises(ValidationError):
+        Puzzle.model_validate(minimal_puzzle() | {"question": ""})

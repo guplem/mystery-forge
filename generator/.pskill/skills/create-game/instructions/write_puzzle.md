@@ -10,12 +10,20 @@ Write `source/puzzles/{{ item.id }}.yaml` and the documents `source/documents/<i
 {% else %}- **The material shows what to solve and where to look, never how.** No sentence of a document explains the decoding method, the order of operations, or which rule to apply. A signpost (a title, an odd detail, a note in the margin) tells players that there is something to solve. Hints 2 and 3 carry the method. An in-world signpost may point at the extraction step (which letters, which order) when players could not guess it, but never at what the result means.
 {% endif %}
 - **The answer format label** names the format only ("two words", "a 4-digit code"), never the category ("a street name", "an animal"): a category makes the answer guessable.
+- **The printed question.** No sheet prints the answer format, so players on paper learn what to answer only from your documents. Example: "What did Marisol have to bring? Two words."
+  - Put one in-world sentence (or two) in the body of one of your documents: a character's note, a form line, a caption, or a lock drawn as "__ : __".
+  - Never put the question only in a header field. A template prints only some header fields, so the check ignores them.
+  - Let it ask what to find and in what form (one word, four digits, two words of 4 and 5 letters). Never name the category.
+  - For a `choice` puzzle, list every choice in the sentence.
+  - When the sentences that must stay (below) hold the planned question, use that sentence.
+  - Copy the printed sentence word for word into `question`, with the same `{{ '{{...}}' }}` references as the document.
+  - The checks reject a `question` that is missing, shorter than three words, or in the body of no document of this stage or an earlier stage.
 - **Fair.** Everything needed is in the material that players have at this stage. When `config.json` sets `equipment.printer` to `black_and_white`, no clue depends on a color, and no text names a printed color ("ruled off in red").
 - **Clues.** Each `clues` entry quotes, character for character, a sentence of a document that players have at this stage or earlier. Start each new clue id with the puzzle id in lower case (`{{ item.id | lower }}-...`), so that it never collides with another clue.
 - **Solution.** Steps that a player could follow, each citing the clues it uses. Name other puzzles by their printed code, never by their id.
 - **Hints.** Three hints: 1 = which materials you need, 2 = a nudge toward the method, 3 = the method. Each hint cites every clue that the hint before it cites, and more. No hint contains the answer.
 - **Hints and the solution describe the printed page.** The builder decides how a built material looks, and it often differs from the plan and the catalog text. Name only a picture, a mark, an arrow, a symbol, or a position that the page shows.
-{% if item.must_contain %}- **Sentences that must stay.** Put each of these sentences word for word in your documents; another puzzle needs them: {% for sentence in item.must_contain %}"{{ sentence }}"{% if not loop.last %}; {% endif %}{% endfor %}.
+{% if item.must_contain %}- **Sentences that must stay.** Put each of these sentences word for word in your documents; the checks or another puzzle need them: {% for sentence in item.must_contain %}"{{ sentence }}"{% if not loop.last %}; {% endif %}{% endfor %}.
 {% endif %}- **Answer variants.** `accepted` for spellings that also count (when the final puzzle uses this answer, only spellings with the same letters and digits), `near_misses` for likely wrong answers with a nudge message, and `decoys`: 3 plausible wrong answers with the same shape as the answer (the same number of digits; about the same number of letters), from the story world.
 - **Canary.** Set `canary` to `canary-{{ item.id | lower }}-` followed by six random letters.
 - **Meta and earlier answers.** When the puzzle depends on other puzzles, the material must make players use their answers, through a mechanism that they discover.
