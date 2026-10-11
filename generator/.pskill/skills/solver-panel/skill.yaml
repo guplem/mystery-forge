@@ -41,6 +41,10 @@ blocks:
     for_each: "{{ steps.packets.json.solver_tasks }}"
     task_name: "{{ item.name }}"
     agent: solver
+    # Solvers are most of a game's subagent tasks (issue #44). A mid-size model plays closer to a real family than
+    # the main model, and the read profile drops the tools that a player never needs.
+    tier: standard
+    tools: read
     instruction: instructions/solve.md
     output:
       status: {type: string, enum: [done, failed], description: "failed only when you could not read your packet."}
@@ -96,6 +100,8 @@ blocks:
       - {name: guesser}
     task_name: "{{ item.name }}"
     agent: solver
+    tier: standard
+    tools: read
     instruction: instructions/guess.md
     output:
       guesses:

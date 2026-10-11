@@ -252,6 +252,7 @@ blocks:
       - {name: story review}
     task_name: "{{ item.name }}"
     agent: story-reviewer
+    tools: read
     instruction: instructions/review_story.md
     output:
       findings:
@@ -289,6 +290,8 @@ blocks:
     for_each: "{{ steps.plain_test.json.solver_tasks }}"
     task_name: "{{ item.name }}"
     agent: solver
+    tier: standard
+    tools: read
     instruction: instructions/plain_test_solve.md
     output:
       status: {type: string, enum: [done, failed], description: "failed only when you could not read your packet."}
@@ -382,6 +385,7 @@ blocks:
       - {name: puzzle design review}
     task_name: "{{ item.name }}"
     agent: puzzle-reviewer
+    tools: read
     instruction: instructions/review_plan.md
     output:
       findings:
@@ -486,6 +490,7 @@ blocks:
       - {name: document review}
     task_name: "{{ item.name }}"
     agent: story-reviewer
+    tools: read
     instruction: instructions/review_documents.md
     output:
       findings:
@@ -589,6 +594,8 @@ blocks:
       - {name: visual review}
     task_name: "{{ item.name }}"
     agent: visual-reviewer
+    tier: standard
+    tools: read
     instruction: instructions/visual_review.md
     output:
       findings:
