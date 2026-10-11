@@ -5,6 +5,7 @@ its document, a puzzle must exist before a stage can open with it) live in `myst
 The loader gives these models text values; pydantic converts them to the declared types.
 """
 
+import re
 from collections import Counter
 from datetime import datetime
 from typing import Annotated, Any, Literal, Self
@@ -25,6 +26,7 @@ Difficulty = Literal["easy", "medium", "hard", "expert"]
 # The config's visual styles without "auto": when the config says "auto", the story names the style it fits.
 VisualStyle = Literal["vintage", "noir", "modern", "victorian", "scifi", "fantasy", "kids", "minimal"]
 TIME_FORMATS: tuple[str, ...] = ("%Y-%m-%d %H:%M", "%Y-%m-%d")
+LINK_PATTERN: re.Pattern[str] = re.compile(r"://|www\.|http", re.IGNORECASE)
 
 
 class SourceModel(BaseModel):
@@ -362,3 +364,24 @@ class Flow(SourceModel):
         if later_starts:
             raise ValueError(f"only the first stage opens with 'start', not {later_starts}")
         return self
+
+
+class MusicSuggestion(SourceModel):
+    """One real work to play in the background. The title keeps its original form."""
+
+    title: ShortText
+    artist: ShortText = Field(description="The artist, the composer, or the soundtrack that the work belongs to.")
+
+    @model_validator(mode="after")
+    def check_no_link(self) -> Self:
+        # The manual stays self-contained (`adr/0005-rendering-stack.md`), and a printed link goes stale.
+        if any(LINK_PATTERN.search(value) for value in (self.title, self.artist)):
+            raise ValueError(f"music suggestion '{self.title}': write the title and the artist only, with no link")
+        return self
+
+
+class Music(SourceModel):
+    """The content of the optional `music.yaml`: a few music suggestions that fit the story, for the manual."""
+
+    format_version: FormatVersion
+    suggestions: list[MusicSuggestion] = Field(min_length=3, max_length=6)

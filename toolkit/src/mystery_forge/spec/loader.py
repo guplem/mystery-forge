@@ -13,7 +13,7 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from mystery_forge.findings import Finding
-from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
+from mystery_forge.spec.models import DocumentMeta, Flow, Music, Puzzle, Story
 from mystery_forge.yaml_loading import (
     YamlDocument,
     YamlLoadError,
@@ -23,6 +23,7 @@ from mystery_forge.yaml_loading import (
 )
 
 SOURCE_FOLDER: str = "source"
+MUSIC_FILE: str = "music.yaml"
 NUMBERED_FILE: re.Pattern[str] = re.compile(r"^([A-Z])(\d+)")
 
 
@@ -46,6 +47,8 @@ class GameSource:
     puzzles: tuple[Puzzle, ...]
     documents: tuple[SourceDocument, ...]
     images: dict[str, str]
+    # None when the optional music.yaml does not exist or failed to load.
+    music: Music | None = None
 
 
 def load_game_source(game_dir: Path) -> tuple[GameSource, list[Finding]]:
@@ -70,7 +73,8 @@ def load_game_source(game_dir: Path) -> tuple[GameSource, list[Finding]]:
     report_duplicate_ids([puzzle.id for puzzle in puzzles], "puzzle", findings)
     report_duplicate_ids([document.meta.id for document in documents], "document", findings)
     images: dict[str, str] = load_images(root, findings)
-    return GameSource(root, story, flow, tuple(puzzles), tuple(documents), images), findings
+    music: Music | None = load_optional_model(root, MUSIC_FILE, Music, findings)
+    return GameSource(root, story, flow, tuple(puzzles), tuple(documents), images, music), findings
 
 
 def load_required_model[ModelType: BaseModel](
@@ -87,6 +91,16 @@ def load_required_model[ModelType: BaseModel](
                 fix_hint=f"Write source/{name}. Run `forge schema {path.stem}` to see its fields.",
             )
         )
+        return None
+    return load_optional_model(root, name, model, findings)
+
+
+def load_optional_model[ModelType: BaseModel](
+    root: Path, name: str, model: type[ModelType], findings: list[Finding]
+) -> ModelType | None:
+    """Load a file that a game may leave out: a missing file is no finding."""
+    path: Path = root / name
+    if not path.is_file():
         return None
     text: str | None = read_source_file(path, name, findings)
     return load_yaml_model(text, name, model, findings) if text is not None else None

@@ -1,9 +1,9 @@
 """Group findings by the writer that owns their files, so that each fixer subagent works on its own files only.
 
 Fixers run in parallel. Two fixers that edit the same file lose each other's changes, so a group holds every file
-that one writer owns: a puzzle with its documents, the story documents, the story, or the plan and the flow. A
-finding with no file (the budget, the variety) needs the "game" group, which holds the plan, the flow, and every
-puzzle, so it runs alone in its round.
+that one writer owns: a puzzle with its documents, the story documents, the story, the music, or the plan and the
+flow. A finding with no file (the budget, the variety) needs the "game" group, which holds the plan, the flow, and
+every puzzle, so it runs alone in its round.
 """
 
 import json
@@ -12,12 +12,13 @@ from pathlib import Path
 from typing import Any
 
 from mystery_forge.findings import Finding, findings_to_json
-from mystery_forge.spec.loader import SOURCE_FOLDER
+from mystery_forge.spec.loader import MUSIC_FILE, SOURCE_FOLDER
 from mystery_forge.yaml_loading import YamlLoadError, parse_yaml_text, read_source_text, split_front_matter
 
 STORY_GROUP: str = "story"
 PLAN_GROUP: str = "plan"
 DOCUMENTS_GROUP: str = "documents"
+MUSIC_GROUP: str = "music"
 GAME_GROUP: str = "game"
 SETUP_FILES: frozenset[str] = frozenset({"config.json", "brief.json", "draw.json"})
 TOOLKIT_RULES: frozenset[str] = frozenset({"render.toolkit_overflow"})
@@ -98,6 +99,8 @@ def group_name(file: str | None, owners: dict[str, str]) -> str | None:
         return STORY_GROUP
     if file in ("flow.yaml", "plan.yaml"):
         return PLAN_GROUP
+    if file == MUSIC_FILE:
+        return MUSIC_GROUP
     # Setup files and the toolkit's own pages (materials.html, solutions.html) are not game sources that a writer owns.
     if file in SETUP_FILES or file.endswith(".html"):
         return None
@@ -111,6 +114,8 @@ def group_files(name: str, owners: dict[str, str]) -> list[str]:
         return ["story.yaml"]
     if name == PLAN_GROUP:
         return ["plan.yaml", "flow.yaml"]
+    if name == MUSIC_GROUP:
+        return [MUSIC_FILE]
     if name == GAME_GROUP:
         return ["plan.yaml", "flow.yaml", *sorted(file for file in owners if file.startswith("puzzles/"))]
     owned: list[str] = [file for file, owner in owners.items() if owner == name]

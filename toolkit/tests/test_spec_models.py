@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from mystery_forge.spec.models import Clue, DocumentMeta, Flow, Puzzle, Story
+from mystery_forge.spec.models import Clue, DocumentMeta, Flow, Music, Puzzle, Story
 
 
 def minimal_story() -> dict[str, Any]:
@@ -280,3 +280,27 @@ def test_the_printed_question_is_optional_in_the_file_and_documented_in_the_sche
     assert "word for word" in Puzzle.model_json_schema()["properties"]["question"]["description"]
     with pytest.raises(ValidationError):
         Puzzle.model_validate(minimal_puzzle() | {"question": ""})
+
+
+def music_with(count: int) -> dict[str, Any]:
+    return {
+        "format_version": "1",
+        "suggestions": [{"title": f"Piece {index}", "artist": "Thomas Newman"} for index in range(count)],
+    }
+
+
+def test_music_holds_three_to_six_suggestions() -> None:
+    music: Music = Music.model_validate(music_with(3))
+    assert [suggestion.title for suggestion in music.suggestions] == ["Piece 0", "Piece 1", "Piece 2"]
+    assert len(Music.model_validate(music_with(6)).suggestions) == 6
+    for count in (2, 7):
+        with pytest.raises(ValidationError, match="suggestions"):
+            Music.model_validate(music_with(count))
+
+
+@pytest.mark.parametrize("link", ["https://example.com/song", "www.example.com", "listen on http now"])
+def test_a_music_suggestion_has_no_link_because_the_pages_stay_self_contained(link: str) -> None:
+    data: dict[str, Any] = music_with(3)
+    data["suggestions"][1]["artist"] = link
+    with pytest.raises(ValidationError, match="link"):
+        Music.model_validate(data)

@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 from mystery_forge.brief import Brief
 from mystery_forge.config import GameConfig
 from mystery_forge.mechanics.base import Artifact
-from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
+from mystery_forge.spec.models import DocumentMeta, Flow, Music, Puzzle, Story
 
 
 class AssembledPuzzle(BaseModel):
@@ -44,3 +44,5 @@ class Game(BaseModel):
     images: dict[str, str]
     # Mixed into every answer hash of the companion page, so that one game's hashes do not work for another game.
     salt: str
+    # None for a game without music.yaml: the manual then has no music section.
+    music: Music | None = None
