@@ -95,6 +95,28 @@ def test_the_music_has_its_own_hash_and_leaves_the_puzzle_hashes_alone(golden_ga
     assert with_satie[MUSIC_KEY] != with_other[MUSIC_KEY]
 
 
+def test_the_music_hash_covers_the_answers_and_the_culprit_names_that_the_music_checks_compare(
+    golden_game: Game,
+) -> None:
+    # The same music.yaml can leak after an answer or the culprit's name changes, so its old pass must go stale.
+    music_game = with_music(golden_game)
+    before = game_hashes(music_game)[MUSIC_KEY]
+    puzzles = [
+        puzzle.model_copy(update={"accepted_normalized": ["satie"]}) if index == 0 else puzzle
+        for index, puzzle in enumerate(music_game.puzzles)
+    ]
+    assert game_hashes(music_game.model_copy(update={"puzzles": puzzles}))[MUSIC_KEY] != before
+    for update in ({"name": "Erik Satie"}, {"aliases": ["Gnossienne"]}):
+        characters = [
+            character.model_copy(update=update) if character.is_culprit else character
+            for character in music_game.story.characters
+        ]
+        renamed = music_game.model_copy(
+            update={"story": music_game.story.model_copy(update={"characters": characters})}
+        )
+        assert game_hashes(renamed)[MUSIC_KEY] != before
+
+
 def test_a_music_change_makes_the_checks_stale_but_not_the_panel(golden_game: Game) -> None:
     # No solver sees the music, so the panel must not run again for it. The leak check reads it, so the checks must.
     hashes = game_hashes(golden_game)

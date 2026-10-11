@@ -97,13 +97,35 @@ def game_hashes(game: Game) -> dict[str, str]:
     if game.story.deduction is not None:
         hashes[DEDUCTION_KEY] = deduction_hash(game)
     if game.music is not None:
-        hashes[MUSIC_KEY] = content_hash({"music": game.music.model_dump(mode="json")})
+        hashes[MUSIC_KEY] = music_hash(game)
     return hashes
 
 
+def music_hash(game: Game) -> str:
+    """Hash the music with what the music checks compare it with: the answers and the culprit's names. A change to
+    them can make the same music leak."""
+    assert game.music is not None
+    return content_hash(
+        {
+            "music": game.music.model_dump(mode="json"),
+            "answers": {puzzle.source.id: puzzle.accepted_normalized for puzzle in game.puzzles},
+            "culprits": [
+                {"name": character.name, "aliases": character.aliases}
+                for character in game.story.characters
+                if character.is_culprit
+            ],
+        }
+    )
+
+
+def panel_judges(code: str) -> bool:
+    """Tell whether the solver panel judges a code: every code but the music, which no solver sees."""
+    return code != MUSIC_KEY
+
+
 def panel_hashes(hashes: dict[str, str]) -> dict[str, str]:
-    """Return the hashes that the solver panel judges: every code but the music, which no solver sees."""
-    return {code: current for code, current in hashes.items() if code != MUSIC_KEY}
+    """Return the hashes that the solver panel judges."""
+    return {code: current for code, current in hashes.items() if panel_judges(code)}
 
 
 def content_hash(content: dict[str, Any]) -> str:
@@ -185,7 +207,7 @@ def stale_codes(ledger: VerificationLedger, hashes: dict[str, str], panel_requir
     stale: list[str] = []
     for code, current in hashes.items():
         entry: LedgerEntry = ledger.entries.get(code, LedgerEntry())
-        panel_stale: bool = panel_required and code != MUSIC_KEY and entry.panel_pass_hash != current
+        panel_stale: bool = panel_required and panel_judges(code) and entry.panel_pass_hash != current
         if entry.checks_pass_hash != current or panel_stale:
             stale.append(code)
     return stale
@@ -262,7 +284,7 @@ def export_problems(ledger: VerificationLedger, hashes: dict[str, str], panel_re
         entry: LedgerEntry = ledger.entries.get(code, LedgerEntry())
         if entry.checks_pass_hash != current:
             problems.append(ExportProblem(code, "checks_failing" if entry.checks_hash == current else "checks_stale"))
-        if panel_required and code != MUSIC_KEY and entry.panel_pass_hash != current:
+        if panel_required and panel_judges(code) and entry.panel_pass_hash != current:
             verdict: Verdict | None = entry.panel_verdict if entry.panel_hash == current else None
             problems.append(ExportProblem(code, verdict if verdict is not None else "panel_stale"))
     return problems
