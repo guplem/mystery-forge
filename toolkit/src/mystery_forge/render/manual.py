@@ -214,7 +214,7 @@ def music_section(game: Game) -> ManualSection | None:
     if game.music is None:
         return None
     language: str = game.config.language
-    headers: list[str] = [text(language, "manual_music_piece"), text(language, "manual_music_artist")]
+    headers: list[str] = [text(language, "manual_music_title_column"), text(language, "manual_music_artist")]
     return ManualSection(
         heading=text(language, "manual_music_title"),
         paragraphs=[text(language, "manual_music_intro")],

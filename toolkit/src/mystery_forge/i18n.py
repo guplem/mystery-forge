@@ -276,7 +276,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_music_intro": (
             "Play it softly in the background. Instrumental music works best, so nobody is distracted while reading."
         ),
-        "manual_music_piece": "Title",
+        "manual_music_title_column": "Title",
         "manual_music_artist": "Artist or soundtrack",
     },
     "es": {
@@ -549,7 +549,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_music_intro": (
             "Ponedla bajita de fondo. La música instrumental funciona mejor, así nadie se distrae mientras lee."
         ),
-        "manual_music_piece": "Título",
+        "manual_music_title_column": "Título",
         "manual_music_artist": "Artista o banda sonora",
     },
     "ca": {
@@ -819,7 +819,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_music_intro": (
             "Poseu-la fluixa de fons. La música instrumental funciona millor, així ningú es distreu mentre llegeix."
         ),
-        "manual_music_piece": "Títol",
+        "manual_music_title_column": "Títol",
         "manual_music_artist": "Artista o banda sonora",
     },
     "fr": {
@@ -1097,7 +1097,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
             "Mettez-la doucement en fond sonore. La musique instrumentale convient le mieux : personne n'est "
             "distrait pendant la lecture."
         ),
-        "manual_music_piece": "Titre",
+        "manual_music_title_column": "Titre",
         "manual_music_artist": "Artiste ou bande originale",
     },
     "de": {
@@ -1369,10 +1369,10 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_player_names": "Detektive: {names}",
         "manual_music_title": "Musikvorschläge",
         "manual_music_intro": (
-            "Spielt sie leise im Hintergrund. Instrumentalmusik passt am besten, damit niemand beim Lesen abgelenkt "
-            "wird."
+            "Lasst sie leise im Hintergrund laufen. Instrumentalmusik passt am besten, damit niemand beim Lesen "
+            "abgelenkt wird."
         ),
-        "manual_music_piece": "Titel",
+        "manual_music_title_column": "Titel",
         "manual_music_artist": "Künstler oder Soundtrack",
     },
     "it": {
@@ -1644,7 +1644,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
             "Mettetela a basso volume in sottofondo. La musica strumentale funziona meglio, così nessuno si distrae "
             "mentre legge."
         ),
-        "manual_music_piece": "Titolo",
+        "manual_music_title_column": "Titolo",
         "manual_music_artist": "Artista o colonna sonora",
     },
     "pt": {
@@ -1913,9 +1913,9 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_player_names": "Detetives: {names}",
         "manual_music_title": "Música sugerida",
         "manual_music_intro": (
-            "Ponham-na baixinho em fundo. A música instrumental funciona melhor, assim ninguém se distrai enquanto lê."
+            "Ponham-na baixinho, de fundo. A música instrumental funciona melhor, assim ninguém se distrai enquanto lê."
         ),
-        "manual_music_piece": "Título",
+        "manual_music_title_column": "Título",
         "manual_music_artist": "Artista ou banda sonora",
     },
 }
