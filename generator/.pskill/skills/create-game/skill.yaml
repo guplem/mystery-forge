@@ -37,6 +37,8 @@ outputs:
   folder: {type: string, optional: true, description: "The exported game folder, when there is one."}
 entry: doctor
 
+# Each max_visits is a safety net: the history counts in the edges set the real limits. ask_on_max_visits: false
+# moves on at a cap with no question, so a stuck loop costs no extra turn.
 blocks:
   doctor:
     type: script
@@ -46,6 +48,7 @@ blocks:
     timeout_s: 900
     max_visits: 2
     on_max_visits: stopped
+    ask_on_max_visits: false
     next:
       - when: "{{ steps.doctor.json.ok }}"
         to: setup
@@ -92,6 +95,7 @@ blocks:
     timeout_s: 900
     max_visits: 4
     on_max_visits: stopped
+    ask_on_max_visits: false
     next:
       - when: "{{ steps.setup.json.ok and inputs.game }}"
         to: apply_change
@@ -146,6 +150,7 @@ blocks:
     parse: json
     max_visits: 4
     on_max_visits: failed
+    ask_on_max_visits: false
     next:
       - when: "{{ steps.texts.json.ok }}"
         to: concepts
@@ -234,6 +239,7 @@ blocks:
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: story}
     max_visits: 4
     on_max_visits: plan
+    ask_on_max_visits: false
     next:
       - when: "{{ steps.story_check.outputs.ok }}"
         to: review_story
@@ -271,6 +277,7 @@ blocks:
     parse: json
     max_visits: 3
     on_max_visits: plan
+    ask_on_max_visits: false
     next:
       - when: "{{ (steps.plain_test.json.solver_tasks | default([]) | length) > 0 }}"
         to: plain_test_solve
@@ -360,6 +367,7 @@ blocks:
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: plan}
     max_visits: 3
     on_max_visits: failed
+    ask_on_max_visits: false
     next:
       - when: "{{ not steps.plan_check.outputs.ok }}"
         to: failed
@@ -461,6 +469,7 @@ blocks:
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}", scope: full}
     max_visits: 9
     on_max_visits: failed
+    ask_on_max_visits: false
     next:
       - when: "{{ not steps.game_check.outputs.ok }}"
         to: failed
@@ -516,6 +525,7 @@ blocks:
     inputs: {game_dir: "{{ steps.setup.json.game_dir }}"}
     max_visits: 5
     on_max_visits: render
+    ask_on_max_visits: false
     next:
       - when: "{{ steps.panel.outputs.ok }}"
         to: render
@@ -544,6 +554,7 @@ blocks:
     timeout_s: 900
     max_visits: 6
     on_max_visits: failed
+    ask_on_max_visits: false
     next:
       - when: "{{ steps.render.json.ok and (history.visual_review | length) == 0 }}"
         to: visual_review
@@ -615,6 +626,7 @@ blocks:
     parse: json
     max_visits: 4
     on_max_visits: export_with_warnings
+    ask_on_max_visits: false
     next:
       - when: "{{ steps.status.json.ok }}"
         to: export

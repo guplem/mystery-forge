@@ -17,6 +17,8 @@ outputs:
   report: {type: string, description: "The path of the last check report."}
 entry: check
 
+# Each max_visits is a safety net: the history counts in the edges set the real limits. ask_on_max_visits: false
+# moves on at a cap with no question, so a stuck loop costs no extra turn.
 blocks:
   check:
     type: script
@@ -40,6 +42,7 @@ blocks:
     instruction: instructions/fix.md
     max_visits: 8
     on_max_visits: errors_left
+    ask_on_max_visits: false
     output:
       status: {type: string, enum: [fixed, failed], description: "failed only when you could not change anything."}
       changed_files: {type: array, items: {type: string}, description: "The files that you changed."}
