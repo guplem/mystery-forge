@@ -16,6 +16,7 @@ from mystery_forge.assemble import AssemblyResult, assemble_game
 from mystery_forge.catalog import Mechanic, load_mechanics
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
+from mystery_forge.spec.models import Music, MusicSuggestion
 
 
 @cache
@@ -71,6 +72,19 @@ def edit_document(game: Game, document_id: str, meta: dict[str, Any] | None = No
 
 def edit_story(game: Game, **updates: Any) -> Game:
     return game.model_copy(update={"story": game.story.model_copy(update=updates)})
+
+
+def with_music(game: Game, *suggestions: tuple[str, str]) -> Game:
+    """Give the game music suggestions as (title, artist) pairs. With no pair, three harmless ones."""
+    pairs: tuple[tuple[str, str], ...] = suggestions or (
+        ("Gnossienne No. 1", "Erik Satie"),
+        ("Clair de lune", "Claude Debussy"),
+        ("The Sea Hawk", "Erich Wolfgang Korngold"),
+    )
+    music = Music(
+        format_version=1, suggestions=[MusicSuggestion(title=title, artist=artist) for title, artist in pairs]
+    )
+    return game.model_copy(update={"music": music})
 
 
 def edit_flow(game: Game, **updates: Any) -> Game:

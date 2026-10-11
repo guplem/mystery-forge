@@ -3,12 +3,14 @@ from pathlib import Path
 
 import pytest
 from test_assemble import FAKE_IMPLEMENTATIONS, GOLDEN_GAME
+from test_checks_support import with_music
 
 from mystery_forge.assemble import assemble_game
 from mystery_forge.game import AssembledDocument, Game
 from mystery_forge.panel.models import ItemVerdict, PanelReport, Verdict
 from mystery_forge.spec.documents import IMAGE_MARK
 from mystery_forge.verification import (
+    MUSIC_KEY,
     ExportProblem,
     LedgerEntry,
     VerificationLedger,
@@ -25,6 +27,7 @@ from mystery_forge.verification import (
     stale_check_codes,
     stale_codes,
     stale_panel_codes,
+    unjudged_panel_codes,
 )
 
 HASHES: dict[str, str] = {"A1": "h1", "B1": "h2", "deduction": "h3"}
@@ -74,6 +77,46 @@ def test_the_hashes_cover_every_puzzle_and_the_deduction(golden_game: Game) -> N
     assert hashes == game_hashes(golden_game)
     no_deduction = golden_game.model_copy(update={"story": golden_game.story.model_copy(update={"deduction": None})})
     assert "deduction" not in game_hashes(no_deduction)
+
+
+def test_a_game_without_music_hashes_as_before_the_music_existed(golden_game: Game) -> None:
+    # The hash of A1 before the music suggestions existed: a stored ledger of an older game must stay fresh.
+    # Update this literal only when the golden fixture itself changes.
+    assert game_hashes(golden_game)["A1"] == "cadcc5feb1aa88db10e02d69b5edd9d9cb01380f46a052a0263578a5aee2de96"
+    assert MUSIC_KEY not in game_hashes(golden_game)
+
+
+def test_the_music_has_its_own_hash_and_leaves_the_puzzle_hashes_alone(golden_game: Game) -> None:
+    before = game_hashes(golden_game)
+    with_satie = game_hashes(with_music(golden_game))
+    with_other = game_hashes(with_music(golden_game, ("A", "B"), ("C", "D"), ("E", "F")))
+    assert {code: with_satie[code] for code in before} == before == {code: with_other[code] for code in before}
+    assert len(with_satie[MUSIC_KEY]) == 64
+    assert with_satie[MUSIC_KEY] != with_other[MUSIC_KEY]
+
+
+def test_a_music_change_makes_the_checks_stale_but_not_the_panel(golden_game: Game) -> None:
+    # No solver sees the music, so the panel must not run again for it. The leak check reads it, so the checks must.
+    hashes = game_hashes(golden_game)
+    passing = PanelReport(
+        ok=True,
+        puzzles=[item(code, "pass") for code in ("A1", "A2", "B1")],
+        questions=[item("who", "pass")],
+        invalid_solvers=[],
+    )
+    ledger = record_panel(record_checks(VerificationLedger(), hashes, hashes), hashes, passing)
+    music_game = with_music(golden_game)
+    music_hashes = game_hashes(music_game)
+    assert panel_stages_to_run(music_game, ledger) == set()
+    assert stale_panel_codes(ledger, music_hashes) == []
+    assert unjudged_panel_codes(ledger, music_hashes) == []
+    assert stale_check_codes(ledger, music_hashes) == [MUSIC_KEY]
+    assert stale_codes(ledger, music_hashes) == [MUSIC_KEY]
+    assert export_problems(ledger, music_hashes, panel_required=True) == [ExportProblem(MUSIC_KEY, "checks_stale")]
+    checked = record_checks(ledger, music_hashes, music_hashes)
+    assert export_problems(checked, music_hashes, panel_required=True) == []
+    # A panel run records nothing for the music.
+    assert MUSIC_KEY not in record_panel(ledger, music_hashes, passing).entries
 
 
 def test_a_document_change_touches_only_the_puzzles_that_see_it(golden_game: Game) -> None:

@@ -1,3 +1,4 @@
+import pytest
 from test_checks_support import (
     edit_assembled_puzzle,
     edit_document,
@@ -7,6 +8,7 @@ from test_checks_support import (
     golden_game,
     only_rule,
     rules,
+    with_music,
 )
 
 from mystery_forge.checks.leaks import check_leaks
@@ -135,3 +137,105 @@ def test_a_hidden_clue_without_a_known_revealing_puzzle_is_left_to_the_ledger() 
     assert only_rule(check_leaks(game), "leaks.hidden_clue_in_text") == []
     unknown_stage: Game = with_text(edit_puzzle(golden_game(), "P3", stage="F"), "D1", boat)
     assert only_rule(check_leaks(unknown_stage), "leaks.hidden_clue_in_text") == []
+
+
+def test_harmless_music_suggestions_leak_nothing() -> None:
+    assert check_leaks(with_music(golden_game())) == []
+
+
+def test_an_answer_in_a_music_suggestion_is_an_error_for_every_stage() -> None:
+    # Players read the manual first, so the music counts before the first puzzle, and before a puzzle of stage B.
+    game: Game = with_music(
+        golden_game(), ("Boathouse Blues", "The Quay Band"), ("Clair de lune", "Low Tide Trio"), ("Nocturne", "Chopin")
+    )
+    findings = check_leaks(game)
+    assert rules(findings) == ["leaks.answer_in_music"] * 2
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("music.yaml", "suggestions.0.title", "error"),
+        ("music.yaml", "suggestions.1.artist", "error"),
+    ]
+    assert "P1" in findings[0].message and "P3" in findings[1].message
+    assert findings[0].fix_hint
+
+
+def test_a_music_leak_asks_for_another_work_and_no_allowlist_silences_it() -> None:
+    # A real title cannot be rephrased, and the fixer of music.yaml cannot edit the puzzle's allowlist.
+    allowed = LeakAllowance(text="Boathouse Blues", reason="A known place.")
+    game: Game = with_music(
+        edit_puzzle(golden_game(), "P1", leak_allowlist=[allowed]), ("Boathouse Blues", "A"), ("B", "C"), ("D", "E")
+    )
+    findings = only_rule(check_leaks(game), "leaks.answer_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.0.title"]
+    assert findings[0].fix_hint == "Replace this music suggestion with another real work that fits the story."
+
+
+def test_a_digits_answer_or_a_reversed_answer_in_a_music_title_is_a_leak() -> None:
+    game: Game = with_music(golden_game(), ("Nocturne 07-26", "Chopin"), ("Esuohtaob", "A"), ("D", "E"))
+    findings = only_rule(check_leaks(game), "leaks.answer_in_music")
+    assert [(finding.path, "P2" in finding.message) for finding in findings] == [
+        ("suggestions.1.title", False),
+        ("suggestions.0.title", True),
+    ]
+    assert "reversed" in findings[0].message
+
+
+def test_the_culprit_s_name_in_a_music_suggestion_is_an_error() -> None:
+    game: Game = with_music(
+        golden_game(), ("Songs Without Words", "Felix Mendelssohn"), ("Clair de lune", "Debussy"), ("Ana", "Ruiz")
+    )
+    findings = only_rule(check_leaks(game), "leaks.culprit_in_music")
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("music.yaml", "suggestions.0.artist", "error")
+    ]
+    # The message names no culprit: the person who runs the generator may play the game.
+    assert "Felix" not in findings[0].message and "culprit" in findings[0].message and findings[0].fix_hint
+    # A name part counts only as a whole word: "Felixstowe" is not "Felix".
+    assert check_leaks(with_music(golden_game(), ("Felixstowe Pier", "A"), ("B", "C"), ("D", "E"))) == []
+
+
+@pytest.mark.parametrize("title", ["Felix's Theme", "Felix\u2019s Theme", "Felix-Lied", "FELIX"])
+def test_the_culprit_s_name_counts_with_a_possessive_a_hyphen_or_another_case(title: str) -> None:
+    game: Game = with_music(golden_game(), (title, "A"), ("B", "C"), ("D", "E"))
+    assert [finding.path for finding in only_rule(check_leaks(game), "leaks.culprit_in_music")] == [
+        "suggestions.0.title"
+    ]
+
+
+def with_culprit(game: Game, name: str, aliases: list[str]) -> Game:
+    characters = [
+        character.model_copy(update={"name": name, "aliases": aliases}) if character.is_culprit else character
+        for character in game.story.characters
+    ]
+    return edit_story(game, characters=characters)
+
+
+def test_an_alias_or_a_short_name_part_of_the_culprit_counts() -> None:
+    music: Game = with_music(
+        golden_game(), ("The Fox Went Out", "Folk"), ("The Sea Hawk", "Korngold"), ("Li Po", "Unknown")
+    )
+    # An alias counts as a whole phrase, so its "The" alone matches nothing.
+    findings = only_rule(check_leaks(with_culprit(music, "Max Li", ["The Fox"])), "leaks.culprit_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.0.title", "suggestions.2.title"]
+
+
+def test_a_lowercase_name_particle_is_no_name_part() -> None:
+    music: Game = with_music(golden_game(), ("Clair de lune", "Debussy"), ("B", "C"), ("Cruz", "E"))
+    findings = only_rule(check_leaks(with_culprit(music, "Ana de la Cruz", [])), "leaks.culprit_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.2.title"]
+
+
+def test_a_game_without_a_culprit_checks_no_name_in_the_music() -> None:
+    characters = [character.model_copy(update={"is_culprit": False}) for character in golden_game().story.characters]
+    game: Game = edit_story(with_music(golden_game(), ("Felix", "Ward"), ("B", "C"), ("D", "E")), characters=characters)
+    assert only_rule(check_leaks(game), "leaks.culprit_in_music") == []
+
+
+def test_a_hidden_clue_written_out_in_a_music_suggestion_is_a_warning() -> None:
+    boat: str = "The thief crossed to the rock at low tide and carried the lens back to a boat"
+    findings = only_rule(
+        check_leaks(with_music(golden_game(), (boat, "A"), ("B", "C"), ("D", "E"))), "leaks.hidden_clue_in_text"
+    )
+    assert [(finding.file, finding.path, finding.severity) for finding in findings] == [
+        ("music.yaml", "suggestions.0.title", "warning")
+    ]
+    assert "came-by-boat" in findings[0].message and "P3" in findings[0].message

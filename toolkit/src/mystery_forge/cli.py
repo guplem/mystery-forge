@@ -41,14 +41,20 @@ from mystery_forge.paths import (
 from mystery_forge.render.pdf import BrowserNotFoundError, launch_first_available
 from mystery_forge.spec.documents import ALL_DIRECTIVES
 from mystery_forge.spec.loader import SOURCE_FOLDER
-from mystery_forge.spec.models import DocumentMeta, Flow, Puzzle, Story
+from mystery_forge.spec.models import DocumentMeta, Flow, Music, Puzzle, Story
 
 type VerbHandler = Callable[[argparse.Namespace, TextIO], int]
 
 RECENT_GAMES_TO_AVOID: int = 5
 PANEL_FLAG_HELP: str = "false (or False, 0) when the run skipped the solver panel."
 MAX_SEED: int = 2_147_483_647
-SCHEMAS: dict[str, type[BaseModel]] = {"story": Story, "flow": Flow, "puzzle": Puzzle, "document": DocumentMeta}
+SCHEMAS: dict[str, type[BaseModel]] = {
+    "story": Story,
+    "flow": Flow,
+    "puzzle": Puzzle,
+    "document": DocumentMeta,
+    "music": Music,
+}
 REFERENCE_FORMS: dict[str, str] = {
     "{{char:<id>}}": "The character's name. Also .role, .age, .description.",
     "{{place:<id>}}": "The location's name.",

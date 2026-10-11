@@ -190,6 +190,19 @@ def test_the_game_json_round_trips(game_dir: Path) -> None:
     assert Game.model_validate(dumped) == result.game
 
 
+def test_the_music_suggestions_go_into_the_game_and_a_game_without_them_still_assembles(game_dir: Path) -> None:
+    without = assemble_game(game_dir, FAKE_IMPLEMENTATIONS)
+    assert without.game is not None and without.game.music is None
+    music_lines: list[str] = ["format_version: 1", "suggestions:"]
+    for name in ("Gnossienne No. 1", "Clair de lune", "Main Title"):
+        music_lines.extend([f"  - title: {name}", "    artist: Erik Satie"])
+    (game_dir / "source" / "music.yaml").write_text("\n".join(music_lines) + "\n", encoding="utf-8")
+    result = assemble_game(game_dir, FAKE_IMPLEMENTATIONS)
+    assert result.findings == []
+    assert result.game is not None and result.game.music is not None
+    assert result.game.music.suggestions[0].title == "Gnossienne No. 1"
+
+
 def test_references_in_header_fields_are_resolved(game_dir: Path) -> None:
     path = game_dir / "source" / "documents" / "D1.md"
     text = path.read_text(encoding="utf-8").replace("sender: Harbour Master E. Lowe", "sender: '{{char:tom-bell}}'")

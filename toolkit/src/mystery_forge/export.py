@@ -16,7 +16,7 @@ from typing import Final
 from mystery_forge.i18n import text
 from mystery_forge.paths import safe_folder_name, unique_folder
 from mystery_forge.render.sheets import OutputFileNames, OutputId
-from mystery_forge.verification import DEDUCTION_KEY, ExportProblem
+from mystery_forge.verification import DEDUCTION_KEY, MUSIC_KEY, ExportProblem
 
 APP_FOLDER: Final[str] = "Mystery Forge"
 # Every render writes these PDF files. The hints PDF and the companion page exist only when the config asks for them.
@@ -52,6 +52,8 @@ def warnings_text(problems: list[ExportProblem], language: str) -> str:
         joined: str = " ".join([sentences[0], *(sentence[:1].upper() + sentence[1:] for sentence in sentences[1:])])
         if code == DEDUCTION_KEY:
             lines.append(f"- {text(language, 'export_warning_accusation', problems=joined)}")
+        elif code == MUSIC_KEY:
+            lines.append(f"- {text(language, 'export_warning_music', problems=joined)}")
         else:
             lines.append(f"- {text(language, 'export_warning_puzzle', code=code, problems=joined)}")
     paragraphs: list[str] = [

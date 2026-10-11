@@ -75,6 +75,7 @@ def assemble_game(
         documents=documents,
         images=source.images,
         salt=game_salt(source.story.title, brief.seed),
+        music=source.music,
     )
     return AssemblyResult(game=game, findings=findings)
 

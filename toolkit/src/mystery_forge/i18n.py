@@ -36,6 +36,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         ),
         "export_warning_puzzle": "Puzzle {code}: {problems}",
         "export_warning_accusation": "Accusation form: {problems}",
+        "export_warning_music": "Suggested music: {problems}",
         "export_warning_checks_failing": "some automatic checks failed.",
         "export_warning_checks_stale": "the automatic checks did not run after the last change.",
         "export_warning_panel_stale": "the test players did not try it after the last change.",
@@ -271,6 +272,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "For this game",
         "manual_host_name": "Your host: {name}",
         "manual_player_names": "Detectives: {names}",
+        "manual_music_title": "Suggested music",
+        "manual_music_intro": (
+            "Play it softly in the background. Instrumental music works best, so nobody is distracted while reading."
+        ),
+        "manual_music_title_column": "Title",
+        "manual_music_artist": "Artist or soundtrack",
     },
     "es": {
         "envelope_label": "Sobre {stage}",
@@ -295,6 +302,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         ),
         "export_warning_puzzle": "Enigma {code}: {problems}",
         "export_warning_accusation": "Formulario de acusación: {problems}",
+        "export_warning_music": "Música recomendada: {problems}",
         "export_warning_checks_failing": "algunas comprobaciones automáticas fallaron.",
         "export_warning_checks_stale": "las comprobaciones automáticas no se repitieron tras el último cambio.",
         "export_warning_panel_stale": "los jugadores de prueba no lo probaron tras el último cambio.",
@@ -537,6 +545,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Para esta partida",
         "manual_host_name": "Anfitrión: {name}",
         "manual_player_names": "Detectives: {names}",
+        "manual_music_title": "Música recomendada",
+        "manual_music_intro": (
+            "Ponedla bajita de fondo. La música instrumental funciona mejor, así nadie se distrae mientras lee."
+        ),
+        "manual_music_title_column": "Título",
+        "manual_music_artist": "Artista o banda sonora",
     },
     "ca": {
         "envelope_label": "Sobre {stage}",
@@ -561,6 +575,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         ),
         "export_warning_puzzle": "Enigma {code}: {problems}",
         "export_warning_accusation": "Formulari d'acusació: {problems}",
+        "export_warning_music": "Música recomanada: {problems}",
         "export_warning_checks_failing": "algunes comprovacions automàtiques han fallat.",
         "export_warning_checks_stale": "les comprovacions automàtiques no s'han repetit després de l'últim canvi.",
         "export_warning_panel_stale": "els jugadors de prova no l'han provat després de l'últim canvi.",
@@ -800,6 +815,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Per a aquesta partida",
         "manual_host_name": "Amfitrió: {name}",
         "manual_player_names": "Detectius: {names}",
+        "manual_music_title": "Música recomanada",
+        "manual_music_intro": (
+            "Poseu-la fluixa de fons. La música instrumental funciona millor, així ningú es distreu mentre llegeix."
+        ),
+        "manual_music_title_column": "Títol",
+        "manual_music_artist": "Artista o banda sonora",
     },
     "fr": {
         "envelope_label": "Enveloppe {stage}",
@@ -824,6 +845,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         ),
         "export_warning_puzzle": "Énigme {code} : {problems}",
         "export_warning_accusation": "Formulaire d'accusation : {problems}",
+        "export_warning_music": "Musique suggérée : {problems}",
         "export_warning_checks_failing": "certains contrôles automatiques ont échoué.",
         "export_warning_checks_stale": (
             "les contrôles automatiques n'ont pas été refaits après la dernière modification."
@@ -1070,6 +1092,13 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Pour cette partie",
         "manual_host_name": "Votre hôte : {name}",
         "manual_player_names": "Détectives : {names}",
+        "manual_music_title": "Musique suggérée",
+        "manual_music_intro": (
+            "Mettez-la doucement en fond sonore. La musique instrumentale convient le mieux : personne n'est "
+            "distrait pendant la lecture."
+        ),
+        "manual_music_title_column": "Titre",
+        "manual_music_artist": "Artiste ou bande originale",
     },
     "de": {
         "envelope_label": "Umschlag {stage}",
@@ -1094,6 +1123,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         ),
         "export_warning_puzzle": "Rätsel {code}: {problems}",
         "export_warning_accusation": "Anklageformular: {problems}",
+        "export_warning_music": "Musikvorschläge: {problems}",
         "export_warning_checks_failing": "einige automatische Prüfungen sind fehlgeschlagen.",
         "export_warning_checks_stale": "die automatischen Prüfungen liefen nach der letzten Änderung nicht erneut.",
         "export_warning_panel_stale": "die Testspieler haben es nach der letzten Änderung nicht erneut versucht.",
@@ -1337,6 +1367,13 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Für dieses Spiel",
         "manual_host_name": "Gastgeber: {name}",
         "manual_player_names": "Detektive: {names}",
+        "manual_music_title": "Musikvorschläge",
+        "manual_music_intro": (
+            "Lasst sie leise im Hintergrund laufen. Instrumentalmusik passt am besten, damit niemand beim Lesen "
+            "abgelenkt wird."
+        ),
+        "manual_music_title_column": "Titel",
+        "manual_music_artist": "Künstler oder Soundtrack",
     },
     "it": {
         "envelope_label": "Busta {stage}",
@@ -1361,6 +1398,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         ),
         "export_warning_puzzle": "Enigma {code}: {problems}",
         "export_warning_accusation": "Modulo d'accusa: {problems}",
+        "export_warning_music": "Musica consigliata: {problems}",
         "export_warning_checks_failing": "alcuni controlli automatici non sono riusciti.",
         "export_warning_checks_stale": "i controlli automatici non sono stati ripetuti dopo l'ultima modifica.",
         "export_warning_panel_stale": "i giocatori di prova non l'hanno provato dopo l'ultima modifica.",
@@ -1601,6 +1639,13 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Per questa partita",
         "manual_host_name": "Chi conduce: {name}",
         "manual_player_names": "Detective: {names}",
+        "manual_music_title": "Musica consigliata",
+        "manual_music_intro": (
+            "Mettetela a basso volume in sottofondo. La musica strumentale funziona meglio, così nessuno si distrae "
+            "mentre legge."
+        ),
+        "manual_music_title_column": "Titolo",
+        "manual_music_artist": "Artista o colonna sonora",
     },
     "pt": {
         "envelope_label": "Envelope {stage}",
@@ -1625,6 +1670,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         ),
         "export_warning_puzzle": "Enigma {code}: {problems}",
         "export_warning_accusation": "Formulário de acusação: {problems}",
+        "export_warning_music": "Música sugerida: {problems}",
         "export_warning_checks_failing": "algumas verificações automáticas falharam.",
         "export_warning_checks_stale": "as verificações automáticas não foram repetidas após a última alteração.",
         "export_warning_panel_stale": "os jogadores de teste não o testaram após a última alteração.",
@@ -1865,6 +1911,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Para este jogo",
         "manual_host_name": "Anfitrião: {name}",
         "manual_player_names": "Detetives: {names}",
+        "manual_music_title": "Música sugerida",
+        "manual_music_intro": (
+            "Ponham-na baixinho, de fundo. A música instrumental funciona melhor, assim ninguém se distrai enquanto lê."
+        ),
+        "manual_music_title_column": "Título",
+        "manual_music_artist": "Artista ou banda sonora",
     },
 }
 

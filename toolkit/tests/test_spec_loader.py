@@ -32,6 +32,8 @@ def test_the_golden_game_loads_without_findings(game_dir: Path) -> None:
     assert source.documents[1].body_line == 11
     assert source.documents[1].file == "documents/D2.md"
     assert source.images == {}
+    # music.yaml is optional: the golden game has none, and that is no finding.
+    assert source.music is None
 
 
 def test_puzzles_and_documents_sort_by_number_not_by_text(game_dir: Path) -> None:
@@ -174,7 +176,7 @@ def test_a_control_character_in_a_file_is_a_syntax_finding(game_dir: Path) -> No
     assert findings[0].file == "flow.yaml"
 
 
-@pytest.mark.parametrize("file", ["story.yaml", "puzzles/P1.yaml", "documents/D1.md", "images/lamp.svg"])
+@pytest.mark.parametrize("file", ["story.yaml", "puzzles/P1.yaml", "documents/D1.md", "images/lamp.svg", "music.yaml"])
 def test_a_file_that_is_not_utf8_is_an_encoding_finding(game_dir: Path, file: str) -> None:
     path = game_dir / "source" / file
     path.parent.mkdir(exist_ok=True)
@@ -199,3 +201,33 @@ def test_a_puzzle_file_without_a_numbered_name_is_reported(game_dir: Path) -> No
     source, findings = load_game_source(game_dir)
     assert [finding.rule for finding in findings] == ["source.file_name"]
     assert [puzzle.id for puzzle in source.puzzles] == ["P1", "P2"]
+
+
+MUSIC_YAML: str = """format_version: 1
+suggestions:
+  - title: Main Title
+    artist: The Queen's Gambit (Carlos Rafael Rivera)
+  - title: Gymnopedie No. 1
+    artist: Erik Satie
+  - title: Clair de lune
+    artist: Claude Debussy
+"""
+
+
+def test_a_music_file_loads_into_the_music_suggestions(game_dir: Path) -> None:
+    (game_dir / "source" / "music.yaml").write_text(MUSIC_YAML, encoding="utf-8")
+    source, findings = load_game_source(game_dir)
+    assert findings == []
+    assert source.music is not None
+    assert source.music.suggestions[1].artist == "Erik Satie"
+
+
+def test_an_invalid_music_file_is_a_schema_finding_with_its_field_path(game_dir: Path) -> None:
+    broken: str = MUSIC_YAML.replace("artist: Erik Satie", "composer: Erik Satie")
+    (game_dir / "source" / "music.yaml").write_text(broken, encoding="utf-8")
+    source, findings = load_game_source(game_dir)
+    assert source.music is None
+    assert sorted(rules(findings)) == ["schema.extra_forbidden", "schema.missing"]
+    assert {finding.file for finding in findings} == {"music.yaml"}
+    assert {finding.path for finding in findings} == {"suggestions.1.composer", "suggestions.1.artist"}
+    assert all(finding.line is not None and finding.fix_hint for finding in findings)

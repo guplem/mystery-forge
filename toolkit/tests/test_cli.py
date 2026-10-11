@@ -185,7 +185,7 @@ def test_catalog_design_rules(monkeypatch: pytest.MonkeyPatch) -> None:
     assert len(text) > 500
 
 
-@pytest.mark.parametrize("name", ["story", "flow", "puzzle", "document"])
+@pytest.mark.parametrize("name", ["story", "flow", "puzzle", "document", "music"])
 def test_schema_prints_the_json_schema_of_each_source_file(name: str, monkeypatch: pytest.MonkeyPatch) -> None:
     code, schema = run(["schema", name], monkeypatch)
     assert code == 0

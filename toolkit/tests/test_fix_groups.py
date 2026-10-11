@@ -91,6 +91,14 @@ def test_findings_are_grouped_by_the_writer_that_owns_their_file(game_dir: Path)
     assert groups["plan"].files == ["plan.yaml", "flow.yaml"]
 
 
+def test_music_findings_go_to_their_own_group_and_never_to_the_documents(game_dir: Path) -> None:
+    findings = [finding("music.yaml"), finding("documents/D1.md")]
+    groups = {group.name: group for group in group_findings(findings, game_dir)}
+    assert sorted(groups) == ["documents", "music"]
+    assert groups["music"].files == ["music.yaml"]
+    assert "music.yaml" not in groups["documents"].files
+
+
 def test_a_missing_printed_question_goes_to_the_writer_of_its_puzzle(game_dir: Path) -> None:
     game: Game = edit_puzzle(golden_game(), "P2", question="")
     findings: list[Finding] = only_rule(check_ledger(game, golden_mechanics()), "ledger.question_missing")

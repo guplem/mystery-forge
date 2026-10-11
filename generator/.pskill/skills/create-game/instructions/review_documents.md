@@ -1,4 +1,4 @@
-Read every player document of the game in `{{ steps.setup.json.game_dir }}` against the story bible, like an editor before print. Read `source/story.yaml`, `source/flow.yaml`, `source/plan.yaml`, every file in `source/documents/`, and the puzzle files in `source/puzzles/` (for their answers, so that you can spot a leak). Do not change any file.
+Read every player document of the game in `{{ steps.setup.json.game_dir }}` against the story bible, like an editor before print. Read `source/story.yaml`, `source/flow.yaml`, `source/plan.yaml`, every file in `source/documents/`, the puzzle files in `source/puzzles/` (for their answers, so that you can spot a leak), and `source/music.yaml` when it exists (the manual prints it, and players read the manual first). Do not change any file.
 
 Report:
 1. **Contradictions** between a document and `story.yaml`, or between two documents: a time, a date, a place, a name, a number, who knew what, who did what. Quote both sides.
@@ -7,5 +7,6 @@ Report:
 4. **Worksheets:** a puzzle document that explains the full method of its puzzle.
 5. **Designer words:** text that talks about "the players", "this puzzle", internal ids such as P3 or D12, or instructions that break the fiction where the fiction would do. The printed question of a puzzle (its `question` in the puzzle file) is not designer words when a character asks it in the story's voice; it must stay, and its puzzle file must change with it. A printed question that names the category of the answer (a street, an animal) is a leak.
 6. **Print colors:** in a black-and-white game (`equipment.printer` in `config.json`), a clue that depends on a color, or a text that names a printed color.
+7. **Music:** a music suggestion whose title or artist names or hints at a puzzle answer, the culprit, an accusation answer, or a twist. Use `music.yaml` as its document.
 
-A finding is `required` for a contradiction, a leak, a confession, or designer words. Everything else is a `suggestion`. Name the document id, quote the problem, and give a concrete fix that keeps every clue quote word for word. Return an empty list when the documents are ready.
+A finding is `required` for a contradiction, a leak, a confession, designer words, or a music suggestion that gives something away. Everything else is a `suggestion`. Name the document id, quote the problem, and give a concrete fix that keeps every clue quote word for word. Return an empty list when the documents are ready.

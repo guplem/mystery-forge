@@ -6,10 +6,12 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from test_checks_support import with_music
 from test_render_support import configured, golden_game, showcase_game
 
 from mystery_forge.assemble import assemble_game
 from mystery_forge.game import Game
+from mystery_forge.i18n import text as fixed_text
 from mystery_forge.mechanics.registry import all_implementations
 from mystery_forge.render import materials
 from mystery_forge.render.answer_register import register_form
@@ -147,8 +149,13 @@ def test_an_overflow_finding_says_how_much_and_what_overflows(browser: Playwrigh
 @pytest.mark.parametrize(
     ("game", "theme"),
     [
-        (configured(golden_game(), equipment={"printer": "black_and_white", "paper": "Letter"}), "noir"),
-        (configured(golden_game(), {"host": "game_master", "language": "es"}, equipment={"ink_saving": True}), "kids"),
+        (configured(with_music(golden_game()), equipment={"printer": "black_and_white", "paper": "Letter"}), "noir"),
+        (
+            configured(
+                with_music(golden_game()), {"host": "game_master", "language": "es"}, equipment={"ink_saving": True}
+            ),
+            "kids",
+        ),
         (showcase_game(), "scifi"),
         (showcase_game(), "victorian"),
     ],
@@ -161,6 +168,21 @@ def test_other_themes_and_modes_fit_their_pages(
     assert report.findings == []
     for output in report.outputs.values():
         assert output.pdf_file is not None and pdf_page_count(output.pdf_file) == output.sheet_count
+    if game.music is not None:
+        assert game.music.suggestions[0].title in " ".join(report.outputs["manual"].sheet_texts)
+
+
+def test_the_longest_music_table_fits_the_manual(browser: PlaywrightSheetBrowser, tmp_path: Path) -> None:
+    # The model allows 6 suggestions of 120 characters each: the fixed-size sheets must hold them all.
+    longest: list[tuple[str, str]] = [
+        ((f"Title {index} " + "Nocturne in a minor key " * 5)[:120], (f"Artist {index} " + "Orchestra " * 12)[:120])
+        for index in range(6)
+    ]
+    report = render_game(with_music(golden_game(), *longest), tmp_path, browser)
+    assert report.findings == []
+    manual_text: str = " ".join(report.outputs["manual"].sheet_texts)
+    assert all(title in manual_text for title, _ in longest)
+    assert fixed_text("en", "manual_music_title") in manual_text
 
 
 LIVE_GAME: Path = Path(__file__).parent / "fixtures" / "live-toy-factory"
