@@ -1,3 +1,4 @@
+import pytest
 from test_checks_support import (
     edit_assembled_puzzle,
     edit_document,
@@ -169,6 +170,37 @@ def test_the_culprit_s_name_in_a_music_suggestion_is_an_error() -> None:
     assert "Felix" not in findings[0].message and "culprit" in findings[0].message and findings[0].fix_hint
     # A name part counts only as a whole word: "Felixstowe" is not "Felix".
     assert check_leaks(with_music(golden_game(), ("Felixstowe Pier", "A"), ("B", "C"), ("D", "E"))) == []
+
+
+@pytest.mark.parametrize("title", ["Felix's Theme", "Felix\u2019s Theme", "Felix-Lied", "FELIX"])
+def test_the_culprit_s_name_counts_with_a_possessive_a_hyphen_or_another_case(title: str) -> None:
+    game: Game = with_music(golden_game(), (title, "A"), ("B", "C"), ("D", "E"))
+    assert [finding.path for finding in only_rule(check_leaks(game), "leaks.culprit_in_music")] == [
+        "suggestions.0.title"
+    ]
+
+
+def with_culprit(game: Game, name: str, aliases: list[str]) -> Game:
+    characters = [
+        character.model_copy(update={"name": name, "aliases": aliases}) if character.is_culprit else character
+        for character in game.story.characters
+    ]
+    return edit_story(game, characters=characters)
+
+
+def test_an_alias_or_a_short_name_part_of_the_culprit_counts() -> None:
+    music: Game = with_music(
+        golden_game(), ("The Fox Went Out", "Folk"), ("The Sea Hawk", "Korngold"), ("Li Po", "Unknown")
+    )
+    # An alias counts as a whole phrase, so its "The" alone matches nothing.
+    findings = only_rule(check_leaks(with_culprit(music, "Max Li", ["The Fox"])), "leaks.culprit_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.0.title", "suggestions.2.title"]
+
+
+def test_a_lowercase_name_particle_is_no_name_part() -> None:
+    music: Game = with_music(golden_game(), ("Clair de lune", "Debussy"), ("B", "C"), ("Cruz", "E"))
+    findings = only_rule(check_leaks(with_culprit(music, "Ana de la Cruz", [])), "leaks.culprit_in_music")
+    assert [finding.path for finding in findings] == ["suggestions.2.title"]
 
 
 def test_a_game_without_a_culprit_checks_no_name_in_the_music() -> None:

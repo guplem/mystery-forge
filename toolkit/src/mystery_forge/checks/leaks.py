@@ -7,6 +7,7 @@ The music suggestions print in the manual, which players read first, so they cou
 not name the culprit.
 """
 
+import re
 from dataclasses import dataclass
 from typing import Final
 
@@ -28,6 +29,9 @@ from mystery_forge.spec.models import Character
 
 # Replaces an allowlisted passage. A non-alphanumeric mark keeps the text on both sides from joining into a new match.
 CUT_MARK: Final[str] = "|"
+WORD_PATTERN: Final[re.Pattern[str]] = re.compile(r"\w+")
+# A straight or a curly apostrophe.
+POSSESSIVE_PATTERN: Final[re.Pattern[str]] = re.compile(r"['\u2019]s\b", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -206,8 +210,13 @@ def culprit_music_findings(game: Game) -> list[Finding]:
     culprit: Character | None = next((character for character in game.story.characters if character.is_culprit), None)
     if culprit is None:
         return []
-    # A short name part such as "Al" occurs in ordinary titles by chance.
-    name_parts: set[str] = {part for part in map(squash, culprit.name.split()) if len(part) >= MIN_SEARCH_LENGTH}
+    # Each capitalized word of the name counts alone, also a short one such as "Li": the match is whole-word, so chance
+    # hits are rare. A lowercase particle such as "de" in "Ana de la Cruz" occurs in ordinary titles, so it does not
+    # count. An alias such as "The Fox" counts only as a whole phrase, because its "The" alone would match any title.
+    names: list[tuple[str, ...]] = [
+        (squash(word),) for word in name_words(culprit.name) if len(word) > 1 and not word[0].islower()
+    ]
+    names.extend(tuple(map(squash, name_words(alias))) for alias in culprit.aliases)
     return [
         Finding(
             severity="error",
@@ -221,5 +230,14 @@ def culprit_music_findings(game: Game) -> list[Finding]:
             "with any character.",
         )
         for field_path, value in music_fields(game)
-        if name_parts & {squash(word) for word in value.split()}
+        if any(contains_phrase(tuple(map(squash, name_words(value))), name) for name in names)
     ]
+
+
+def name_words(text: str) -> list[str]:
+    """Split a name or a title into words, without a possessive "'s": "Felix's Theme" gives "Felix" and "Theme"."""
+    return WORD_PATTERN.findall(POSSESSIVE_PATTERN.sub("", text))
+
+
+def contains_phrase(words: tuple[str, ...], phrase: tuple[str, ...]) -> bool:
+    return any(words[start : start + len(phrase)] == phrase for start in range(len(words) - len(phrase) + 1))
