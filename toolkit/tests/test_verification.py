@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from test_assemble import FAKE_IMPLEMENTATIONS, GOLDEN_GAME
+from test_checks_support import with_music
 
 from mystery_forge.assemble import assemble_game
 from mystery_forge.game import AssembledDocument, Game
@@ -74,6 +75,15 @@ def test_the_hashes_cover_every_puzzle_and_the_deduction(golden_game: Game) -> N
     assert hashes == game_hashes(golden_game)
     no_deduction = golden_game.model_copy(update={"story": golden_game.story.model_copy(update={"deduction": None})})
     assert "deduction" not in game_hashes(no_deduction)
+
+
+def test_a_music_change_makes_every_puzzle_check_stale_and_no_music_keeps_the_old_hashes(golden_game: Game) -> None:
+    # The leak check reads the music for every puzzle, so its results must not stay fresh after a music change.
+    before = game_hashes(golden_game)
+    with_satie = game_hashes(with_music(golden_game))
+    with_other = game_hashes(with_music(golden_game, ("A", "B"), ("C", "D"), ("E", "F")))
+    assert all(before[code] != with_satie[code] != with_other[code] for code in ("A1", "A2", "B1"))
+    assert game_hashes(golden_game.model_copy(update={"music": None})) == before
 
 
 def test_a_document_change_touches_only_the_puzzles_that_see_it(golden_game: Game) -> None:

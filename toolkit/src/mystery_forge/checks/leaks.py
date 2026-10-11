@@ -3,6 +3,8 @@
 Texts are compared squashed (lowercase letters and digits only), so "B O A T", "b-o-a-t", and "taob" (reversed) all
 count. A puzzle's `leak_allowlist` cuts out the passages that contain the answer on purpose. A hidden clue leaks the
 same way: when a document that players hold before the revealing puzzle states its fact, the puzzle is not needed.
+The music suggestions print in the manual, which players read first, so they count before every puzzle. They must also
+not name the culprit.
 """
 
 from dataclasses import dataclass
@@ -21,6 +23,8 @@ from mystery_forge.checks.game_index import (
 )
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledPuzzle, Game
+from mystery_forge.spec.loader import MUSIC_FILE
+from mystery_forge.spec.models import Character
 
 # Replaces an allowlisted passage. A non-alphanumeric mark keeps the text on both sides from joining into a new match.
 CUT_MARK: Final[str] = "|"
@@ -45,7 +49,7 @@ def check_leaks(game: Game) -> list[Finding]:
         if position is None or puzzle.source.answer_format.kind not in CODE_LIKE_KINDS:
             continue
         findings.extend(puzzle_leak_findings(puzzle, visible_texts(game, puzzle, position)))
-    return [*findings, *hidden_clue_leak_findings(game)]
+    return [*findings, *hidden_clue_leak_findings(game), *culprit_music_findings(game)]
 
 
 def visible_texts(game: Game, puzzle: AssembledPuzzle, position: int) -> list[VisibleText]:
@@ -78,7 +82,21 @@ def visible_texts(game: Game, puzzle: AssembledPuzzle, position: int) -> list[Vi
             for key, value in document.meta.fields.items()
         )
     texts.append(VisibleText(puzzle.source.title, f"the title of {puzzle.source.id}", puzzle.file, "title", in_title))
+    texts.extend(
+        VisibleText(value, f"the music suggestions ({field_path})", MUSIC_FILE, field_path, "leaks.answer_in_music")
+        for field_path, value in music_fields(game)
+    )
     return texts
+
+
+def music_fields(game: Game) -> list[tuple[str, str]]:
+    """Each title and artist of the music suggestions, with its field path in music.yaml."""
+    suggestions = game.music.suggestions if game.music is not None else []
+    return [
+        (f"suggestions.{index}.{name}", value)
+        for index, suggestion in enumerate(suggestions)
+        for name, value in (("title", suggestion.title), ("artist", suggestion.artist))
+    ]
 
 
 def puzzle_leak_findings(puzzle: AssembledPuzzle, texts: list[VisibleText]) -> list[Finding]:
@@ -156,20 +174,52 @@ def hidden_clue_leak_findings(game: Game) -> list[Finding]:
             continue
         fact: str = squash(entry.clue.quote)
         findings.extend(
-            hidden_clue_leak_finding(entry, revealer, document.meta.id, document.file)
+            hidden_clue_leak_finding(entry, revealer, f"The text of {document.meta.id}", document.file)
             for document in game.documents
             if positions.get(document.meta.stage, position + 1) <= position and fact in squash(document.text)
+        )
+        findings.extend(
+            hidden_clue_leak_finding(entry, revealer, "A music suggestion", MUSIC_FILE, field_path)
+            for field_path, value in music_fields(game)
+            if fact in squash(value)
         )
     return findings
 
 
-def hidden_clue_leak_finding(entry: ClueEntry, revealer: AssembledPuzzle, document_id: str, file: str) -> Finding:
+def hidden_clue_leak_finding(
+    entry: ClueEntry, revealer: AssembledPuzzle, where: str, file: str, path: str | None = None
+) -> Finding:
     return Finding(
         severity="warning",
         rule="leaks.hidden_clue_in_text",
-        message=f"The text of {document_id} states the hidden clue '{entry.clue.id}' word for word, and players "
-        f"read it before they solve {revealer.source.id}, the puzzle that reveals it.",
+        message=f"{where} states the hidden clue '{entry.clue.id}' word for word, and players read it before they "
+        f"solve {revealer.source.id}, the puzzle that reveals it.",
         file=file,
-        fix_hint=f"Remove the fact from the document, so that only {revealer.source.id} reveals it, or turn the "
-        "clue into a plain clue of that document.",
+        path=path,
+        fix_hint=f"Remove the fact from the text, so that only {revealer.source.id} reveals it. In a document, you "
+        "may instead turn the clue into a plain clue of that document.",
     )
+
+
+def culprit_music_findings(game: Game) -> list[Finding]:
+    """Find a music suggestion that shares a whole name word with the culprit, such as "Felix" for Felix Ward."""
+    culprit: Character | None = next((character for character in game.story.characters if character.is_culprit), None)
+    if culprit is None:
+        return []
+    # A short name part such as "Al" occurs in ordinary titles by chance.
+    name_parts: set[str] = {part for part in map(squash, culprit.name.split()) if len(part) >= MIN_SEARCH_LENGTH}
+    return [
+        Finding(
+            severity="error",
+            rule="leaks.culprit_in_music",
+            # The message names no one: the person who runs the generator may play the game.
+            message=f"The music suggestions ({field_path}) share a name with the culprit, and players read the "
+            "manual before they play.",
+            file=MUSIC_FILE,
+            path=field_path,
+            fix_hint="Replace this music suggestion with another real work that fits the story and shares no name "
+            "with any character.",
+        )
+        for field_path, value in music_fields(game)
+        if name_parts & {squash(word) for word in value.split()}
+    ]

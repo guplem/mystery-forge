@@ -1,9 +1,10 @@
 """Content hashes of what each check saw, and the ledger that tells export which results are still fresh.
 
 A check result is valid only for the content that it checked (`adr/0004-verification-strategy.md`). A puzzle's
-closure hash covers everything that a solver of its stage sees, plus the puzzle file itself. A fix to one document
-therefore makes stale only the puzzles whose players hold that document, and export refuses those until they pass
-again. The same ledger tells `forge packets` which stages the solver panel must run again.
+closure hash covers everything that a solver of its stage sees, plus the puzzle file itself and the music
+suggestions, which the leak check reads. A fix to one document therefore makes stale only the puzzles whose players
+hold that document, and export refuses those until they pass again. The same ledger tells `forge packets` which
+stages the solver panel must run again.
 """
 
 import hashlib
@@ -55,8 +56,12 @@ def puzzle_closure_hash(game: Game, puzzle_id: str) -> str:
     stage: str = puzzle.source.stage
     documents: list[AssembledDocument] = available_documents(game, stage)
     opened_stages = game.flow.stages[: stage_index(game, stage) + 1]
+    # No solver sees the music, but the leak check reads it for every puzzle. The key exists only when the game has
+    # music, so the hashes of a game without music stay the same.
+    music: dict[str, Any] = {"music": game.music.model_dump(mode="json")} if game.music is not None else {}
     return content_hash(
         {
+            **music,
             "puzzle": puzzle.source.model_dump(mode="json"),
             "artifact": puzzle.artifact.model_dump(mode="json") if puzzle.artifact is not None else None,
             "documents": [document_content(document) for document in documents],
