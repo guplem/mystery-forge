@@ -210,6 +210,20 @@ def scoring_section(game: Game) -> ManualSection | None:
     )
 
 
+def music_section(game: Game) -> ManualSection | None:
+    if game.music is None:
+        return None
+    language: str = game.config.language
+    headers: list[str] = [text(language, "manual_music_piece"), text(language, "manual_music_artist")]
+    return ManualSection(
+        heading=text(language, "manual_music_title"),
+        paragraphs=[text(language, "manual_music_intro")],
+        table=TableData(
+            headers=headers, rows=[[suggestion.title, suggestion.artist] for suggestion in game.music.suggestions]
+        ),
+    )
+
+
 def personal_section(game: Game) -> ManualSection | None:
     language: str = game.config.language
     personal = game.config.personalization
@@ -339,6 +353,7 @@ def manual_sections(game: Game, counts: Mapping[OutputId, int]) -> list[ManualSe
         play_section(game),
         help_section(game),
         scoring_section(game),
+        music_section(game),
         personal_section(game),
         host_section(game) if game.config.host == "game_master" else None,
     ]

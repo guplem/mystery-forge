@@ -1,3 +1,4 @@
+from test_checks_support import with_music
 from test_render_support import configured, golden_game, with_story
 
 from mystery_forge.game import Game
@@ -192,6 +193,29 @@ def test_personal_details_appear_only_when_given() -> None:
         personalization={"host_name": "Clara", "place": "", "inside_jokes": (), "dedication": "For Ben."},
     )
     assert section(game, "For this game").paragraphs == ["Your host: Clara", "Detectives: Ana, Ben", "For Ben."]
+
+
+def test_music_suggestions_get_their_own_section_only_when_the_game_has_them() -> None:
+    assert "Suggested music" not in all_text(golden_game())
+    game: Game = configured(with_music(golden_game()), {"host": "game_master"})
+    music = section(game, "Suggested music")
+    assert music.paragraphs[0].startswith("Play it softly in the background.")
+    assert "Instrumental music" in music.paragraphs[0]
+    assert music.table is not None
+    assert music.table.headers == ["Title", "Artist or soundtrack"]
+    assert music.table.rows[0] == ["Gnossienne No. 1", "Erik Satie"]
+    assert music.checklist == [] and music.steps == []
+    headings: list[str] = [item.heading for item in manual_sections(game, {"manual": 3, **COUNTS})]
+    # After the rules of play, before the personal and host sections.
+    assert headings.index("Suggested music") == headings.index("Accusation and scoring") + 1
+    assert headings[-1] == "Game master guide"
+    assert "Suggested music" in [block.text for block in blocks(game) if block.kind == "heading"]
+
+
+def test_the_music_section_speaks_the_game_language() -> None:
+    game: Game = configured(with_music(golden_game()), {"language": "es"})
+    music = section(game, "Música recomendada")
+    assert music.table is not None and music.table.headers == ["Título", "Artista o banda sonora"]
 
 
 def test_a_game_master_gets_a_timing_section() -> None:

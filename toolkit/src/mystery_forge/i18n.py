@@ -271,6 +271,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "For this game",
         "manual_host_name": "Your host: {name}",
         "manual_player_names": "Detectives: {names}",
+        "manual_music_title": "Suggested music",
+        "manual_music_intro": (
+            "Play it softly in the background. Instrumental music works best, so nobody is distracted while reading."
+        ),
+        "manual_music_piece": "Title",
+        "manual_music_artist": "Artist or soundtrack",
     },
     "es": {
         "envelope_label": "Sobre {stage}",
@@ -537,6 +543,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Para esta partida",
         "manual_host_name": "Anfitrión: {name}",
         "manual_player_names": "Detectives: {names}",
+        "manual_music_title": "Música recomendada",
+        "manual_music_intro": (
+            "Ponedla bajita de fondo. La música instrumental funciona mejor, así nadie se distrae mientras lee."
+        ),
+        "manual_music_piece": "Título",
+        "manual_music_artist": "Artista o banda sonora",
     },
     "ca": {
         "envelope_label": "Sobre {stage}",
@@ -800,6 +812,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Per a aquesta partida",
         "manual_host_name": "Amfitrió: {name}",
         "manual_player_names": "Detectius: {names}",
+        "manual_music_title": "Música recomanada",
+        "manual_music_intro": (
+            "Poseu-la fluixa de fons. La música instrumental funciona millor, així ningú es distreu mentre llegeix."
+        ),
+        "manual_music_piece": "Títol",
+        "manual_music_artist": "Artista o banda sonora",
     },
     "fr": {
         "envelope_label": "Enveloppe {stage}",
@@ -1070,6 +1088,13 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Pour cette partie",
         "manual_host_name": "Votre hôte : {name}",
         "manual_player_names": "Détectives : {names}",
+        "manual_music_title": "Musique suggérée",
+        "manual_music_intro": (
+            "Mettez-la doucement en fond sonore. La musique instrumentale convient le mieux : personne n'est "
+            "distrait pendant la lecture."
+        ),
+        "manual_music_piece": "Titre",
+        "manual_music_artist": "Artiste ou bande originale",
     },
     "de": {
         "envelope_label": "Umschlag {stage}",
@@ -1337,6 +1362,13 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Für dieses Spiel",
         "manual_host_name": "Gastgeber: {name}",
         "manual_player_names": "Detektive: {names}",
+        "manual_music_title": "Musikvorschläge",
+        "manual_music_intro": (
+            "Spielt sie leise im Hintergrund. Instrumentalmusik passt am besten, damit niemand beim Lesen abgelenkt "
+            "wird."
+        ),
+        "manual_music_piece": "Titel",
+        "manual_music_artist": "Künstler oder Soundtrack",
     },
     "it": {
         "envelope_label": "Busta {stage}",
@@ -1601,6 +1633,13 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Per questa partita",
         "manual_host_name": "Chi conduce: {name}",
         "manual_player_names": "Detective: {names}",
+        "manual_music_title": "Musica consigliata",
+        "manual_music_intro": (
+            "Mettetela a basso volume in sottofondo. La musica strumentale funziona meglio, così nessuno si distrae "
+            "mentre legge."
+        ),
+        "manual_music_piece": "Titolo",
+        "manual_music_artist": "Artista o colonna sonora",
     },
     "pt": {
         "envelope_label": "Envelope {stage}",
@@ -1865,6 +1904,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_personal_title": "Para este jogo",
         "manual_host_name": "Anfitrião: {name}",
         "manual_player_names": "Detetives: {names}",
+        "manual_music_title": "Música sugerida",
+        "manual_music_intro": (
+            "Ponham-na baixinho em fundo. A música instrumental funciona melhor, assim ninguém se distrai enquanto lê."
+        ),
+        "manual_music_piece": "Título",
+        "manual_music_artist": "Artista ou banda sonora",
     },
 }
 

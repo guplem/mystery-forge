@@ -6,6 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from test_checks_support import with_music
 from test_render_support import configured, golden_game, showcase_game
 
 from mystery_forge.assemble import assemble_game
@@ -147,8 +148,13 @@ def test_an_overflow_finding_says_how_much_and_what_overflows(browser: Playwrigh
 @pytest.mark.parametrize(
     ("game", "theme"),
     [
-        (configured(golden_game(), equipment={"printer": "black_and_white", "paper": "Letter"}), "noir"),
-        (configured(golden_game(), {"host": "game_master", "language": "es"}, equipment={"ink_saving": True}), "kids"),
+        (configured(with_music(golden_game()), equipment={"printer": "black_and_white", "paper": "Letter"}), "noir"),
+        (
+            configured(
+                with_music(golden_game()), {"host": "game_master", "language": "es"}, equipment={"ink_saving": True}
+            ),
+            "kids",
+        ),
         (showcase_game(), "scifi"),
         (showcase_game(), "victorian"),
     ],
@@ -161,6 +167,8 @@ def test_other_themes_and_modes_fit_their_pages(
     assert report.findings == []
     for output in report.outputs.values():
         assert output.pdf_file is not None and pdf_page_count(output.pdf_file) == output.sheet_count
+    if game.music is not None:
+        assert game.music.suggestions[0].title in " ".join(report.outputs["manual"].sheet_texts)
 
 
 LIVE_GAME: Path = Path(__file__).parent / "fixtures" / "live-toy-factory"
