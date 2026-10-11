@@ -6,6 +6,8 @@ generator/.pskill/
 generator/games/
 generator/.claude/skills/
 generator/.agents/skills/
+# `pskill sync` writes these; `pskill validate` fails when their bytes differ from what sync writes.
+generator/.claude/agents/pskill-*.md
 .reviews/
 # Generated from contracts/game-config.schema.json by `npm run generate:schema`
 configurator/gameConfigSchema.js
