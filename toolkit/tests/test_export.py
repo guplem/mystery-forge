@@ -108,6 +108,11 @@ def test_the_warnings_follow_the_game_language() -> None:
     assert output_file_names("ca").warnings == "0 - LLEGEIX AIXÒ PRIMER (avisos).txt"
 
 
+def test_a_music_warning_names_the_music_suggestions() -> None:
+    warnings = warnings_text([ExportProblem("music", "checks_stale")], "en")
+    assert "- Suggested music: the automatic checks did not run after the last change." in warnings
+
+
 def test_a_clean_game_gets_no_warnings_file(tmp_path: Path) -> None:
     assert warnings_text([], "en") == ""
     result = export_game(make_render(tmp_path / "render"), tmp_path / "out", "Clean", ENGLISH, "")

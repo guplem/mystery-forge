@@ -1,10 +1,10 @@
 """Content hashes of what each check saw, and the ledger that tells export which results are still fresh.
 
 A check result is valid only for the content that it checked (`adr/0004-verification-strategy.md`). A puzzle's
-closure hash covers everything that a solver of its stage sees, plus the puzzle file itself and the music
-suggestions, which the leak check reads. A fix to one document therefore makes stale only the puzzles whose players
-hold that document, and export refuses those until they pass again. The same ledger tells `forge packets` which
-stages the solver panel must run again.
+closure hash covers everything that a solver of its stage sees, plus the puzzle file itself. A fix to one document
+therefore makes stale only the puzzles whose players hold that document, and export refuses those until they pass
+again. The same ledger tells `forge packets` which stages the solver panel must run again. The music suggestions
+have their own entry, which only the checks read: the leak check scans the music, but no solver sees it.
 """
 
 import hashlib
@@ -25,6 +25,7 @@ from mystery_forge.spec.models import Story
 
 LEDGER_FILE: Final[Path] = Path("reports") / "verification.json"
 DEDUCTION_KEY: Final[str] = "deduction"
+MUSIC_KEY: Final[str] = "music"
 LEDGER_FORMAT_VERSION: Final[int] = 1
 
 
@@ -43,7 +44,7 @@ class VerificationLedger(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     format_version: int = LEDGER_FORMAT_VERSION
-    # By puzzle code, plus "deduction" for the accusation questions.
+    # By puzzle code, plus "deduction" for the accusation questions and "music" for the music suggestions.
     entries: dict[str, LedgerEntry] = {}
 
 
@@ -56,12 +57,8 @@ def puzzle_closure_hash(game: Game, puzzle_id: str) -> str:
     stage: str = puzzle.source.stage
     documents: list[AssembledDocument] = available_documents(game, stage)
     opened_stages = game.flow.stages[: stage_index(game, stage) + 1]
-    # No solver sees the music, but the leak check reads it for every puzzle. The key exists only when the game has
-    # music, so the hashes of a game without music stay the same.
-    music: dict[str, Any] = {"music": game.music.model_dump(mode="json")} if game.music is not None else {}
     return content_hash(
         {
-            **music,
             "puzzle": puzzle.source.model_dump(mode="json"),
             "artifact": puzzle.artifact.model_dump(mode="json") if puzzle.artifact is not None else None,
             "documents": [document_content(document) for document in documents],
@@ -92,13 +89,21 @@ def deduction_hash(game: Game) -> str:
 
 
 def game_hashes(game: Game) -> dict[str, str]:
-    """Return the closure hash of every puzzle by its code, plus "deduction" when the story has one."""
+    """Return the closure hash of every puzzle by its code, plus "deduction" when the story has one and "music" when
+    the game has music suggestions."""
     hashes: dict[str, str] = {
         puzzle.code: puzzle_closure_hash(game, puzzle.source.id) for puzzle in ordered_puzzles(game)
     }
     if game.story.deduction is not None:
         hashes[DEDUCTION_KEY] = deduction_hash(game)
+    if game.music is not None:
+        hashes[MUSIC_KEY] = content_hash({"music": game.music.model_dump(mode="json")})
     return hashes
+
+
+def panel_hashes(hashes: dict[str, str]) -> dict[str, str]:
+    """Return the hashes that the solver panel judges: every code but the music, which no solver sees."""
+    return {code: current for code, current in hashes.items() if code != MUSIC_KEY}
 
 
 def content_hash(content: dict[str, Any]) -> str:
@@ -180,7 +185,8 @@ def stale_codes(ledger: VerificationLedger, hashes: dict[str, str], panel_requir
     stale: list[str] = []
     for code, current in hashes.items():
         entry: LedgerEntry = ledger.entries.get(code, LedgerEntry())
-        if entry.checks_pass_hash != current or (panel_required and entry.panel_pass_hash != current):
+        panel_stale: bool = panel_required and code != MUSIC_KEY and entry.panel_pass_hash != current
+        if entry.checks_pass_hash != current or panel_stale:
             stale.append(code)
     return stale
 
@@ -195,7 +201,9 @@ def stale_check_codes(ledger: VerificationLedger, hashes: dict[str, str]) -> lis
 def stale_panel_codes(ledger: VerificationLedger, hashes: dict[str, str]) -> list[str]:
     """Return the codes whose solver panel has no pass on their current content."""
     return [
-        code for code, current in hashes.items() if ledger.entries.get(code, LedgerEntry()).panel_pass_hash != current
+        code
+        for code, current in panel_hashes(hashes).items()
+        if ledger.entries.get(code, LedgerEntry()).panel_pass_hash != current
     ]
 
 
@@ -205,7 +213,11 @@ def unjudged_panel_codes(ledger: VerificationLedger, hashes: dict[str, str]) -> 
     A code that failed the panel on its current content is stale but not unjudged: the same packet would get the same
     verdict, so a run gains nothing by sending it to the panel again before a fix changes it.
     """
-    return [code for code, current in hashes.items() if ledger.entries.get(code, LedgerEntry()).panel_hash != current]
+    return [
+        code
+        for code, current in panel_hashes(hashes).items()
+        if ledger.entries.get(code, LedgerEntry()).panel_hash != current
+    ]
 
 
 def panel_tested_stages(game: Game, ledger: VerificationLedger) -> set[str]:
@@ -221,8 +233,9 @@ def panel_stages_to_run(game: Game, ledger: VerificationLedger) -> set[str]:
     """Return the packet stages that hold an item with no panel pass on its current content.
 
     A puzzle's hash covers everything that its stage packet shows, so a stage whose puzzles all passed on their
-    current hashes would get the same packet again: running it costs solvers and proves nothing new. The accusation
-    lives in the last stage packet and in the story-only packet.
+    current hashes would get the same packet again: running it costs solvers and proves nothing new. The music has
+    its own hash outside the packets, so a music change runs no stage. The accusation lives in the last stage packet
+    and in the story-only packet.
     """
     stale: set[str] = set(stale_panel_codes(ledger, game_hashes(game)))
     stages: set[str] = {puzzle.source.stage for puzzle in game.puzzles if puzzle.code in stale}
@@ -249,7 +262,7 @@ def export_problems(ledger: VerificationLedger, hashes: dict[str, str], panel_re
         entry: LedgerEntry = ledger.entries.get(code, LedgerEntry())
         if entry.checks_pass_hash != current:
             problems.append(ExportProblem(code, "checks_failing" if entry.checks_hash == current else "checks_stale"))
-        if panel_required and entry.panel_pass_hash != current:
+        if panel_required and code != MUSIC_KEY and entry.panel_pass_hash != current:
             verdict: Verdict | None = entry.panel_verdict if entry.panel_hash == current else None
             problems.append(ExportProblem(code, verdict if verdict is not None else "panel_stale"))
     return problems
