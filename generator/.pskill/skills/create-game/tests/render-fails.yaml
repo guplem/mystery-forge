@@ -106,6 +106,10 @@ answers:
   - documents:
     - documents/D1.md
     summary: The briefing.
+  write_music:
+  - files:
+    - music.yaml
+    summary: Four calm soundtrack pieces.
   write_puzzles:
   - status: written
     files:
@@ -147,6 +151,7 @@ expect:
   - plan_check
   - review_plan
   - write_story_documents
+  - write_music
   - writer_tasks
   - write_puzzles
   - illustrate

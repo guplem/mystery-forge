@@ -9,7 +9,8 @@ How to work:
    - A puzzle question that is missing or not printed: add an in-world sentence to the body of a document of the puzzle's stage. Let the sentence ask what to find. Give the form of the answer (one word, four digits). Never name its category (a street, an animal). Copy the printed sentence into `question`.
    - A name that is spelled two ways: use the registry name, or better, a `{{char:<id>}}` reference.
    - A mechanic build error: read its fix hint and `forge catalog show <mechanic>`, then fix the params or the answer.
-   - A schema error: run `forge schema <story|flow|puzzle|document>` and match the fields exactly.
+   - A music suggestion that names an answer or the culprit: replace it with another real work that fits the story.
+   - A schema error: run `forge schema <story|flow|puzzle|document|music>` and match the fields exactly.
 4. Keep the game language, the tone, and the facts of the story. Never change a fact that other files rely on (a name, a date, an answer) unless the finding asks for it.
 
 Never read files outside the game folder and the toolkit's command output. Never edit `config.json`, `brief.json`, `draw.json`, `game.json`, or `reports/`.

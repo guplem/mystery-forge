@@ -416,6 +416,19 @@ blocks:
     output:
       documents: {type: array, items: {type: string}, description: "The document files that you wrote."}
       summary: {type: string, description: "At most 3 lines, with no spoiler."}
+    next: write_music
+
+  write_music:
+    type: parallel
+    description: Suggest background music that fits the story, for the manual
+    for_each:
+      - {name: music}
+    task_name: "{{ item.name }}"
+    agent: document-writer
+    instruction: instructions/write_music.md
+    output:
+      files: {type: array, items: {type: string}, description: "The files that you wrote."}
+      summary: {type: string, description: "One line, with no spoiler."}
     next: writer_tasks
 
   writer_tasks:
