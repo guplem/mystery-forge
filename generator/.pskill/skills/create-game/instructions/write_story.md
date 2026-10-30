@@ -3,7 +3,7 @@
 Read first: `source/config.json`, `source/brief.json` (puzzle count, stages, reading budget), `source/draw.json` (the audience rule and the clichés to avoid), `source/concepts.yaml`, `uv run --project ../toolkit forge catalog rules`, and `uv run --project ../toolkit forge schema story`.
 
 Write `{{ steps.setup.json.game_dir }}/source/story.yaml`, in the game language, with the Write tool (a long shell command fails on Windows). It must hold:
-- **The fact registry.** Every character, place, object, and true event, with an id. Give the timeline real times (`YYYY-MM-DD HH:MM`), places, and participants: the checks reject a person who is in two places at once. Set `known_to_players: true` on the events that the intro or the first documents tell.
+- **The fact registry.** Every character, place, object, and true event, with an id. Set `is_victim: true` on the person whom the crime harmed (killed, robbed, or missing), if there is one: the detective notebook gives the victim a page. Give the timeline real times (`YYYY-MM-DD HH:MM`), places, and participants: the checks reject a person who is in two places at once. Set `known_to_players: true` on the events that the intro or the first documents tell.
 - **The truth.** What really happened, step by step, in plain prose. It is the source for every document; nothing in the game may contradict it.
 - **The clues.** Two kinds:
   - **Plain clues:** a fact that a document prints. Give the clue an id, the document id where it will appear (`D1`, `D2`, ... in the order that players meet them; the planner keeps these ids), and the exact sentence that the document will contain (`quote`), written as a natural sentence from that kind of document.

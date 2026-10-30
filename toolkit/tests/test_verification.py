@@ -86,6 +86,12 @@ def test_a_game_without_music_hashes_as_before_the_music_existed(golden_game: Ga
     assert MUSIC_KEY not in game_hashes(golden_game)
 
 
+def test_the_victim_flag_leaves_the_puzzle_hashes_alone(golden_game: Game) -> None:
+    characters = [character.model_copy(update={"is_victim": True}) for character in golden_game.story.characters]
+    victims = golden_game.model_copy(update={"story": golden_game.story.model_copy(update={"characters": characters})})
+    assert game_hashes(victims) == game_hashes(golden_game)
+
+
 def test_the_music_has_its_own_hash_and_leaves_the_puzzle_hashes_alone(golden_game: Game) -> None:
     before = game_hashes(golden_game)
     with_satie = game_hashes(with_music(golden_game))

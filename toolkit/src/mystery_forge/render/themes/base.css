@@ -2314,6 +2314,16 @@ body.mode-low-ink .label-seal {
   font-style: italic;
   color: var(--ink-soft);
 }
+.character-victim {
+  align-self: flex-start;
+  margin: -1.5mm 0 2mm;
+  padding: 0.5mm 2mm;
+  border: var(--line-weight) solid var(--accent);
+  font: 8pt var(--font-heading);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
 .character-field {
   margin: 0;
   height: 9mm;

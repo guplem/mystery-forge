@@ -12,6 +12,7 @@
         <div class="character-facts">
           <h2 class="character-name">{{ card.name }}</h2>
           <p class="character-role">{{ card.role }}</p>
+          {% if card.victim %}<p class="character-victim">{{ t("character_victim") }}</p>{% endif %}
           <p class="character-field"><span>{{ t("character_time") }}</span></p>
           <p class="character-field"><span>{{ t("character_places") }}</span></p>
           <p class="character-field"></p>

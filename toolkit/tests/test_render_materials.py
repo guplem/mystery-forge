@@ -400,3 +400,29 @@ def test_the_character_pages_list_everyone_when_the_story_names_no_suspect() -> 
         "Felix Ward",
         "Maud Price",
     ]
+
+
+def with_victim(game: Game, character_id: str = "tom-bell", **values: bool) -> Game:
+    characters = [
+        character.model_copy(update={"is_victim": True, **values}) if character.id == character_id else character
+        for character in game.story.characters
+    ]
+    return with_story(game, characters=characters)
+
+
+def test_the_victim_comes_first_on_the_character_pages_and_stays_out_of_the_suspect_table() -> None:
+    game = with_victim(golden_game())
+    pages = character_pages(game)
+    assert [[card.name for card in page.cards] for page in pages] == [
+        ["Tom Bell", "Ana Ruiz"],
+        ["Felix Ward", "Maud Price"],
+    ]
+    assert [card.victim for page in pages for card in page.cards] == [True, False, False, False]
+    assert notes_pages(game)[0].suspects == ["Ana Ruiz", "Felix Ward", "Maud Price"]
+
+
+def test_a_victim_appears_once_when_the_story_names_no_suspect() -> None:
+    characters = [character.model_copy(update={"is_suspect": False}) for character in golden_game().story.characters]
+    game = with_victim(with_story(golden_game(), characters=characters, deduction=None), "felix-ward")
+    names = [card.name for page in character_pages(game) for card in page.cards]
+    assert names == ["Felix Ward", "Tom Bell", "Ana Ruiz", "Maud Price"]
