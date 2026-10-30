@@ -77,7 +77,8 @@ The file names follow the game language. A Spanish game, for example, starts wit
 
 ## Printing tips
 
-- Print at **actual size (100%)**, on one side of the paper. "Fit to page" breaks grids and cut-out pieces. In Chrome or Edge, click **More settings** in the Print window, then choose **Actual size** under **Scale**. In Adobe Reader, click **Actual size** under **Page Sizing & Handling**.
+- Print at **actual size (100%)**, on one side of the paper (or see the next tip). "Fit to page" breaks grids and cut-out pieces. In Chrome or Edge, click **More settings** in the Print window, then choose **Actual size** under **Scale**. In Adobe Reader, click **Actual size** under **Page Sizing & Handling**.
+- **To save paper, print on both sides.** Turn on **Print on both sides** on the configurator page. The game materials then have blank pages in the right places: each envelope starts on a new sheet, and each page to cut out has a blank back. Print only the game materials on both sides (flip on the long edge).
 - **Black and white is fine.** Choose it on the configurator page, and the game uses patterns instead of colors.
 - **Envelopes:** split the printed stack at each **STOP** page without reading ahead, and put each part in its own envelope (or fold it and use a clip).
 

@@ -129,6 +129,7 @@ class EquipmentConfig(FrozenConfigModel):
     scissors: bool
     tape_or_glue: bool
     envelopes: bool
+    double_sided: bool
 
 
 class AssistanceConfig(FrozenConfigModel):

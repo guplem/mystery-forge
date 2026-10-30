@@ -466,6 +466,9 @@
     'field.equipment.tape_or_glue.help': 'Players may stick pieces together.',
     'field.equipment.envelopes.label': 'Envelopes',
     'field.equipment.envelopes.help': 'You have envelopes to hide the next parts of the game.',
+    'field.equipment.double_sided.label': 'Print on both sides',
+    'field.equipment.double_sided.help':
+      'Your printer prints on both sides. Blank pages keep the cut-out pages and the envelopes apart.',
 
     'field.assistance.label': 'Assistance',
     'field.assistance.help': 'Help for the players during the game.',
@@ -947,6 +950,9 @@
     'field.equipment.tape_or_glue.help': 'Los jugadores pueden pegar piezas.',
     'field.equipment.envelopes.label': 'Sobres',
     'field.equipment.envelopes.help': 'Tienes sobres para esconder las siguientes partes del juego.',
+    'field.equipment.double_sided.label': 'Imprimir a doble cara',
+    'field.equipment.double_sided.help':
+      'Tu impresora imprime por las dos caras. Unas páginas en blanco separan las páginas para recortar y los sobres.',
 
     'field.assistance.label': 'Ayuda',
     'field.assistance.help': 'Ayuda para los jugadores durante el juego.',
@@ -1431,6 +1437,9 @@
     'field.equipment.tape_or_glue.help': 'Els jugadors poden enganxar peces.',
     'field.equipment.envelopes.label': 'Sobres',
     'field.equipment.envelopes.help': 'Tens sobres per amagar les parts següents del joc.',
+    'field.equipment.double_sided.label': 'Imprimir a doble cara',
+    'field.equipment.double_sided.help':
+      'La teva impressora imprimeix per les dues cares. Unes pàgines en blanc separen les pàgines per retallar i els sobres.',
 
     'field.assistance.label': 'Ajuda',
     'field.assistance.help': 'Ajuda per als jugadors durant el joc.',

@@ -80,7 +80,11 @@ def checklist_section(game: Game, page_counts: Mapping[OutputId, int]) -> Manual
     if config.assistance.companion_page:
         rows.append([names.companion, "-", text(language, "manual_print_companion_file")])
     paragraphs: list[str] = [
-        text(language, "manual_print_actual_size", paper=config.equipment.paper),
+        text(
+            language,
+            "manual_print_actual_size_double" if config.equipment.double_sided else "manual_print_actual_size",
+            paper=config.equipment.paper,
+        ),
         text(language, "manual_print_bw" if config.equipment.printer == "black_and_white" else "manual_print_color"),
     ]
     if config.assistance.companion_page:

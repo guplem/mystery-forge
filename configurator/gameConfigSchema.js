@@ -368,6 +368,11 @@ globalThis.MysteryForgeGameConfigSchema = {
           "description": "True means that the host has envelopes.",
           "type": "boolean",
           "default": true
+        },
+        "double_sided": {
+          "description": "True means that the host prints on both sides of the paper. The materials then add blank pages, so that a page to cut out has a blank back and each envelope starts on a new sheet.",
+          "type": "boolean",
+          "default": false
         }
       }
     },

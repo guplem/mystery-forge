@@ -74,6 +74,14 @@ def test_the_first_page_is_the_printing_checklist_with_exact_page_counts() -> No
     assert "use the Game companion page instead" in checklist.paragraphs[2]
 
 
+def test_a_double_sided_game_tells_the_host_to_print_the_materials_on_both_sides() -> None:
+    checklist = section(configured(golden_game(), equipment={"double_sided": True}), "Printing checklist")
+    assert checklist.paragraphs[0].startswith(
+        "Print at 100% (actual size), on A4 paper. Print the game materials on both"
+    )
+    assert "single-sided" in checklist.paragraphs[0]
+
+
 def test_the_first_page_shows_where_to_set_100_percent_in_each_program() -> None:
     first = pages(golden_game())[0]
     box = next(block for block in first.blocks if block.kind == "box")

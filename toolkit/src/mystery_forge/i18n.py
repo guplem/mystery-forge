@@ -199,6 +199,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_print_actual_size": (
             "Print at 100% (actual size), single-sided, on {paper} paper. Do not use “fit to page”."
         ),
+        "manual_print_actual_size_double": (
+            "Print at 100% (actual size), on {paper} paper. Print the game materials on both sides (flip on the "
+            "long edge): the blank pages are there on purpose. Print the rest single-sided. Do not use “fit to "
+            "page”."
+        ),
+        "blank_page": "This page is blank on purpose.",
         "manual_print_bw": "This game is made for a black-and-white printer.",
         "manual_print_color": "Color looks best, but a black-and-white printer works too.",
         "manual_print_skip_spoilers": (
@@ -474,6 +480,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_print_actual_size": (
             "Imprime al 100 % (tamaño real), a una cara, en papel {paper}. No uses «ajustar a la página»."
         ),
+        "manual_print_actual_size_double": (
+            "Imprime al 100 % (tamaño real), en papel {paper}. Imprime los materiales del juego a doble cara "
+            "(volteo por el borde largo): las páginas en blanco están a propósito. Imprime el resto a una cara. "
+            "No uses «ajustar a la página»."
+        ),
+        "blank_page": "Esta página está en blanco a propósito.",
         "manual_print_bw": "Este juego está pensado para una impresora en blanco y negro.",
         "manual_print_color": "En color queda mejor, pero una impresora en blanco y negro también sirve.",
         "manual_print_skip_spoilers": (
@@ -754,6 +766,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_print_actual_size": (
             "Imprimeix al 100 % (mida real), a una cara, en paper {paper}. No facis servir «ajusta a la pàgina»."
         ),
+        "manual_print_actual_size_double": (
+            "Imprimeix al 100 % (mida real), en paper {paper}. Imprimeix els materials del joc a doble cara (gir "
+            "per la vora llarga): les pàgines en blanc hi són a propòsit. Imprimeix la resta a una cara. No facis "
+            "servir «ajusta a la pàgina»."
+        ),
+        "blank_page": "Aquesta pàgina és en blanc a propòsit.",
         "manual_print_bw": "Aquest joc està pensat per a una impressora en blanc i negre.",
         "manual_print_color": "En color queda millor, però una impressora en blanc i negre també serveix.",
         "manual_print_skip_spoilers": (
@@ -1035,6 +1053,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_print_actual_size": (
             "Imprimez à 100 % (taille réelle), en recto seul, sur papier {paper}. N'utilisez pas « ajuster à la page »."
         ),
+        "manual_print_actual_size_double": (
+            "Imprimez à 100 % (taille réelle), sur papier {paper}. Imprimez le matériel de jeu en recto verso "
+            "(retournement sur le bord long) : les pages blanches sont voulues. Imprimez le reste en recto seul. "
+            "N'utilisez pas « ajuster à la page »."
+        ),
+        "blank_page": "Cette page est blanche exprès.",
         "manual_print_bw": "Ce jeu est prévu pour une imprimante noir et blanc.",
         "manual_print_color": "La couleur est plus belle, mais une imprimante noir et blanc convient aussi.",
         "manual_print_skip_spoilers": (
@@ -1316,6 +1340,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_print_actual_size": (
             "Druckt in 100 % (tatsächliche Größe), einseitig, auf {paper}-Papier. Nutzt nicht „An Seite anpassen“."
         ),
+        "manual_print_actual_size_double": (
+            "Druckt in 100 % (tatsächliche Größe) auf {paper}-Papier. Druckt das Spielmaterial beidseitig (an der "
+            "langen Kante wenden): Die leeren Seiten sind Absicht. Druckt den Rest einseitig. Nutzt nicht „An "
+            "Seite anpassen“."
+        ),
+        "blank_page": "Diese Seite ist absichtlich leer.",
         "manual_print_bw": "Dieses Spiel ist für einen Schwarz-Weiß-Drucker gemacht.",
         "manual_print_color": "In Farbe sieht es am besten aus, aber ein Schwarz-Weiß-Drucker geht auch.",
         "manual_print_skip_spoilers": (
@@ -1596,6 +1626,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_print_actual_size": (
             "Stampa al 100% (dimensioni reali), solo fronte, su carta {paper}. Non usare «adatta alla pagina»."
         ),
+        "manual_print_actual_size_double": (
+            "Stampa al 100% (dimensioni reali), su carta {paper}. Stampa i materiali di gioco fronte e retro "
+            "(capovolgi sul lato lungo): le pagine bianche sono volute. Stampa il resto solo fronte. Non usare "
+            "«adatta alla pagina»."
+        ),
+        "blank_page": "Questa pagina è bianca di proposito.",
         "manual_print_bw": "Questo gioco è pensato per una stampante in bianco e nero.",
         "manual_print_color": "A colori rende meglio, ma va bene anche una stampante in bianco e nero.",
         "manual_print_skip_spoilers": (
@@ -1872,6 +1908,12 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "manual_print_actual_size": (
             "Imprima a 100% (tamanho real), só de um lado, em papel {paper}. Não use «ajustar à página»."
         ),
+        "manual_print_actual_size_double": (
+            "Imprima a 100% (tamanho real), em papel {paper}. Imprima os materiais do jogo frente e verso (virar "
+            "pela margem longa): as páginas em branco estão lá de propósito. Imprima o resto só de um lado. Não "
+            "use «ajustar à página»."
+        ),
+        "blank_page": "Esta página está em branco de propósito.",
         "manual_print_bw": "Este jogo foi feito para uma impressora a preto e branco.",
         "manual_print_color": "A cores fica melhor, mas uma impressora a preto e branco também serve.",
         "manual_print_skip_spoilers": (

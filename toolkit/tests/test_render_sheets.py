@@ -5,6 +5,7 @@ from mystery_forge.render.sheets import (
     OutputFileNames,
     OutputPlan,
     Sheet,
+    double_sided,
     number_sheets,
     number_sheets_by_stage,
     output_file_names,
@@ -101,3 +102,30 @@ def test_every_language_names_the_files_in_reading_order_with_names_that_windows
     if language != "en":
         assert pdfs != list(output_file_names("en").pdfs.values())
         assert names.spoiler_folder != output_file_names("en").spoiler_folder
+
+
+def cut_sheet(stage: str | None) -> Sheet:
+    return Sheet(role="document", template="x.html.j2", content=None, stage=stage, cut_out=True)
+
+
+def layout(sheets: list[Sheet]) -> list[str]:
+    """One letter per printed page: B for a blank page, C for a cut-out page, and P for any other page."""
+    return ["B" if page.role == "blank" else "C" if page.cut_out else "P" for page in sheets]
+
+
+def test_double_sided_starts_every_envelope_on_a_new_sheet() -> None:
+    sheets = double_sided([sheet(None), sheet("A"), sheet("A"), sheet("A"), sheet("B"), sheet("B")])
+    assert layout(sheets) == ["P", "B", "P", "P", "P", "B", "P", "P"]
+    assert [page.stage for page in sheets] == [None, None, "A", "A", "A", "A", "B", "B"]
+    assert all(page.corner == "" and page.content is None for page in sheets if page.role == "blank")
+
+
+def test_double_sided_gives_a_cut_out_page_its_own_sheet_with_a_blank_back() -> None:
+    sheets = double_sided([sheet("A"), cut_sheet("A"), cut_sheet("A"), sheet("A")])
+    assert layout(sheets) == ["P", "B", "C", "B", "C", "B", "P", "B"]
+
+
+def test_double_sided_adds_nothing_to_an_even_stack_without_cut_outs() -> None:
+    plain = [sheet("A"), sheet("A")]
+    assert double_sided(plain) == plain
+    assert double_sided([]) == []

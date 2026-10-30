@@ -170,3 +170,18 @@ def test_a_new_render_removes_the_outputs_of_an_earlier_language(tmp_path: Path)
         "materials.html",
         "solutions.html",
     ]
+
+
+def test_a_double_sided_game_adds_blank_pages_only_to_the_materials() -> None:
+    single = {plan.id: plan for plan in output_plans(golden_game())}
+    double = {plan.id: plan for plan in output_plans(configured(golden_game(), equipment={"double_sided": True}))}
+    roles = [sheet.role for sheet in double["materials"].sheets]
+    assert "blank" not in [sheet.role for sheet in single["materials"].sheets]
+    assert "blank" in roles and len(roles) % 2 == 0
+    # Each envelope part starts on the front of a sheet, so the host can split the stack at the STOP page.
+    assert all(index % 2 == 0 for index, role in enumerate(roles) if role == "stage-cover")
+    assert [sheet.corner for sheet in double["materials"].sheets if sheet.role != "blank"] == [
+        sheet.corner for sheet in single["materials"].sheets
+    ]
+    for output in ("hints", "solutions"):
+        assert double[output].sheets == single[output].sheets

@@ -2249,6 +2249,17 @@ body.mode-low-ink .label-seal {
   background-size: 100% 7.65mm;
 }
 
+/* ---------- Blank back of a double-sided sheet ---------- */
+.blank-page {
+  justify-content: center;
+  align-items: center;
+}
+.blank-note {
+  margin: 0;
+  font-size: 8pt;
+  color: var(--ink-faint);
+}
+
 /* ---------- Character files ---------- */
 .character-cards {
   flex: 1;
