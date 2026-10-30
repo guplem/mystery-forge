@@ -42,7 +42,7 @@ def golden_plan() -> dict[str, Any]:
              "hidden_from": "the crew", "reveals": "Rope.", "documents": ["D3"],
              "must_contain": ["Lamp oil: 7 barrels"]},
             {"id": "P3", "stage": "B", "title": "The tide", "mechanic": "deduction", "difficulty": "medium",
-             "depends_on": ["P1"], "answer": "low tide", "in_world_reason": "A causeway.",
+             "depends_on": ["P1"], "relies_on": ["D1"], "answer": "low tide", "in_world_reason": "A causeway.",
              "hidden_from": "visitors", "reveals": "Low tide.",
              "documents": ["D4"]},
         ],
@@ -55,6 +55,15 @@ def golden_plan() -> dict[str, Any]:
 
 def write_plan(game_dir: Path) -> None:
     (game_dir / "source" / "plan.yaml").write_text(yaml.safe_dump(golden_plan()), encoding="utf-8")
+    cite_the_letter_in_p3(game_dir)
+
+
+def cite_the_letter_in_p3(game_dir: Path) -> None:
+    """Make P3 need the letter of stage A, as its `relies_on` in the plan says."""
+    path = game_dir / "source" / "puzzles" / "P3.yaml"
+    text = path.read_text(encoding="utf-8")
+    text = text.replace("clues:\n", "clues:\n  - id: dark-night\n    document: D1\n    quote: was dark last night\n", 1)
+    path.write_text(text.replace("uses: [boots-wet]", "uses: [boots-wet, dark-night]", 1), encoding="utf-8")
 
 
 def test_check_story_plan_and_full(game_dir: Path) -> None:

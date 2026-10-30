@@ -14,6 +14,7 @@ from mystery_forge.plan import (
     check_plan_folder,
     document_puzzle_link_findings,
     planned_sentence_findings,
+    relied_on_evidence_findings,
     stale_title_findings,
 )
 
@@ -58,6 +59,7 @@ def golden_plan() -> dict[str, Any]:
                 "mechanic": "deduction",
                 "difficulty": "easy",
                 "depends_on": ["P1"],
+                "relies_on": ["D1"],
                 "answer": "low tide",
                 "in_world_reason": "The causeway floods.",
                 "hidden_from": "anyone who does not know the tides",
@@ -439,3 +441,62 @@ def test_a_plan_below_the_config_difficulty_is_an_error(game_dir: Path) -> None:
     findings = [finding for finding in check(game_dir) if finding.rule == "plan.difficulty_drift"]
     assert [finding.severity for finding in findings] == ["error"]
     assert "hard" in findings[0].message
+
+
+def test_a_later_stage_needs_puzzles_that_go_back_to_earlier_evidence(game_dir: Path) -> None:
+    findings = mutate(game_dir, lambda plan: plan["puzzles"][2].update({"relies_on": []}))
+    assert errors(findings) == ["plan.evidence_unused"]
+    assert "1 of them" in findings[0].message
+    # A document of the puzzle's own stage lies next to the puzzle: it is not evidence from earlier in the game.
+    findings = mutate(game_dir, lambda plan: plan["puzzles"][2].update({"relies_on": ["D5"]}))
+    assert errors(findings) == ["plan.evidence_unused"]
+
+
+def test_a_game_with_one_stage_needs_no_earlier_evidence(game_dir: Path) -> None:
+    flow_file = game_dir / "source" / "flow.yaml"
+    flow = yaml.safe_load(flow_file.read_text(encoding="utf-8"))
+    flow["stages"] = flow["stages"][:1]
+    flow_file.write_text(yaml.safe_dump(flow), encoding="utf-8")
+
+    def one_stage(plan: dict[str, Any]) -> None:
+        plan["puzzles"][2].update({"stage": "A", "relies_on": []})
+        plan["story_documents"][1]["stage"] = "A"
+
+    assert "plan.evidence_unused" not in errors(mutate(game_dir, one_stage))
+
+
+def with_solution_uses(game: Game, puzzle_index: int, uses: list[str]) -> Game:
+    puzzles = list(game.puzzles)
+    source = puzzles[puzzle_index].source
+    steps = [source.solution[0].model_copy(update={"uses": uses}), *source.solution[1:]]
+    puzzles[puzzle_index] = puzzles[puzzle_index].model_copy(
+        update={"source": source.model_copy(update={"solution": steps})}
+    )
+    return game.model_copy(update={"puzzles": puzzles})
+
+
+def test_a_puzzle_must_cite_a_clue_of_each_document_that_it_relies_on(game_dir: Path) -> None:
+    plan = golden_plan()
+    plan["puzzles"][1]["relies_on"] = []
+    plan["puzzles"][2]["relies_on"] = ["D5", "D2"]
+    write_plan(game_dir, plan)
+    game = assembled(game_dir)
+    findings = relied_on_evidence_findings(game_dir, game)
+    assert [(finding.rule, finding.file, finding.severity) for finding in findings] == [
+        ("plan.relies_on_unused", "puzzles/P3.yaml", "error"),
+        ("plan.relies_on_unused", "puzzles/P3.yaml", "error"),
+    ]
+    assert "D5" in findings[0].message and "D2" in findings[1].message
+    cited = with_solution_uses(game, 2, ["boots-wet", "maud-ticket", "kitchen-all-night"])
+    assert relied_on_evidence_findings(game_dir, cited) == []
+
+
+def test_relied_on_evidence_is_checked_only_with_a_valid_plan_and_written_puzzles(game_dir: Path) -> None:
+    game = assembled(game_dir)
+    plan = golden_plan()
+    plan["puzzles"][2]["id"] = "P9"
+    plan["puzzles"][1]["relies_on"] = []
+    write_plan(game_dir, plan)
+    assert relied_on_evidence_findings(game_dir, game) == []
+    (game_dir / "source" / "plan.yaml").write_text("puzzles: 3\n", encoding="utf-8")
+    assert relied_on_evidence_findings(game_dir, game) == []

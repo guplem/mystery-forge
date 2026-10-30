@@ -20,6 +20,7 @@ Read these rules before you plan a story or a puzzle. They make a game fair, var
 - **The meta puzzle's links stay put.** Each link that pairs a document with an earlier answer (a stamp, a symbol, a number) goes into the plan's `must_contain` of the document's owner. A puzzle that feeds the meta accepts no answer variant with other letters.
 - **Parallel width:** give each stage at least (players / 2) puzzles that players can solve at the same time, so nobody waits.
 - **Reuse documents.** One document that feeds 2 or 3 puzzles feels designed. Make at least 40% of the puzzles combine 2 or more documents.
+- **Old evidence matters again.** After the first stage, about one puzzle in three needs a fact from a story document of an earlier stage. Players then go back to papers they already read, and the evidence matters during play, not only for the accusation.
 - **Every puzzle has an in-world reason.** Say why this thing is hidden this way ("the smuggler coded his telegrams"), and from whom.
 - **Every puzzle has a job:** it opens a stage, feeds the meta puzzle, or reveals a hidden clue. A puzzle without a job is decoration.
 - **One friendly character authors at most 2 puzzles.** Spread the puzzles over several in-world authors.
