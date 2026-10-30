@@ -6,6 +6,7 @@ from mystery_forge.game import Game
 from mystery_forge.mechanics.base import Artifact
 from mystery_forge.render.materials import (
     AccusationContent,
+    CharactersPage,
     CoverContent,
     DetectiveNotesContent,
     DocumentPage,
@@ -37,6 +38,8 @@ def test_the_golden_stack_follows_the_setup_order() -> None:
         "register",
         "register-results",
         "detective-notes",
+        "characters",
+        "characters",
         "stage-cover",
         "document",
         "document",
@@ -47,8 +50,8 @@ def test_the_golden_stack_follows_the_setup_order() -> None:
         "story-cards",
         "accusation",
     ]
-    assert [sheet.stage for sheet in sheets[5:]] == ["A", "A", "A", "A", "B", "B", "B", "B", "B"]
-    assert all(sheet.stage is None for sheet in sheets[:5])
+    assert [sheet.stage for sheet in sheets[7:]] == ["A", "A", "A", "A", "B", "B", "B", "B", "B"]
+    assert all(sheet.stage is None for sheet in sheets[:7])
 
 
 def test_stage_covers_say_when_to_open_without_the_answer() -> None:
@@ -120,6 +123,7 @@ def test_optional_pages_follow_the_config_and_the_story() -> None:
     assert "register" not in roles(sheets)
     assert "detective-notes" not in roles(sheets)
     assert "accusation" not in roles(sheets)
+    assert "characters" in roles(sheets)
 
 
 def test_detective_notes_list_the_suspects_or_everyone() -> None:
@@ -341,3 +345,43 @@ def test_four_usual_accusation_questions_share_one_page() -> None:
     assert deduction is not None
     game = with_story(golden_game(), deduction=deduction.model_copy(update={"questions": questions}))
     assert [sheet.role for sheet in materials_sheets(game)].count("accusation") == 1
+
+
+PORTRAIT_SVG: str = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><title>A woman with a ladle</title>'
+    '<circle cx="5" cy="5" r="4"/></svg>'
+)
+
+
+def character_pages(game: Game) -> list[CharactersPage]:
+    return [sheet.content for sheet in materials_sheets(game) if isinstance(sheet.content, CharactersPage)]
+
+
+def test_the_character_pages_hold_two_suspects_each_with_their_public_facts_only() -> None:
+    pages = character_pages(golden_game())
+    assert [[card.name for card in page.cards] for page in pages] == [["Ana Ruiz", "Felix Ward"], ["Maud Price"]]
+    assert [page.first for page in pages] == [True, False]
+    assert pages[0].cards[0].role == "cook"
+    secrets = [character.secret for character in golden_game().story.characters if character.secret]
+    assert secrets
+    for page in pages:
+        for card in page.cards:
+            assert not any(secret in f"{card.name} {card.role} {card.portrait}" for secret in secrets)
+
+
+def test_a_drawn_portrait_replaces_the_silhouette() -> None:
+    game = golden_game().model_copy(update={"images": {"portrait-ana-ruiz": "<?xml version='1.0'?>" + PORTRAIT_SVG}})
+    cards = [card for page in character_pages(game) for card in page.cards]
+    assert cards[0].drawn and "A woman with a ladle" in cards[0].portrait and "<?xml" not in cards[0].portrait
+    assert not cards[1].drawn and "mf-silhouette" in cards[1].portrait
+
+
+def test_the_character_pages_list_everyone_when_the_story_names_no_suspect() -> None:
+    characters = [character.model_copy(update={"is_suspect": False}) for character in golden_game().story.characters]
+    game = with_story(golden_game(), characters=characters, deduction=None)
+    assert [card.name for page in character_pages(game) for card in page.cards] == [
+        "Tom Bell",
+        "Ana Ruiz",
+        "Felix Ward",
+        "Maud Price",
+    ]

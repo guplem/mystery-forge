@@ -17,10 +17,17 @@ FORBIDDEN_TAGS: Final[frozenset[str]] = frozenset({"script", "foreignobject", "i
 LINK_ATTRIBUTES: Final[frozenset[str]] = frozenset({"href", "src"})
 IMAGE_MARK: Final[re.Pattern[str]] = re.compile(r"⟦image:([^|⟧]+)\|")
 TITLE_PATTERN: Final[re.Pattern[str]] = re.compile(r"<title[^>]*>\s*\S")
+# The character pages of the materials show `images/portrait-<character id>.svg` without any image mark.
+PORTRAIT_PREFIX: Final[str] = "portrait-"
+
+
+def portrait_image_id(character_id: str) -> str:
+    return f"{PORTRAIT_PREFIX}{character_id}"
 
 
 def check_images(game: Game) -> list[Finding]:
     used: set[str] = {match for document in game.documents for match in IMAGE_MARK.findall(document.body_html)}
+    used |= {portrait_image_id(character.id) for character in game.story.characters}
     in_puzzles: set[str] = {
         match
         for document in game.documents
@@ -43,7 +50,8 @@ def check_images(game: Game) -> list[Finding]:
                     rule="images.unused",
                     message=f"No document shows the image '{image_id}'.",
                     file=file,
-                    fix_hint="Place it with {{image:<id>|caption}} in a document, or delete the file.",
+                    fix_hint="Place it with {{image:<id>|caption}} in a document, name a portrait "
+                    "portrait-<character id>, or delete the file.",
                 )
             )
     return findings

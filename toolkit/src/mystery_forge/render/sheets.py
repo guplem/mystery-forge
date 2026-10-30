@@ -23,6 +23,7 @@ SheetRole = Literal[
     "envelope-labels",
     "story-cards",
     "detective-notes",
+    "characters",
     "manual",
     "hint-cards",
     "solution",

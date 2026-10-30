@@ -78,3 +78,9 @@ def test_an_image_without_a_title_is_a_warning_and_an_error_in_puzzle_material()
     puzzle_document = check_images(with_images({"lamp": UNTITLED_SVG}, document=1))
     assert [(finding.rule, finding.severity) for finding in puzzle_document] == [("images.no_title", "error")]
     assert puzzle_document[0].file == "images/lamp.svg"
+
+
+def test_a_portrait_of_a_character_counts_as_used() -> None:
+    assert check_images(with_images({"portrait-ana-ruiz": SAFE_SVG}, referenced=())) == []
+    findings = check_images(with_images({"portrait-nobody": SAFE_SVG}, referenced=()))
+    assert rules(findings) == ["images.unused"]

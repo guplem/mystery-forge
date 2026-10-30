@@ -1,8 +1,8 @@
 """The sheet plan of the game materials: what the players print, split into envelopes, and hold in their hands.
 
 The order of the stack is the order of the setup: first the pages that stay outside the envelopes (cover, envelope
-labels, answer register, detective notes), then each stage behind its STOP cover sheet. The accusation form closes
-the last stage, so it travels in the last envelope.
+labels, answer register, detective notes, character files), then each stage behind its STOP cover sheet. The
+accusation form closes the last stage, so it travels in the last envelope.
 """
 
 import math
@@ -15,6 +15,7 @@ from markupsafe import Markup
 from mystery_forge.answers import normalize_answer
 from mystery_forge.catalog.loader import mechanics_by_id
 from mystery_forge.checks.budget import estimate_game_minutes
+from mystery_forge.checks.images import portrait_image_id
 from mystery_forge.game import AssembledDocument, Game
 from mystery_forge.i18n import text
 from mystery_forge.mechanics.base import Artifact
@@ -25,12 +26,12 @@ from mystery_forge.render.answer_register import (
     build_answer_register,
     story_card_numbers,
 )
-from mystery_forge.render.document_body import insert_artifacts, insert_images, split_pages
+from mystery_forge.render.document_body import clean_svg, insert_artifacts, insert_images, split_pages
 from mystery_forge.render.kinds import DocumentKind, document_kind
 from mystery_forge.render.layout import Tightness, page_budget, split_text, text_height, tightness
 from mystery_forge.render.sheets import Sheet, paginate
 from mystery_forge.spec.documents import ARTIFACT_MARK
-from mystery_forge.spec.models import AccusationQuestion, Stage
+from mystery_forge.spec.models import AccusationQuestion, Character, Stage
 
 # The flow groups of the materials. The sizes are millimetres on the printed page, as `themes/base.css` sets them.
 REGISTER_GROUP: Final[str] = "register"
@@ -69,6 +70,13 @@ LABEL_ROW_MM: Final[float] = 60
 STORY_CARD_FRAME_MM: Final[float] = 18
 STORY_CARD_CHARS_PER_LINE: Final[int] = 88
 STORY_CARD_LINE_MM: Final[float] = 5.2
+# Two character files fit one page with room for a portrait and enough lines to write on.
+CHARACTERS_PER_PAGE: Final[int] = 2
+# A plain head and shoulders for a character that has no drawn portrait (no images, or the illustrator skipped one).
+SILHOUETTE_SVG: Final[str] = (
+    '<svg class="mf-silhouette" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="36" r="19"/>'
+    '<path d="M12 100c0-24 17-38 38-38s38 14 38 38z"/></svg>'
+)
 # The cover rounds the estimated play time to this many minutes, so it reads as an estimate.
 PLAY_TIME_STEP: Final[int] = 5
 
@@ -165,6 +173,23 @@ class DetectiveNotesContent:
     locations: list[str]
     first: bool = True
     last: bool = True
+
+
+@dataclass(frozen=True)
+class CharacterCard:
+    name: str
+    role: str
+    portrait: Markup
+    # False when the card shows the silhouette instead of a drawn portrait.
+    drawn: bool
+
+
+@dataclass(frozen=True)
+class CharactersPage:
+    """A page of the detective notebook: a portrait of each character with lines for times, places, and notes."""
+
+    cards: list[CharacterCard]
+    first: bool
 
 
 def puzzle_codes(game: Game) -> dict[str, str]:
@@ -373,12 +398,15 @@ def notes_places(game: Game) -> list[str]:
     ]
 
 
+def notebook_characters(game: Game) -> list[Character]:
+    """The suspects, or every character when the story names no suspect."""
+    characters: list[Character] = game.story.characters
+    return [character for character in characters if character.is_suspect] or characters
+
+
 def detective_notes_sheets(game: Game, levels: Tightness) -> list[Sheet]:
     """The suspect table and the free notes, plus the "who was where" grid on as many pages as it needs."""
-    characters = game.story.characters
-    suspects: list[str] = [character.name for character in characters if character.is_suspect] or [
-        character.name for character in characters
-    ]
+    suspects: list[str] = [character.name for character in notebook_characters(game)]
     places: list[str] = notes_places(game)
     budget: float = page_budget(game.config.equipment.paper, HEADER_MM, tightness(levels, NOTES_GROUP))
     free_mm: float = budget - NOTES_TABLE_HEAD_MM - NOTES_FREE_LINES_MM
@@ -397,6 +425,29 @@ def detective_notes_sheets(game: Game, levels: Tightness) -> list[Sheet]:
             group=NOTES_GROUP,
         )
         for index, chunk in enumerate(chunks)
+    ]
+
+
+def character_card(game: Game, character: Character) -> CharacterCard:
+    # Only the name and the role print: the description and the secret may hold what players must find out.
+    svg: str | None = game.images.get(portrait_image_id(character.id))
+    return CharacterCard(
+        name=character.name,
+        role=character.role,
+        portrait=Markup(clean_svg(svg) if svg is not None else SILHOUETTE_SVG),
+        drawn=svg is not None,
+    )
+
+
+def character_sheets(game: Game) -> list[Sheet]:
+    cards: list[CharacterCard] = [character_card(game, character) for character in notebook_characters(game)]
+    return [
+        Sheet(
+            role="characters",
+            template="characters.html.j2",
+            content=CharactersPage(cards=cards[start : start + CHARACTERS_PER_PAGE], first=start == 0),
+        )
+        for start in range(0, len(cards), CHARACTERS_PER_PAGE)
     ]
 
 
@@ -443,6 +494,7 @@ def materials_sheets(game: Game, levels: Tightness | None = None) -> list[Sheet]
         sheets.extend(register_sheets(game, tight))
     if config.format in ("case_file", "both"):
         sheets.extend(detective_notes_sheets(game, tight))
+    sheets.extend(character_sheets(game))
     for stage in game.flow.stages:
         sheets.extend(stage_sheets(game, stage))
         sheets.extend(story_cards_sheets(game, stage, tight))
