@@ -18,6 +18,7 @@ An LLM writes the game. Long prose inside one big JSON file is hard for an LLM t
 - Each parallel writer owns only its own files. Shared indexes are computed by the toolkit, never written by agents.
 - **Every YAML scalar loads as text**, except `null`. Pydantic then converts each field to its declared type. `0420` stays `"0420"`.
 - `forge assemble` loads everything, runs the puzzle builders, resolves the references in the documents and in each puzzle's `question`, and writes `game.json`. The renderer reads only `game.json`.
+- `forge assemble` puts the options of each accusation question in a random order, seeded by the brief. Writers tend to write the right option first, and every output reads the order from `game.json`, so players could guess from the place alone.
 - Every error names the file, the line when known, the field path, a rule id, and a fix hint, because fix loops read these errors.
 - Every file carries `format_version: 1`. A change that breaks old games raises the version and adds a migration.
 - A new field that every new game needs, but that old games lack, stays optional in the model. A check makes it mandatory. Old games then still load, and the check tells the fix loop what to add. Example: a puzzle's `question` has an empty default. It holds the in-world sentence that a document prints to ask what to answer. `ledger.question_missing` rejects it when it is empty.

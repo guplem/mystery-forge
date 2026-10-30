@@ -6,6 +6,7 @@ without them. The semantic checks (`mystery_forge.checks`) run on the assembled 
 """
 
 import hashlib
+import random
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -35,7 +36,7 @@ from mystery_forge.spec.documents import (
     resolve_references,
 )
 from mystery_forge.spec.loader import SOURCE_FOLDER, GameSource, SourceDocument, load_game_source
-from mystery_forge.spec.models import Puzzle
+from mystery_forge.spec.models import AccusationOption, AccusationQuestion, Puzzle, Story
 
 # A game in a language without a checked table brings its translated fixed texts in this file of source/.
 STRINGS_FILE: str = "strings.json"
@@ -69,7 +70,7 @@ def assemble_game(
     game = Game(
         config=config,
         brief=brief,
-        story=source.story,
+        story=story_with_shuffled_options(source.story, brief.seed),
         flow=source.flow,
         puzzles=puzzles,
         documents=documents,
@@ -315,6 +316,33 @@ def puzzle_codes(puzzles: list[tuple[str, str]]) -> dict[str, str]:
         counters[stage] = counters.get(stage, 0) + 1
         codes[puzzle_id] = f"{stage}{counters[stage]}"
     return codes
+
+
+def story_with_shuffled_options(story: Story, seed: int) -> Story:
+    if story.deduction is None:
+        return story
+    questions: list[AccusationQuestion] = shuffled_options(story.deduction.questions, seed)
+    return story.model_copy(update={"deduction": story.deduction.model_copy(update={"questions": questions})})
+
+
+def shuffled_options(questions: list[AccusationQuestion], seed: int) -> list[AccusationQuestion]:
+    """Put the options of each accusation question in a seeded random order.
+
+    Writers tend to write the right option first, and every output shows the options in this order, so players could
+    guess from the place alone. Two questions in a row never put the right option at the same place.
+    """
+    generator: random.Random = random.Random(f"accusation:{seed}")
+    shuffled: list[AccusationQuestion] = []
+    previous: int | None = None
+    for question in questions:
+        correct: AccusationOption = next(option for option in question.options if option.id == question.correct)
+        others: list[AccusationOption] = [option for option in question.options if option.id != question.correct]
+        generator.shuffle(others)
+        places: list[int] = [place for place in range(len(question.options)) if place != previous]
+        previous = generator.choice(places)
+        others.insert(previous, correct)
+        shuffled.append(question.model_copy(update={"options": others}))
+    return shuffled
 
 
 def game_salt(title: str, seed: int) -> str:

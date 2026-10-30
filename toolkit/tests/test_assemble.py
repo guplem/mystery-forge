@@ -1,12 +1,21 @@
 import json
 import shutil
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
 import pytest
 from pydantic import BaseModel
 
-from mystery_forge.assemble import assemble_game, game_salt, image_text, insert_solver_texts, puzzle_codes
+from mystery_forge.assemble import (
+    assemble_game,
+    game_salt,
+    image_text,
+    insert_solver_texts,
+    puzzle_codes,
+    shuffled_options,
+    story_with_shuffled_options,
+)
 from mystery_forge.findings import Finding
 from mystery_forge.game import AssembledDocument
 from mystery_forge.i18n import language_pack_template, text
@@ -18,7 +27,7 @@ from mystery_forge.mechanics.base import (
     MechanicImplementation,
 )
 from mystery_forge.spec.documents import ARTIFACT_MARK
-from mystery_forge.spec.models import DocumentMeta
+from mystery_forge.spec.models import AccusationOption, AccusationQuestion, DocumentMeta
 
 GOLDEN_GAME: Path = Path(__file__).parent / "fixtures" / "golden"
 
@@ -294,3 +303,46 @@ def test_a_language_without_a_checked_table_needs_its_translated_pack(game_dir: 
     write_pack(game_dir, strings)
     assert assemble_game(game_dir, FAKE_IMPLEMENTATIONS).findings == []
     assert text("ja", "envelope_label", stage="B") == "JA Envelope B"
+
+
+def accusation_question(question_id: str, option_count: int) -> AccusationQuestion:
+    options: list[AccusationOption] = [
+        AccusationOption(id=f"o{index}", text=f"Option {index}") for index in range(option_count)
+    ]
+    return AccusationQuestion(
+        id=question_id, prompt="Who?", options=options, correct="o0", points=10, proven_by=["some-clue"]
+    )
+
+
+def correct_positions(questions: list[AccusationQuestion]) -> list[int]:
+    return [[option.id for option in question.options].index(question.correct) for question in questions]
+
+
+def test_the_accusation_options_are_shuffled_with_the_seed() -> None:
+    questions: list[AccusationQuestion] = [accusation_question(f"q{index}", 4) for index in range(6)]
+    shuffled: list[AccusationQuestion] = shuffled_options(questions, seed=7)
+    assert shuffled == shuffled_options(questions, seed=7)
+    assert [sorted(option.id for option in question.options) for question in shuffled] == [["o0", "o1", "o2", "o3"]] * 6
+    positions: list[int] = correct_positions(shuffled)
+    # Two questions in a row never put the right option at the same place, so the place gives nothing away.
+    assert all(first != second for first, second in pairwise(positions))
+
+
+def test_a_question_whose_options_all_fit_one_place_keeps_working() -> None:
+    questions: list[AccusationQuestion] = [accusation_question("q1", 2), accusation_question("q2", 2)]
+    positions: list[int] = correct_positions(shuffled_options(questions, seed=3))
+    assert positions in ([0, 1], [1, 0])
+
+
+def test_the_assembled_game_holds_the_shuffled_options(game_dir: Path) -> None:
+    game = assemble_game(game_dir, FAKE_IMPLEMENTATIONS).game
+    assert game is not None and game.story.deduction is not None
+    questions: list[AccusationQuestion] = game.story.deduction.questions
+    assert correct_positions(questions) != [0, 0]
+
+
+def test_a_story_without_a_deduction_stays_as_it_is(game_dir: Path) -> None:
+    game = assemble_game(game_dir, FAKE_IMPLEMENTATIONS).game
+    assert game is not None
+    story = game.story.model_copy(update={"deduction": None})
+    assert story_with_shuffled_options(story, seed=1) is story
