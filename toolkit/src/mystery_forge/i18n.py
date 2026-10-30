@@ -126,6 +126,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "character_time": "Time",
         "character_places": "Places",
         "character_notes": "Notes",
+        "character_victim": "Victim",
         "warning_title": "Spoiler warning",
         "hints_title": "Hint cards",
         "hints_warning_text": (
@@ -406,6 +407,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "character_time": "Hora",
         "character_places": "Lugares",
         "character_notes": "Notas",
+        "character_victim": "Víctima",
         "warning_title": "Aviso de spoilers",
         "hints_title": "Tarjetas de pistas",
         "hints_warning_text": (
@@ -692,6 +694,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "character_time": "Hora",
         "character_places": "Llocs",
         "character_notes": "Notes",
+        "character_victim": "Víctima",
         "warning_title": "Avís d'espòilers",
         "hints_title": "Targetes de pistes",
         "hints_warning_text": (
@@ -979,6 +982,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "character_time": "Heure",
         "character_places": "Lieux",
         "character_notes": "Notes",
+        "character_victim": "Victime",
         "warning_title": "Attention, révélations",
         "hints_title": "Cartes d'indices",
         "hints_warning_text": (
@@ -1265,6 +1269,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "character_time": "Uhrzeit",
         "character_places": "Orte",
         "character_notes": "Notizen",
+        "character_victim": "Opfer",
         "warning_title": "Spoiler-Warnung",
         "hints_title": "Hinweiskarten",
         "hints_warning_text": (
@@ -1552,6 +1557,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "character_time": "Ora",
         "character_places": "Luoghi",
         "character_notes": "Appunti",
+        "character_victim": "Vittima",
         "warning_title": "Attenzione: spoiler",
         "hints_title": "Carte degli indizi",
         "hints_warning_text": (
@@ -1834,6 +1840,7 @@ STRINGS: Final[dict[str, dict[str, str]]] = {
         "character_time": "Hora",
         "character_places": "Locais",
         "character_notes": "Notas",
+        "character_victim": "Vítima",
         "warning_title": "Aviso de spoilers",
         "hints_title": "Cartões de pistas",
         "hints_warning_text": (

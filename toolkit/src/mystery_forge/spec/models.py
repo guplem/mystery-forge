@@ -87,6 +87,8 @@ class Character(SourceModel):
     age: int | None = Field(default=None, ge=0, le=130)
     is_suspect: bool = False
     is_culprit: bool = False
+    # The person whom the crime harmed: killed, robbed, or missing. The character pages of the notebook show them first.
+    is_victim: bool = False
     secret: str = ""
     aliases: list[ShortText] = []
 

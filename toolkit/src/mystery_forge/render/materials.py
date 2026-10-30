@@ -182,6 +182,7 @@ class CharacterCard:
     portrait: Markup
     # False when the card shows the silhouette instead of a drawn portrait.
     drawn: bool
+    victim: bool = False
 
 
 @dataclass(frozen=True)
@@ -439,11 +440,18 @@ def character_card(game: Game, character: Character) -> CharacterCard:
         role=character.role,
         portrait=Markup(clean_svg(svg) if svg is not None else SILHOUETTE_SVG),
         drawn=svg is not None,
+        victim=character.is_victim,
     )
 
 
+def file_characters(game: Game) -> list[Character]:
+    """The victims first, then the suspects. Only the suspects go into the suspect table of the notes."""
+    victims: list[Character] = [character for character in game.story.characters if character.is_victim]
+    return victims + [character for character in notebook_characters(game) if not character.is_victim]
+
+
 def character_sheets(game: Game) -> list[Sheet]:
-    cards: list[CharacterCard] = [character_card(game, character) for character in notebook_characters(game)]
+    cards: list[CharacterCard] = [character_card(game, character) for character in file_characters(game)]
     return [
         Sheet(
             role="characters",

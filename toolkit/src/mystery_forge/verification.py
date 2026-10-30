@@ -121,7 +121,13 @@ def used_images(documents: list[AssembledDocument]) -> list[str]:
 
 
 def story_registry(story: Story) -> dict[str, Any]:
-    return story.model_dump(mode="json", include={"characters", "locations", "objects", "timeline", "clues"})
+    # The victim flag only orders the character pages of the notebook. Without it in the hash, a game written before
+    # the flag existed keeps its verified puzzles fresh.
+    return story.model_dump(
+        mode="json",
+        include={"characters", "locations", "objects", "timeline", "clues"},
+        exclude={"characters": {"__all__": {"is_victim"}}},
+    )
 
 
 def load_ledger(path: Path) -> VerificationLedger:
