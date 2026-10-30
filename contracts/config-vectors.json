@@ -37,6 +37,7 @@
         "equipment.scissors": true,
         "equipment.tape_or_glue": false,
         "equipment.envelopes": true,
+        "equipment.double_sided": false,
         "assistance.hints": true,
         "assistance.paper_answer_check": true,
         "assistance.companion_page": true,
@@ -93,7 +94,8 @@
           "paper": "Letter",
           "scissors": false,
           "tape_or_glue": true,
-          "envelopes": false
+          "envelopes": false,
+          "double_sided": true
         },
         "assistance": {
           "hints": false,
@@ -124,6 +126,7 @@
         "puzzle_preferences.numbers": "avoid",
         "equipment.paper": "Letter",
         "equipment.envelopes": false,
+        "equipment.double_sided": true,
         "assistance.companion_page": false,
         "visuals.readable_font": true,
         "generation.seed": 12345,

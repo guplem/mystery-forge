@@ -246,7 +246,8 @@ def document_sheets(game: Game, document: AssembledDocument) -> list[Sheet]:
     artifacts: dict[str, Artifact | None] = {puzzle.source.id: puzzle.artifact for puzzle in game.puzzles}
     body: str = insert_images(insert_artifacts(document.body_html, artifacts), game.images)
     # A cut-out carries its own dashed lines. A dashed line around the whole page would tell players to cut it too.
-    cut: bool = meta.print.cut and not holds_cut_out(document, artifacts)
+    cut_out: bool = holds_cut_out(document, artifacts)
+    cut: bool = meta.print.cut and not cut_out
     pages: list[str] = split_pages(body)
     code: str | None = puzzle_codes(game).get(meta.puzzle) if meta.puzzle else None
     return [
@@ -270,6 +271,7 @@ def document_sheets(game: Game, document: AssembledDocument) -> list[Sheet]:
                 copies=meta.copies,
             ),
             stage=meta.stage,
+            cut_out=cut or cut_out,
         )
         for copy_number in range(1, meta.copies + 1)
         for page_number, page in enumerate(pages, start=1)
@@ -352,6 +354,7 @@ def envelope_labels_sheets(game: Game, levels: Tightness) -> list[Sheet]:
             template="envelope_labels.html.j2",
             content=EnvelopeLabelsContent(title=game.story.title, labels=labels[start : start + per_sheet]),
             group=LABELS_GROUP,
+            cut_out=True,
         )
         for start in range(0, len(labels), per_sheet)
     ]

@@ -31,6 +31,8 @@ from mystery_forge.render.sheets import (
     OutputFileNames,
     OutputId,
     OutputPlan,
+    Sheet,
+    double_sided,
     number_sheets,
     number_sheets_by_stage,
     output_file_names,
@@ -74,9 +76,11 @@ class RenderReport(BaseModel):
 def output_plans(game: Game, levels: Tightness | None = None) -> list[OutputPlan]:
     """Plan every output. The manual comes first and lists the page count of the others."""
     tight: Tightness = levels or {}
-    others: list[OutputPlan] = [
-        OutputPlan(id="materials", sheets=number_sheets_by_stage(materials_sheets(game, tight)))
-    ]
+    materials: list[Sheet] = number_sheets_by_stage(materials_sheets(game, tight))
+    # Only the materials print on both sides: the hint cards fold over, and the other outputs stay simple to print.
+    if game.config.equipment.double_sided:
+        materials = double_sided(materials)
+    others: list[OutputPlan] = [OutputPlan(id="materials", sheets=materials)]
     if game.config.assistance.hints:
         others.append(OutputPlan(id="hints", sheets=number_sheets(hint_sheets(game, tight))))
     others.append(OutputPlan(id="solutions", sheets=number_sheets(solution_sheets(game, tight))))

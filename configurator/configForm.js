@@ -56,6 +56,7 @@
         'equipment.scissors',
         'equipment.tape_or_glue',
         'equipment.envelopes',
+        'equipment.double_sided',
       ],
     },
     { id: 'look', collapsed: false, fields: ['visuals.style', 'visuals.images', 'visuals.readable_font'] },

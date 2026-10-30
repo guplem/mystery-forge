@@ -30,6 +30,7 @@ SheetRole = Literal[
     "deduction",
     "truth",
     "epilogues",
+    "blank",
 ]
 
 
@@ -90,6 +91,8 @@ class Sheet:
     corner: str = ""
     # The flow group of a sheet that the toolkit fills from a list. When it overflows, the group gets more sheets.
     group: str | None = None
+    # Players cut this page apart, so a double-sided print gives it a sheet of its own with a blank back.
+    cut_out: bool = False
 
 
 @dataclass(frozen=True)
@@ -167,3 +170,32 @@ def number_sheets_by_stage(sheets: list[Sheet]) -> list[Sheet]:
         prefix: str = f"{sheet.stage} · " if sheet.stage else ""
         numbered.append(replace(sheet, corner=f"{prefix}{counters[sheet.stage]}/{totals[sheet.stage]}"))
     return numbered
+
+
+def blank_sheet(stage: str | None) -> Sheet:
+    return Sheet(role="blank", template="blank.html.j2", content=None, stage=stage)
+
+
+def double_sided(sheets: list[Sheet]) -> list[Sheet]:
+    """Add the blank pages that a print on both sides of the paper needs.
+
+    Each part of the stack (the pages outside the envelopes, then each stage) starts on the front of a new sheet, so
+    the host can split the stack at the STOP pages. A cut-out page sits on the front of its own sheet, so the scissors
+    never cut through another page. A blank page gets no corner code: players count only the pages that carry content.
+    """
+    printed: list[Sheet] = []
+
+    def start_new_sheet() -> None:
+        if len(printed) % 2 == 1:
+            printed.append(blank_sheet(printed[-1].stage))
+
+    for sheet in sheets:
+        if printed and sheet.stage != printed[-1].stage:
+            start_new_sheet()
+        if sheet.cut_out:
+            start_new_sheet()
+            printed.extend([sheet, blank_sheet(sheet.stage)])
+        else:
+            printed.append(sheet)
+    start_new_sheet()
+    return printed

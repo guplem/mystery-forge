@@ -320,6 +320,21 @@ def test_only_the_cut_out_gets_cut_lines_never_the_whole_page_around_it() -> Non
     assert receipt.cut
 
 
+def test_the_pages_that_players_cut_apart_are_marked_as_cut_outs() -> None:
+    def cut_out_documents(game: Game) -> list[str]:
+        return [
+            sheet.content.document_id
+            for sheet in materials_sheets(game)
+            if sheet.cut_out and isinstance(sheet.content, DocumentPage)
+        ]
+
+    assert cut_out_documents(cut_out_game(cut=True)) == ["D2", "D3"]
+    assert cut_out_documents(cut_out_game(cut=False)) == ["D2"]
+    assert cut_out_documents(golden_game()) == []
+    labels = [sheet for sheet in materials_sheets(golden_game()) if sheet.role == "envelope-labels"]
+    assert labels and all(sheet.cut_out for sheet in labels)
+
+
 def test_the_cover_shows_the_estimated_play_time_rounded_to_five_minutes() -> None:
     cover = next(sheet.content for sheet in materials_sheets(golden_game()) if isinstance(sheet.content, CoverContent))
     assert cover.minutes % 5 == 0
