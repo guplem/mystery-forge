@@ -4,9 +4,10 @@ The planner decides the puzzles before anyone writes them: the mechanic, the sta
 which documents each writer owns. Writers then work in parallel, so one document must have exactly one owner. The
 checks here run on the plan alone, before the expensive writing starts, and catch the structural mistakes early.
 The graph, variety, and budget rules call the same pure functions as the whole-game checks in `checks/`, so a plan
-that passes does not fail the same rule later. Three checks run later, on the written game, because writers and fixers
-can drift from the plan: a `must_contain` sentence that the documents lost, a puzzle named by its old plan title, and
-a document whose front matter `puzzle:` does not match its owner in the plan.
+that passes does not fail the same rule later. Four checks run later, on the written game, because writers and fixers
+can drift from the plan: a `must_contain` sentence that the documents lost, a puzzle named by its old plan title, a
+document whose front matter `puzzle:` does not match its owner in the plan, and a `relies_on` document that the
+written solution never cites.
 """
 
 from collections.abc import Callable
@@ -43,7 +44,7 @@ from mystery_forge.checks.variety import (
 from mystery_forge.config import GameConfig
 from mystery_forge.draw import mechanic_fits
 from mystery_forge.findings import Finding, Severity
-from mystery_forge.game import Game
+from mystery_forge.game import AssembledPuzzle, Game
 from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
 from mystery_forge.spec.models import (
     Difficulty,
@@ -62,6 +63,9 @@ from mystery_forge.spec.models import (
 PLAN_FILE: str = "plan.yaml"
 # A shorter title, such as "The tide", also occurs in plain sentences, so a search for it finds false matches.
 MIN_STALE_TITLE_LENGTH: int = 12
+# About one puzzle in this many, after the first stage, must need evidence from an earlier stage. More would make every
+# puzzle a search through old papers; none leaves the evidence useful only for the accusation.
+EVIDENCE_PUZZLE_SHARE: int = 3
 
 
 class PlannedPuzzle(SourceModel):
@@ -121,6 +125,7 @@ def check_plan_folder(game_dir: Path, implemented_builders: frozenset[str]) -> l
         lambda: check_graph(plan, flow),
         lambda: check_jobs(plan, flow, story),
         lambda: check_documents(plan, flow, story),
+        lambda: check_evidence_use(plan, flow),
         lambda: check_variety(plan, flow),
         lambda: check_budget(plan, config, brief),
     ]
@@ -162,6 +167,41 @@ def planned_sentence_findings(game_dir: Path, game: Game) -> list[Finding]:
             )
             for sentence in sentences
             if not any(normalize_quote_text(sentence) in texts[document_id] for document_id in written)
+        )
+    return findings
+
+
+def relied_on_evidence_findings(game_dir: Path, game: Game) -> list[Finding]:
+    """Report a puzzle whose solution cites no clue of a document that the plan says it relies on.
+
+    The plan can list a document in `relies_on` while the written puzzle never needs it. Then the evidence is still
+    useless during play, which is the very thing that `relies_on` must prevent.
+    """
+    plan: Plan | None = load_required_model(game_dir / SOURCE_FOLDER, PLAN_FILE, Plan, [])
+    if plan is None:
+        return []
+    puzzles: dict[str, AssembledPuzzle] = {puzzle.source.id: puzzle for puzzle in game.puzzles}
+    findings: list[Finding] = []
+    for planned in plan.puzzles:
+        puzzle: AssembledPuzzle | None = puzzles.get(planned.id)
+        if puzzle is None:
+            continue
+        documents: dict[str, str | None] = {clue.id: clue.document for clue in game.story.clues}
+        documents |= {clue.id: clue.document for clue in puzzle.source.clues}
+        cited: set[str | None] = {documents.get(clue_id) for step in puzzle.source.solution for clue_id in step.uses}
+        findings.extend(
+            Finding(
+                severity="error",
+                rule="plan.relies_on_unused",
+                message=f"The plan says that {planned.id} relies on {document_id}, but no solution step cites a "
+                f"clue of {document_id}.",
+                file=puzzle.file,
+                path="solution",
+                fix_hint=f"Make the puzzle need a fact of {document_id}: quote it as a clue of the puzzle and cite "
+                "it in the step that uses it.",
+            )
+            for document_id in planned.relies_on
+            if document_id not in cited
         )
     return findings
 
@@ -445,6 +485,37 @@ def check_documents(plan: Plan, flow: Flow, story: Story) -> list[Finding]:
                     )
                 )
     return findings
+
+
+def check_evidence_use(plan: Plan, flow: Flow) -> list[Finding]:
+    """Ask for puzzles that send players back to a story document of an earlier stage.
+
+    A puzzle that needs only the material around it leaves the evidence useful only for the accusation. Players enjoy
+    the moment when an old paper suddenly matters again.
+    """
+    order: dict[str, int] = {stage.id: index for index, stage in enumerate(flow.stages)}
+    stages: dict[str, str] = {document.id: document.stage for document in plan.story_documents}
+    later: list[PlannedPuzzle] = [puzzle for puzzle in plan.puzzles if order.get(puzzle.stage, 0) > 0]
+    if not later:
+        return []
+    needed: int = max(1, len(later) // EVIDENCE_PUZZLE_SHARE)
+    have: int = sum(
+        1
+        for puzzle in later
+        if any(order.get(stages.get(document, ""), 99) < order[puzzle.stage] for document in puzzle.relies_on)
+    )
+    if have >= needed:
+        return []
+    return [
+        plan_finding(
+            "plan.evidence_unused",
+            f"Only {have} of the {len(later)} puzzles after the first stage rely on a story document of an earlier "
+            f"stage; at least {needed} of them must.",
+            "Pick a puzzle after the first stage and make it need a fact that only an earlier story document gives "
+            "(a date, a number, a name, a list). Add that document to its relies_on, and the fact to the "
+            "document's must_contain.",
+        )
+    ]
 
 
 def check_variety(plan: Plan, flow: Flow) -> list[Finding]:

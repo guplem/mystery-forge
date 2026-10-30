@@ -57,6 +57,7 @@ from mystery_forge.plan import (
     check_plan_folder,
     document_puzzle_link_findings,
     planned_sentence_findings,
+    relied_on_evidence_findings,
     stale_title_findings,
 )
 from mystery_forge.render.companion_data import build_companion_html
@@ -203,6 +204,7 @@ def full_check(game_dir: Path, write: bool = True) -> list[Finding]:
     findings.extend(run_checks(result.game))
     findings.extend(planned_sentence_findings(game_dir, result.game))
     findings.extend(stale_title_findings(game_dir, result.game))
+    findings.extend(relied_on_evidence_findings(game_dir, result.game))
     findings.extend(document_puzzle_link_findings(game_dir, result.game))
     # A run with errors records nothing: the codes keep their last pass, which no longer matches, so they stay stale.
     if write and count_errors(findings) == 0:
