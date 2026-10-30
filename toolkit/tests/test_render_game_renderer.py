@@ -54,7 +54,7 @@ def test_without_a_browser_the_render_writes_only_html(tmp_path: Path) -> None:
     assert [path.name for path in report.files] == ["manual.html", "materials.html", "hints.html", "solutions.html"]
     assert all(path.is_file() for path in report.files)
     assert report.theme == "vintage"
-    assert report.outputs["materials"].sheet_count == 14
+    assert report.outputs["materials"].sheet_count == 16
     assert report.outputs["materials"].sheet_roles[2] == "register"
     assert report.outputs["materials"].sheet_stages[-1] == "B"
     assert report.outputs["materials"].pdf_file is None
@@ -125,13 +125,13 @@ def test_without_hints_the_render_skips_the_hints_file(tmp_path: Path) -> None:
 def test_the_manual_comes_first_and_corner_codes_count_inside_each_stage() -> None:
     plans = output_plans(golden_game())
     assert [plan.id for plan in plans] == ["manual", "materials", "hints", "solutions"]
-    assert plans[1].sheets[6].corner == "A · 2/4"
+    assert plans[1].sheets[8].corner == "A · 2/4"
 
 
 def test_sheet_source_files_point_document_sheets_to_their_file() -> None:
     plans = output_plans(golden_game())
     files = sheet_source_files(golden_game(), plans[1])
-    assert files[:7] == [None, None, None, None, None, None, "documents/D1.md"]
+    assert files[:9] == [None] * 8 + ["documents/D1.md"]
 
 
 def test_a_new_render_removes_the_previews_and_outputs_of_the_last_one(tmp_path: Path) -> None:

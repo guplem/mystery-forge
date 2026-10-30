@@ -64,14 +64,14 @@ Open the file whose name starts with `1 -` (the manual). It has the printing che
 
 A folder on your Desktop (`Mystery Forge/<game title>`) with:
 
-| File                                     | What it is                                                                                                                                                                                               |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0 - READ FIRST (warnings).txt`          | Only when some tests of the game did not pass: which puzzles may be unclear or too hard, and how to fix them. It reveals no answer.                                                                      |
-| `1 - START HERE (manual).pdf`            | Read this before you print: what to print, how to set up the envelopes, how to play, and background music that fits the story.                                                                           |
-| `2 - PRINT THIS (game materials).pdf`    | The game itself: letters, reports, maps, codes, and puzzles, split into envelopes by "STOP" pages, plus the answer list and the accusation form.                                                         |
-| `Game companion.html`                    | An optional page for a phone or a computer. It checks your answers, shows a bit of story for each solved puzzle, gives one hint at a time, keeps the time, and scores your accusation. It works offline. |
-| `HOST ONLY - spoilers/3 - Hints.pdf`     | Fold-over hint cards, for groups that play without a phone or computer.                                                                                                                                  |
-| `HOST ONLY - spoilers/4 - Solutions.pdf` | Every answer and the full story. Do not open it if you want to play.                                                                                                                                     |
+| File                                     | What it is                                                                                                                                                                                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `0 - READ FIRST (warnings).txt`          | Only when some tests of the game did not pass: which puzzles may be unclear or too hard, and how to fix them. It reveals no answer.                                                                                |
+| `1 - START HERE (manual).pdf`            | Read this before you print: what to print, how to set up the envelopes, how to play, and background music that fits the story.                                                                                     |
+| `2 - PRINT THIS (game materials).pdf`    | The game itself: letters, reports, maps, codes, and puzzles, split into envelopes by "STOP" pages, plus character files with a portrait and note lines for each suspect, the answer list, and the accusation form. |
+| `Game companion.html`                    | An optional page for a phone or a computer. It checks your answers, shows a bit of story for each solved puzzle, gives one hint at a time, keeps the time, and scores your accusation. It works offline.           |
+| `HOST ONLY - spoilers/3 - Hints.pdf`     | Fold-over hint cards, for groups that play without a phone or computer.                                                                                                                                            |
+| `HOST ONLY - spoilers/4 - Solutions.pdf` | Every answer and the full story. Do not open it if you want to play.                                                                                                                                               |
 
 The file names follow the game language. A Spanish game, for example, starts with `1 - EMPIEZA AQUÍ (manual).pdf`.
 

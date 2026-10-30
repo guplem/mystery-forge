@@ -141,6 +141,7 @@ def outside_pages(game: Game) -> list[str]:
         keys.append("manual_outside_register")
     if config.format in ("case_file", "both"):
         keys.append("manual_outside_notes")
+    keys.append("manual_outside_characters")
     return [text(config.language, key) for key in keys]
 
 

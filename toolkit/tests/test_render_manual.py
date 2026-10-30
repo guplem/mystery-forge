@@ -294,19 +294,26 @@ def test_a_solo_game_fills_in_the_accusation_alone() -> None:
 def test_the_setup_names_only_the_outside_pages_that_the_game_prints() -> None:
     assert section(golden_game(), "Setup").steps[1] == (
         "The pages before the first STOP page stay outside the envelopes: the cover, the envelope labels, the answer "
-        "register, and the detective notes."
+        "register, the detective notes, and the character files."
     )
     envelope_game = configured(golden_game(), {"format": "envelopes"}, assistance={"paper_answer_check": False})
     assert section(envelope_game, "Setup").steps[1] == (
-        "The pages before the first STOP page stay outside the envelopes: the cover and the envelope labels."
+        "The pages before the first STOP page stay outside the envelopes: the cover, the envelope labels, and the "
+        "character files."
     )
     piles = configured(envelope_game, equipment={"envelopes": False})
-    assert section(piles, "Setup").steps[1] == "The pages before the first STOP page stay on the table: the cover."
+    assert section(piles, "Setup").steps[1] == (
+        "The pages before the first STOP page stay on the table: the cover and the character files."
+    )
 
 
 def test_the_setup_list_follows_the_grammar_of_the_game_language() -> None:
     spanish = configured(golden_game(), {"language": "es", "format": "envelopes"})
-    assert section(spanish, "Preparación").steps[1].endswith(": la portada, las etiquetas y el registro de respuestas.")
+    assert (
+        section(spanish, "Preparación")
+        .steps[1]
+        .endswith(": la portada, las etiquetas, el registro de respuestas y las fichas de personajes.")
+    )
 
 
 def test_the_outside_pages_match_the_pages_that_the_materials_put_before_the_first_stop_page() -> None:
@@ -315,6 +322,7 @@ def test_the_outside_pages_match_the_pages_that_the_materials_put_before_the_fir
         "envelope-labels": "the envelope labels",
         "register": "the answer register",
         "detective-notes": "the detective notes",
+        "characters": "the character files",
     }
     for game_format in ("envelopes", "case_file", "both"):
         for envelopes in (True, False):

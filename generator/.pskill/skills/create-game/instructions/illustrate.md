@@ -9,6 +9,7 @@ Read first: `source/config.json` (the visual style, the printer, and ink saving)
    - Draw like an illustrator, not a clip-art generator: a clear composition, a few well-chosen details, lines in `currentColor`. Use at most two flat fills that stay readable in grayscale; never let a color carry meaning.
    - Show nothing that solves a puzzle or names the culprit, unless the plan puts that clue in this image on purpose.
    - A map uses the registry names exactly as `story.yaml` writes them.
-3. **Place each image** with `{{ '{{image:<id>|caption}}' }}` on its own line in its document, where a reader expects it. Change nothing else in the document: every clue quote and every `{{ '{{artifact}}' }}` must stay exactly as it is.
+3. **Draw one portrait per suspect** (every character when `story.yaml` marks no suspect) as `source/images/portrait-<character id>.svg`. The character files of the detective notebook print it next to lines for notes, so no document places it. Keep it a very simple cartoon: head and shoulders, a few lines, one or two features that fit the role (a chef's hat, round glasses, a bow tie). These portraits do not count toward the limit of step 1. Give every portrait the same style, and never make the culprit look guilty.
+4. **Place each image** with `{{ '{{image:<id>|caption}}' }}` on its own line in its document, where a reader expects it. Change nothing else in the document: every clue quote and every `{{ '{{artifact}}' }}` must stay exactly as it is.
 
-Then run `uv run --project ../toolkit forge check --game {{ steps.setup.json.game_dir }} --scope full` and fix every `images.*` finding. Your answer lists the image files.
+Then run `uv run --project ../toolkit forge check --game {{ steps.setup.json.game_dir }} --scope full` and fix every `images.*` finding. Your answer lists the image files, the portraits too.
