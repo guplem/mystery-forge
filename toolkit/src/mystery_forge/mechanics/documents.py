@@ -265,6 +265,8 @@ def decode_cut_strips(rendered: RenderedArtifact, params: CutStripsParams, conte
 # timeline-order
 
 TIMELINE_FORMAT: str = "%Y-%m-%d %H:%M"
+# A card that opens with "60" or "12" gives players two digits to choose from, so a digit code gets several answers.
+LEADING_NUMBER: re.Pattern[str] = re.compile(r"^\W*(\d{2,})")
 
 
 class TimelineEvent(BaseModel):
@@ -305,6 +307,13 @@ def sorted_events(events: list[TimelineEvent]) -> list[tuple[str, TimelineEvent]
         if not fold(event.text):
             raise MechanicBuildError(
                 f"The event at {when} has no letters.", fix_hint="Start the event text with the next answer letter."
+            )
+        number: re.Match[str] | None = LEADING_NUMBER.match(event.text)
+        if number is not None:
+            raise MechanicBuildError(
+                f"The event at {when} starts with the number '{number.group(1)}', so players cannot tell which digit "
+                "counts.",
+                fix_hint="Start the card with one digit followed by a word, such as '6 km of dirt road'.",
             )
         dated[when] = event
     return sorted(dated.items())
