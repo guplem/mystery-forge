@@ -669,3 +669,9 @@ def test_plain_test_without_an_accusation_or_a_story(game_dir: Path) -> None:
     story_path.unlink()
     missing = run(["plain-test", "--game", str(game_dir)])
     assert missing["ok"] is False and missing["findings"]
+
+
+def test_plain_test_needs_the_brief_for_the_order_of_the_options(game_dir: Path) -> None:
+    (game_dir / "source" / "brief.json").unlink()
+    missing = run(["plain-test", "--game", str(game_dir)])
+    assert missing["ok"] is False and missing["findings"]

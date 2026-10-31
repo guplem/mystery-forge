@@ -8,6 +8,7 @@ accusation questions, and no hidden clue. The story-only judge of the panel then
 
 from typing import Final
 
+from mystery_forge.assemble import story_with_shuffled_options
 from mystery_forge.checks.ledger import normalize_quote_text
 from mystery_forge.panel.judge import ValidSolver, judge_story_only, question_attempt
 from mystery_forge.panel.models import ItemVerdict, SolverResult
@@ -26,9 +27,13 @@ For each question of the final accusation, give your best answer from these sent
 - Leave the option empty only when the sentences give you no reason at all to prefer one option."""
 
 
-def build_plain_clue_packet(story: Story) -> StagePacket | None:
-    """The packet of the plain clue test, or None when the story has no accusation."""
-    deduction: Deduction | None = story.deduction
+def build_plain_clue_packet(story: Story, seed: int) -> StagePacket | None:
+    """The packet of the plain clue test, or None when the story has no accusation.
+
+    The test runs on `story.yaml` before any assembly. It shuffles the options with the brief seed, as the assembly
+    does: writers tend to put the right option first, and solvers would read its place as a clue.
+    """
+    deduction: Deduction | None = story_with_shuffled_options(story, seed).deduction
     if deduction is None:
         return None
     people: list[str] = [
