@@ -13,7 +13,7 @@ from typing import Final, Literal
 
 from mystery_forge.checks.game_index import FLOW_FILE, STORY_FILE
 from mystery_forge.findings import Finding
-from mystery_forge.game import AssembledDocument, Game
+from mystery_forge.game import AssembledDocument, AssembledPuzzle, Game
 from mystery_forge.i18n import text
 from mystery_forge.spec.models import Deduction
 
@@ -46,6 +46,8 @@ FREE_TEXT_PATTERNS: Final[dict[str, tuple[FreeTextPattern, ...]]] = {
 }
 
 INTERNAL_ID_PATTERN: Final[re.Pattern[str]] = re.compile(r"\b[PD]\d{1,3}\b")
+# The material of these mechanics names grid squares, and "D8" or "P3" is a square there, not an internal id.
+GRID_SQUARE_MECHANICS: Final[frozenset[str]] = frozenset({"grid-coordinates"})
 
 
 @dataclass(frozen=True)
@@ -133,9 +135,22 @@ def player_texts(game: Game) -> list[PlayerText]:
     return texts
 
 
+def grid_square_files(game: Game) -> set[str]:
+    """The puzzle files and documents of the puzzles whose material names grid squares."""
+    grid_puzzles: list[AssembledPuzzle] = [
+        puzzle for puzzle in game.puzzles if puzzle.source.mechanic in GRID_SQUARE_MECHANICS
+    ]
+    ids: set[str] = {puzzle.source.id for puzzle in grid_puzzles}
+    files: set[str] = {puzzle.file for puzzle in grid_puzzles}
+    return files | {document.file for document in game.documents if document.meta.puzzle in ids}
+
+
 def internal_id_findings(game: Game) -> list[Finding]:
     findings: list[Finding] = []
+    skipped: set[str] = grid_square_files(game)
     for player_text in player_texts(game):
+        if player_text.file in skipped:
+            continue
         found: list[str] = INTERNAL_ID_PATTERN.findall(player_text.text)
         if not found:
             continue
