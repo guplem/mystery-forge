@@ -156,3 +156,10 @@ def test_render_markdown_strikes_through_crossed_out_text() -> None:
     rendered = render_markdown("Paid ~~3 December~~ 5 December.", "documents/D1.md", 1)
     assert "<s>3 December</s>" in rendered.html
     assert "~~" not in rendered.text
+
+
+def test_render_markdown_turns_a_table_into_a_real_table() -> None:
+    rendered = render_markdown("| Digit | Sign |\n| --- | --- |\n| 1 | .---- |\n| 2 | ..--- |\n", "documents/D1.md", 1)
+    assert "<table>" in rendered.html and "<td>..---</td>" in rendered.html
+    assert "|" not in rendered.text
+    assert "2  ..---" in rendered.text
