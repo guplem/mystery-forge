@@ -6,7 +6,8 @@ The solver panel failed **{{ item.code }}** with the verdict `{{ item.verdict }}
 {% set earlier = [] %}{% for round in history.panel[:-1] %}{% for line in round.outputs.failing %}{% if line.startswith(item.code ~ ':') %}{% set _ = earlier.append(line) %}{% endif %}{% endfor %}{% endfor %}{% if earlier %}This item also failed earlier panel rounds: {{ earlier | join('; ') | truncate(400) }}. A text edit did not help, so change the mechanic, the params, or the answer this time.
 
 {% endif %}Limits for every fix:
-- Never add the method, the order of steps, or the meaning of the result in the voice of the character who hides the answer: a hider does not explain the code. Keep each limit in the `notes` of this puzzle in `plan.yaml`.
+- Never add the method, the order of steps, or the meaning of the result in the voice of the character who hides the answer: a hider does not explain the code.
+- Write each limit that your fix sets (such as "the note never names the stove") as a comment line `# Limit: ...` at the top of the puzzle file that you change, so that a later fixer keeps it. Do not edit `plan.yaml`: other fixers work at the same time, and it is not one of your files.
 - The same verdict after an earlier fix means that more text will not help: change the mechanic, the params, or the answer instead.
 
 What each verdict asks:
