@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from mystery_forge.assemble import shuffled_options
 from mystery_forge.panel.models import AccusationChoice, Evidence, SolverResult, SolverStatus
 from mystery_forge.panel.packets import STORY_ONLY_STAGE
 from mystery_forge.panel.plain_clues import build_plain_clue_packet, judge_plain_clue_test
@@ -7,6 +8,7 @@ from mystery_forge.spec.loader import load_required_model
 from mystery_forge.spec.models import Story
 
 GOLDEN_SOURCE: Path = Path(__file__).parent / "fixtures" / "golden" / "source"
+SEED: int = 11
 
 
 def golden_story() -> Story:
@@ -25,7 +27,7 @@ def solver(number: int, chosen: AccusationChoice, status: SolverStatus = "done")
 
 def test_the_packet_holds_the_plain_clues_and_the_questions_but_no_hidden_clue_or_secret() -> None:
     story = golden_story()
-    packet = build_plain_clue_packet(story)
+    packet = build_plain_clue_packet(story, SEED)
     assert packet is not None
     assert (packet.stage, packet.codes, packet.questions) == (STORY_ONLY_STAGE, [], ["who", "why"])
     assert "## Document D4\n\n> wet boot prints on the lamp room stairs, too big for Ana" in packet.text
@@ -37,16 +39,16 @@ def test_the_packet_holds_the_plain_clues_and_the_questions_but_no_hidden_clue_o
 
 
 def test_a_story_without_an_accusation_has_no_packet() -> None:
-    packet = build_plain_clue_packet(golden_story())
+    packet = build_plain_clue_packet(golden_story(), SEED)
     assert packet is not None
     story = golden_story().model_copy(update={"deduction": None})
-    assert build_plain_clue_packet(story) is None
+    assert build_plain_clue_packet(story, SEED) is None
     assert judge_plain_clue_test(story, packet, []) == []
 
 
 def test_solvers_that_prove_the_culprit_from_plain_clues_fail_the_question() -> None:
     story = golden_story()
-    packet = build_plain_clue_packet(story)
+    packet = build_plain_clue_packet(story, SEED)
     assert packet is not None
     proof = choice("felix", "wet boot prints on the lamp room stairs, too big for Ana")
     verdicts = judge_plain_clue_test(story, packet, [solver(1, proof), solver(2, proof), solver(3, proof)])
@@ -55,7 +57,7 @@ def test_solvers_that_prove_the_culprit_from_plain_clues_fail_the_question() -> 
 
 def test_guesses_without_a_real_quote_and_failed_solvers_do_not_count() -> None:
     story = golden_story()
-    packet = build_plain_clue_packet(story)
+    packet = build_plain_clue_packet(story, SEED)
     assert packet is not None
     guess = choice("felix", "Felix confessed everything.")
     proof = choice("felix", "wet boot prints on the lamp room stairs, too big for Ana")
@@ -63,3 +65,13 @@ def test_guesses_without_a_real_quote_and_failed_solvers_do_not_count() -> None:
     assert guessed[0].verdict == "pass"
     too_few = judge_plain_clue_test(story, packet, [solver(1, proof), solver(2, proof), solver(3, proof, "failed")])
     assert too_few[0].verdict == "insufficient_solvers"
+
+
+def test_the_packet_lists_the_options_in_the_same_seeded_order_as_the_assembled_game() -> None:
+    story = golden_story()
+    assert story.deduction is not None
+    packet = build_plain_clue_packet(story, SEED)
+    assert packet is not None
+    for question in shuffled_options(story.deduction.questions, SEED):
+        listed = "\n".join(f"  - {option.id}: {option.text}" for option in question.options)
+        assert f"- {question.id}: {question.prompt}\n{listed}" in packet.text

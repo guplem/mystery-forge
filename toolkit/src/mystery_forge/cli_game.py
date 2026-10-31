@@ -15,7 +15,8 @@ from typing import Any, Final, Self, TextIO
 from playwright.sync_api import Error as PlaywrightError
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, model_validator
 
-from mystery_forge.assemble import STRINGS_FILE, AssemblyResult, assemble_game, load_config
+from mystery_forge.assemble import STRINGS_FILE, AssemblyResult, assemble_game, load_brief, load_config
+from mystery_forge.brief import Brief
 from mystery_forge.checks.runner import run_checks
 from mystery_forge.cli_output import (
     BROWSER_FIX,
@@ -305,10 +306,11 @@ def command_plain_test(arguments: argparse.Namespace, output: TextIO) -> int:
     game_dir: Path = Path(arguments.game)
     findings: list[Finding] = []
     story: Story | None = load_required_model(game_dir / SOURCE_FOLDER, STORY_FILE, Story, findings)
-    if story is None:
+    brief: Brief | None = load_brief(game_dir, findings)
+    if story is None or brief is None:
         emit(output, {"ok": False, "solver_tasks": [], "failing": [], **capped_findings(findings)})
         return 0
-    packet: StagePacket | None = build_plain_clue_packet(story)
+    packet: StagePacket | None = build_plain_clue_packet(story, brief.seed)
     folder: Path = game_dir / "reports" / PLAIN_TEST_FOLDER
     if packet is None:
         emit(output, {"ok": True, "solver_tasks": [], "failing": []})
