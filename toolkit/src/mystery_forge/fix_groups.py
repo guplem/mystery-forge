@@ -7,6 +7,7 @@ every puzzle, so it runs alone in its round.
 """
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ MUSIC_GROUP: str = "music"
 GAME_GROUP: str = "game"
 SETUP_FILES: frozenset[str] = frozenset({"config.json", "brief.json", "draw.json"})
 TOOLKIT_RULES: frozenset[str] = frozenset({"render.toolkit_overflow"})
+IMAGE_REFERENCE: re.Pattern[str] = re.compile(r"\{\{\s*image:([^|}\s]+)")
 
 
 @dataclass(frozen=True)
@@ -41,6 +43,10 @@ def file_owners(game_dir: Path) -> dict[str, str]:
         owner: str | None = document_owner(path)
         if owner is not None:
             owners[f"documents/{path.name}"] = owner
+        if owner is not None and owner != DOCUMENTS_GROUP:
+            # The image of a puzzle document is puzzle material, such as the photo of an observation puzzle: its
+            # fixer must be able to change it.
+            owners.update({f"images/{image}.svg": owner for image in IMAGE_REFERENCE.findall(path.read_text("utf-8"))})
     owners.update(plan_owners(root / "plan.yaml"))
     return owners
 
@@ -104,8 +110,6 @@ def group_name(file: str | None, owners: dict[str, str]) -> str | None:
     # Setup files and the toolkit's own pages (materials.html, solutions.html) are not game sources that a writer owns.
     if file in SETUP_FILES or file.endswith(".html"):
         return None
-    if file.startswith("images/"):
-        return DOCUMENTS_GROUP
     return owners.get(file, DOCUMENTS_GROUP)
 
 
@@ -121,8 +125,9 @@ def group_files(name: str, owners: dict[str, str]) -> list[str]:
     owned: list[str] = [file for file, owner in owners.items() if owner == name]
     puzzle_files: list[str] = sorted(file for file in owned if file.startswith("puzzles/"))
     document_files: list[str] = sorted(file for file in owned if file.startswith("documents/"))
+    image_files: list[str] = sorted(file for file in owned if file.startswith("images/"))
     extra: list[str] = ["images/"] if name == DOCUMENTS_GROUP else []
-    return puzzle_files + document_files + extra
+    return puzzle_files + document_files + image_files + extra
 
 
 def group_findings(findings: list[Finding], game_dir: Path) -> list[FixGroup]:

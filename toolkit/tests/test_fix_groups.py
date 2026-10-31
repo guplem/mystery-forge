@@ -91,6 +91,15 @@ def test_findings_are_grouped_by_the_writer_that_owns_their_file(game_dir: Path)
     assert groups["plan"].files == ["plan.yaml", "flow.yaml"]
 
 
+def test_an_image_that_a_puzzle_document_places_belongs_to_that_puzzle(game_dir: Path) -> None:
+    document = game_dir / "source" / "documents" / "D2.md"
+    document.write_text(document.read_text(encoding="utf-8") + "\n{{image:contact-sheet|The sheet}}\n", "utf-8")
+    owners = file_owners(game_dir)
+    assert owners["images/contact-sheet.svg"] == "P1"
+    groups = {group.name: group for group in group_findings([finding("images/contact-sheet.svg")], game_dir)}
+    assert groups["P1"].files == ["puzzles/P1.yaml", "documents/D2.md", "images/contact-sheet.svg"]
+
+
 def test_music_findings_go_to_their_own_group_and_never_to_the_documents(game_dir: Path) -> None:
     findings = [finding("music.yaml"), finding("documents/D1.md")]
     groups = {group.name: group for group in group_findings(findings, game_dir)}
