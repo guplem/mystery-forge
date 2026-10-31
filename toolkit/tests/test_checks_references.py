@@ -87,6 +87,19 @@ def test_an_internal_id_in_a_puzzle_text_is_an_error() -> None:
     ]
 
 
+def test_a_grid_coordinates_puzzle_may_name_squares_that_look_like_internal_ids() -> None:
+    game: Game = edit_puzzle(
+        golden_game(),
+        "P1",
+        mechanic="grid-coordinates",
+        hints=[Hint(level=1, text="Start with the square D8.")],
+        solution=[SolutionStep(text="Read the squares A3, P4, and D8 in order.")],
+    )
+    game = edit_document(game, "D2", text="Squares: A3, P4, D8.")
+    game = edit_document(game, "D1", text="Solve P3 first.")
+    assert internal_id_places(game) == [("documents/D1.md", None)]
+
+
 def test_an_internal_id_in_a_story_or_flow_text_is_an_error() -> None:
     who = golden_deduction().questions[0]
     options: list[Any] = [who.options[0].model_copy(update={"text": "The cook of D1"}), *who.options[1:]]
