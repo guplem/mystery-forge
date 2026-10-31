@@ -338,6 +338,21 @@ def test_timeline_order_rejects_an_event_text_without_letters() -> None:
     assert error.fix_hint
 
 
+def test_timeline_order_rejects_a_card_that_starts_with_a_number_of_several_digits() -> None:
+    events: list[dict[str, str]] = [
+        {"when": "1979-08-14 19:40", "text": "4 herons in the photo."},
+        {"when": "1979-08-14 20:15", "text": "60 minutes to Huelva."},
+    ]
+    error: MechanicBuildError = expect_build_error("timeline-order", {"events": events}, make_context("46"))
+    assert (
+        error.message
+        == "The event at 1979-08-14 20:15 starts with the number '60', so players cannot tell which digit counts."
+    )
+    assert error.fix_hint
+    events[1]["text"] = "6 km of dirt road."
+    assert build("timeline-order", {"events": events}, make_context("46")).solver_text
+
+
 def test_timeline_order_rejects_first_letters_that_do_not_spell_the_answer() -> None:
     error: MechanicBuildError = expect_build_error("timeline-order", {"events": EVENTS}, make_context("tree"))
     assert error.message == "In date order, the first letters spell 'toae', not the answer 'tree'."

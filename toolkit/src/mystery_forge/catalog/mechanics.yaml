@@ -1486,6 +1486,7 @@ mechanics:
     pitfalls:
       - Time zones, 12 or 24 hour confusion, and unstated travel times. State all travel times.
       - Offer the cards as a list for groups without scissors.
+      - For a digit code, start each card with one digit and a word ("6 km", never "60 minutes"). A number of two digits gives players two digits to choose from.
     hint_ladder:
       - Collect the times from <documents> on the timeline sheet.
       - Put the events with exact times down first.
