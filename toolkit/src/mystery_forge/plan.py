@@ -51,6 +51,7 @@ from mystery_forge.spec.models import (
     KNOWN_DOCUMENT_KINDS,
     Difficulty,
     DocumentId,
+    DocumentMeta,
     Flow,
     PuzzleId,
     RegistryId,
@@ -174,14 +175,20 @@ def planned_sentence_findings(game_dir: Path, game: Game) -> list[Finding]:
 
 
 def relied_on_evidence_findings(game_dir: Path, game: Game) -> list[Finding]:
-    """Report a puzzle whose solution cites no clue of a document that the plan says it relies on.
+    """Check that the written puzzles still send players back to evidence of an earlier stage.
 
-    The plan can list a document in `relies_on` while the written puzzle never needs it. Then the evidence is still
-    useless during play, which is the very thing that `relies_on` must prevent.
+    The plan can list a document in `relies_on` while the written puzzle never needs it, for example after a panel fix
+    changed the puzzle. A puzzle fixer may not change `plan.yaml`, so that drift is only a warning. What matters is
+    the written game: when too few puzzles after the first stage cite evidence of an earlier stage, the error has no
+    file, so the game fixer, who may change every puzzle and the plan, gets it.
     """
     plan: Plan | None = load_required_model(game_dir / SOURCE_FOLDER, PLAN_FILE, Plan, [])
     if plan is None:
         return []
+    return [*relies_on_drift_findings(plan, game), *written_evidence_findings(game)]
+
+
+def relies_on_drift_findings(plan: Plan, game: Game) -> list[Finding]:
     puzzles: dict[str, AssembledPuzzle] = {puzzle.source.id: puzzle for puzzle in game.puzzles}
     findings: list[Finding] = []
     for planned in plan.puzzles:
@@ -193,19 +200,56 @@ def relied_on_evidence_findings(game_dir: Path, game: Game) -> list[Finding]:
         cited: set[str | None] = {documents.get(clue_id) for step in puzzle.source.solution for clue_id in step.uses}
         findings.extend(
             Finding(
-                severity="error",
+                severity="warning",
                 rule="plan.relies_on_unused",
                 message=f"The plan says that {planned.id} relies on {document_id}, but no solution step cites a "
                 f"clue of {document_id}.",
                 file=puzzle.file,
                 path="solution",
                 fix_hint=f"Make the puzzle need a fact of {document_id}: quote it as a clue of the puzzle and cite "
-                "it in the step that uses it.",
+                "it in the step that uses it. Or, when a fixer changed the puzzle on purpose, update relies_on.",
             )
             for document_id in planned.relies_on
             if document_id not in cited
         )
     return findings
+
+
+def written_evidence_findings(game: Game) -> list[Finding]:
+    """Ask that about one puzzle in three after the first stage cites a clue of a document of an earlier stage."""
+    order: dict[str, int] = {stage.id: index for index, stage in enumerate(game.flow.stages)}
+    documents: dict[str, DocumentMeta] = {document.meta.id: document.meta for document in game.documents}
+    later: list[AssembledPuzzle] = [puzzle for puzzle in game.puzzles if order.get(puzzle.source.stage, 0) > 0]
+    if not later:
+        return []
+    needed: int = max(1, len(later) // EVIDENCE_PUZZLE_SHARE)
+    have: int = sum(1 for puzzle in later if cites_earlier_evidence(puzzle, game, documents, order))
+    if have >= needed:
+        return []
+    return [
+        Finding(
+            severity="error",
+            rule="plan.evidence_unused_written",
+            message=f"Only {have} of the {len(later)} written puzzles after the first stage cite a clue of a "
+            f"document of an earlier stage; at least {needed} of them must.",
+            fix_hint="Make a puzzle after the first stage need a fact that a document of an earlier stage gives: "
+            "quote it as a clue of the puzzle, cite it in its solution, and add the document to its relies_on.",
+        )
+    ]
+
+
+def cites_earlier_evidence(
+    puzzle: AssembledPuzzle, game: Game, documents: dict[str, DocumentMeta], order: dict[str, int]
+) -> bool:
+    clue_documents: dict[str, str | None] = {clue.id: clue.document for clue in game.story.clues}
+    clue_documents |= {clue.id: clue.document for clue in puzzle.source.clues}
+    stage: int = order[puzzle.source.stage]
+    for step in puzzle.source.solution:
+        for clue_id in step.uses:
+            meta: DocumentMeta | None = documents.get(clue_documents.get(clue_id) or "")
+            if meta is not None and meta.puzzle != puzzle.source.id and order.get(meta.stage, stage) < stage:
+                return True
+    return False
 
 
 def stale_title_findings(game_dir: Path, game: Game) -> list[Finding]:

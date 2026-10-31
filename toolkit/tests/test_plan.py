@@ -488,13 +488,23 @@ def test_a_puzzle_must_cite_a_clue_of_each_document_that_it_relies_on(game_dir: 
     write_plan(game_dir, plan)
     game = assembled(game_dir)
     findings = relied_on_evidence_findings(game_dir, game)
+    # A puzzle fixer cannot change plan.yaml, so the drift is a warning. The written game itself must still send
+    # players back to evidence of an earlier stage: that is the error, and the game fixer may change any puzzle.
     assert [(finding.rule, finding.file, finding.severity) for finding in findings] == [
-        ("plan.relies_on_unused", "puzzles/P3.yaml", "error"),
-        ("plan.relies_on_unused", "puzzles/P3.yaml", "error"),
+        ("plan.relies_on_unused", "puzzles/P3.yaml", "warning"),
+        ("plan.relies_on_unused", "puzzles/P3.yaml", "warning"),
+        ("plan.evidence_unused_written", None, "error"),
     ]
     assert "D5" in findings[0].message and "D2" in findings[1].message
+    assert "0 of the 1" in findings[2].message
     cited = with_solution_uses(game, 2, ["boots-wet", "maud-ticket", "kitchen-all-night"])
     assert relied_on_evidence_findings(game_dir, cited) == []
+    # A document of the puzzle's own stage is not evidence from earlier in the game.
+    same_stage = with_solution_uses(game, 2, ["boots-wet", "maud-ticket"])
+    assert [finding.rule for finding in relied_on_evidence_findings(game_dir, same_stage)] == [
+        "plan.relies_on_unused",
+        "plan.evidence_unused_written",
+    ]
 
 
 def test_relied_on_evidence_is_checked_only_with_a_valid_plan_and_written_puzzles(game_dir: Path) -> None:
@@ -503,6 +513,20 @@ def test_relied_on_evidence_is_checked_only_with_a_valid_plan_and_written_puzzle
     plan["puzzles"][2]["id"] = "P9"
     plan["puzzles"][1]["relies_on"] = []
     write_plan(game_dir, plan)
-    assert relied_on_evidence_findings(game_dir, game) == []
+    assert [finding.rule for finding in relied_on_evidence_findings(game_dir, game)] == ["plan.evidence_unused_written"]
     (game_dir / "source" / "plan.yaml").write_text("puzzles: 3\n", encoding="utf-8")
     assert relied_on_evidence_findings(game_dir, game) == []
+
+
+def test_a_game_with_one_stage_needs_no_written_evidence_from_earlier(game_dir: Path) -> None:
+    game = assembled(game_dir)
+    one_stage = game.model_copy(update={"flow": game.flow.model_copy(update={"stages": game.flow.stages[:1]})})
+    puzzles = [
+        puzzle.model_copy(update={"source": puzzle.source.model_copy(update={"stage": "A"})}) for puzzle in game.puzzles
+    ]
+    one_stage = one_stage.model_copy(update={"puzzles": puzzles})
+    plan = golden_plan()
+    plan["puzzles"][1]["relies_on"] = []
+    plan["puzzles"][2]["relies_on"] = []
+    write_plan(game_dir, plan)
+    assert relied_on_evidence_findings(game_dir, one_stage) == []
