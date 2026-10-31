@@ -192,6 +192,12 @@ def test_schema_prints_the_json_schema_of_each_source_file(name: str, monkeypatc
     assert schema["type"] == "object"
 
 
+def test_schema_document_lists_the_document_kinds(monkeypatch: pytest.MonkeyPatch) -> None:
+    code, schema = run(["schema", "document"], monkeypatch)
+    assert code == 0
+    assert "case-briefing" in schema["properties"]["kind"]["description"]
+
+
 def test_schema_references_lists_the_reference_forms_and_directives(monkeypatch: pytest.MonkeyPatch) -> None:
     code, result = run(["schema", "references"], monkeypatch)
     assert code == 0

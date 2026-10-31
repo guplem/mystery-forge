@@ -34,6 +34,30 @@ LINK_PATTERN: re.Pattern[str] = re.compile(
 )
 
 
+# The document kinds that have a template. The renderer (`render/kinds.py`) keeps one template per kind; a test
+# compares both lists. Agents read this list in `forge schema document`, and the plan check uses it too.
+KNOWN_DOCUMENT_KINDS: tuple[str, ...] = (
+    "letter",
+    "notebook",
+    "receipt",
+    "police-report",
+    "newspaper",
+    "telegram",
+    "transcript",
+    "email",
+    "chat-log",
+    "ticket",
+    "id-card",
+    "map",
+    "photo",
+    "poster",
+    "form",
+    "case-briefing",
+    "generic",
+)
+KIND_DESCRIPTION: str = f"The document kind, which picks the printed look. One of: {', '.join(KNOWN_DOCUMENT_KINDS)}."
+
+
 class SourceModel(BaseModel):
     """Base of every source model: unknown fields are errors, so a typo never disappears silently."""
 
@@ -331,7 +355,7 @@ class DocumentMeta(SourceModel):
 
     format_version: FormatVersion
     id: DocumentId
-    kind: RegistryId
+    kind: RegistryId = Field(description=KIND_DESCRIPTION)
     stage: StageId
     title: ShortText
     puzzle: PuzzleId | None = None

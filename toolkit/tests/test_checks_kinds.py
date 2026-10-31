@@ -1,7 +1,8 @@
 from test_checks_support import edit_document, golden_game, rules
 
-from mystery_forge.checks.kinds import KNOWN_DOCUMENT_KINDS, check_document_kinds
+from mystery_forge.checks.kinds import check_document_kinds
 from mystery_forge.render.kinds import document_kind_ids
+from mystery_forge.spec.models import KNOWN_DOCUMENT_KINDS
 
 
 def test_the_golden_documents_use_known_kinds() -> None:
