@@ -47,6 +47,8 @@ from mystery_forge.findings import Finding, Severity
 from mystery_forge.game import AssembledPuzzle, Game
 from mystery_forge.spec.loader import SOURCE_FOLDER, load_required_model
 from mystery_forge.spec.models import (
+    KIND_DESCRIPTION,
+    KNOWN_DOCUMENT_KINDS,
     Difficulty,
     DocumentId,
     Flow,
@@ -93,7 +95,7 @@ class PlannedDocument(SourceModel):
     """A document that no puzzle owns: the case briefing, evidence for the deduction, red herrings."""
 
     id: DocumentId
-    kind: RegistryId
+    kind: RegistryId = Field(description=KIND_DESCRIPTION)
     stage: StageId
     title: ShortText
     purpose: Text
@@ -464,6 +466,15 @@ def check_documents(plan: Plan, flow: Flow, story: Story) -> list[Finding]:
                     "Plan at least one document in every stage.",
                 )
             )
+    findings.extend(
+        plan_finding(
+            "plan.kind_unknown",
+            f"The story document {document.id} has the kind '{document.kind}', which has no template.",
+            f"Use the kind that looks closest: {', '.join(KNOWN_DOCUMENT_KINDS)}.",
+        )
+        for document in plan.story_documents
+        if document.kind not in KNOWN_DOCUMENT_KINDS
+    )
     for clue in story.clues:
         if clue.document is not None and clue.document not in document_stages:
             findings.append(

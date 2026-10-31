@@ -214,6 +214,12 @@ def test_story_clues_must_point_to_planned_documents(game_dir: Path) -> None:
     assert "plan.clue_document" in errors(findings)
 
 
+def test_a_story_document_needs_a_kind_with_a_template(game_dir: Path) -> None:
+    findings = mutate(game_dir, lambda plan: plan["story_documents"][0].update({"kind": "will"}))
+    assert errors(findings) == ["plan.kind_unknown"]
+    assert "case-briefing" in (findings[0].fix_hint or "")
+
+
 def test_relies_on_must_name_a_story_document_of_the_same_or_an_earlier_stage(game_dir: Path) -> None:
     findings = mutate(game_dir, lambda plan: plan["puzzles"][1].update({"relies_on": ["D9"]}))
     assert errors(findings) == ["plan.relies_on"]

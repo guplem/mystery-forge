@@ -1,30 +1,8 @@
 """Document kinds: each document names a kind that the renderer has a template for."""
 
-from typing import Final
-
 from mystery_forge.findings import Finding
 from mystery_forge.game import Game
-
-# The renderer (`render/kinds.py`) has one template per kind and must keep this same list. A test compares both.
-KNOWN_DOCUMENT_KINDS: Final[tuple[str, ...]] = (
-    "letter",
-    "notebook",
-    "receipt",
-    "police-report",
-    "newspaper",
-    "telegram",
-    "transcript",
-    "email",
-    "chat-log",
-    "ticket",
-    "id-card",
-    "map",
-    "photo",
-    "poster",
-    "form",
-    "case-briefing",
-    "generic",
-)
+from mystery_forge.spec.models import KNOWN_DOCUMENT_KINDS
 
 
 def check_document_kinds(game: Game) -> list[Finding]:
